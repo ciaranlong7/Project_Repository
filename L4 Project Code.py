@@ -50,6 +50,7 @@ c = 299792458
 # object_name = '131630.87+211915.1' #Object U - chosen because non-CLAGN and has a z score of 458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
 object_name = '112015.67+542742.9'
+print('success')
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
 # object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
