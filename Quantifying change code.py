@@ -27,14 +27,14 @@ print(f'Median AGN sample redshift = {median_AGN_redshift:.3f}')
 
 #Quantifying change data
 # CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv')
-CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_2nd_biggest_smallest_max_uncs.csv')
+CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
 print(f'Number of CLAGN: {len(CLAGN_quantifying_change_data)}')
 CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
 CLAGN_zscore_uncs = CLAGN_quantifying_change_data.iloc[:, 18].tolist()
 CLAGN_norm_flux_diff = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
 CLAGN_norm_flux_diff_unc = CLAGN_quantifying_change_data.iloc[:, 20].tolist()
 CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
-CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in w1 band
+CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
 CLAGN_W1_median_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
 CLAGN_W1_median_dev_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
 CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
@@ -48,14 +48,14 @@ for i in range(len(CLAGN_quantifying_change_data)):
     CLAGN_new_norm_diff.append(CLAGN_norm_flux_diff[i]/CLAGN_W1_median_flux_unc[i])
 
 # AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv')
-AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest_max_uncs.csv')
+AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs.csv')
 print(f'Number of AGN: {len(AGN_quantifying_change_data)}')
 AGN_zscores = AGN_quantifying_change_data.iloc[:, 17].tolist()
 AGN_zscore_uncs = AGN_quantifying_change_data.iloc[:, 18].tolist()
 AGN_norm_flux_diff = AGN_quantifying_change_data.iloc[:, 19].tolist()
 AGN_norm_flux_diff_unc = AGN_quantifying_change_data.iloc[:, 20].tolist()
 AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 25].tolist()
-AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in w1 band
+AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
 AGN_W1_median_flux_unc = AGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
 AGN_W1_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
 AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 26].tolist()
@@ -95,6 +95,8 @@ for object_name in CLAGN_names_analysis:
 AGN_redshifts = []
 for object_name in AGN_names_analysis:
     object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+    if len(object_data) == 0:
+        print(object_name)
     redshift = object_data.iloc[0, 2]
     AGN_redshifts.append(redshift)
 

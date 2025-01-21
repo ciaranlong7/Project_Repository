@@ -64,7 +64,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # parent_sample = pd.read_csv('combined_guo_parent_sample.csv')
 # print(f'Objects in parent sample, before duplicates removed = {len(parent_sample)}')
-# columns_to_check = parent_sample.columns[[3, 10]] #checking SDSS name, DESI name
+# columns_to_check = parent_samplecolumns[[10]] #checking DESI name
 # parent_sample = parent_sample.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in parent sample, after duplicates removed = {len(parent_sample)}')
 
@@ -77,7 +77,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # print(f'Objects in parent sample with same redshift for SDSS & DESI = {len(same_redshift)}')
 # print(f'Objects in parent sample with different redshift for SDSS & DESI = {len(different_redshift)}')
 
-# columns_to_check = parent_sample.columns[[3, 10]] #checking SDSS name, DESI name
+# columns_to_check = parent_samplecolumns[[10]] #checking DESI name
 # same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in cleaned sample after duplicates removed = {len(same_redshift)}')
 
@@ -103,7 +103,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # print(f'Objects recovered with a matching redshift that originally was removed (with duplicates) = {len(same_redshift)}')
 # print(f'Objects in matching_rows with different redshift for SDSS & DESI (with duplicates) = {len(different_redshift)}')
 
-# columns_to_check = matching_rows.columns[[4, 11]] #checking SDSS name, DESI name
+# columns_to_check = matching_rows.columns[[11]] #checking DESI name
 # same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
 # print(f'Objects recovered with a matching redshift after duplicates removed = {len(same_redshift)}')
 
@@ -122,7 +122,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # clean_sample = pd.read_csv('clean_parent_sample.csv') #sample after recovered objects are appended.
 # print(f'length of clean sample = {len(clean_sample)}')
-# columns_to_check = clean_sample.columns[[3, 10]] #checking SDSS name, DESI name
+# columns_to_check = clean_sample.columns[[10]] #checking DESI name
 # clean_sample = clean_sample.drop_duplicates(subset=columns_to_check)
 # clean_sample.to_csv('clean_parent_sample.csv', index=False) 
 # print(f'length of clean sample after dropping duplicates = {len(clean_sample)}')
@@ -144,7 +144,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # ## Now constructing the sample of 280 AGN:
 # guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
 # guo_CLAGN = guo_CLAGN.dropna(subset=[guo_CLAGN.columns[0]]) #removing the 8 CLAGN with 2 CL lines
-# parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 
 # AGN_Sample = []
 # # Iterate through each row in guo_CLAGN

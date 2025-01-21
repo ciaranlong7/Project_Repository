@@ -12,11 +12,13 @@ AGN_sample = pd.read_csv("AGN_Sample.csv")
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 
 AGN_outlier_flux = pd.read_excel('AGN_outlier_flux.xlsx')
-AGN_outlier_flux_names = AGN_outlier_flux.iloc[:, 0]
+AGN_outlier_flux_names = AGN_outlier_flux.iloc[:, 0].tolist()
 AGN_outlier_flux_band = AGN_outlier_flux.iloc[:, 1]
+AGN_outlier_flux_epoch = AGN_outlier_flux.iloc[:, 2]
 CLAGN_outlier_flux = pd.read_excel('CLAGN_outlier_flux.xlsx')
-CLAGN_outlier_flux_names = CLAGN_outlier_flux.iloc[:, 0]
+CLAGN_outlier_flux_names = CLAGN_outlier_flux.iloc[:, 0].tolist()
 CLAGN_outlier_flux_band = CLAGN_outlier_flux.iloc[:, 1]
+CLAGN_outlier_flux_epoch = CLAGN_outlier_flux.iloc[:, 2]
 
 my_object = 1 #0 = AGN. 1 = CLAGN
 if my_object == 0:
@@ -36,8 +38,6 @@ W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
 object_names_list = [] #Keeps track of objects that met MIR data requirements to take z score & absolute change
-SDSS_redshifts = []
-DESI_redshifts = []
 
 # z_score & absolute change lists
 W1_max = []
@@ -53,6 +53,7 @@ W1_abs_change_unc = []
 W1_abs_change_norm = []
 W1_abs_change_norm_unc = []
 W1_gap = []
+W1_epochs = []
 
 W2_max = []
 W2_max_unc = []
@@ -67,6 +68,7 @@ W2_abs_change_unc = []
 W2_abs_change_norm = []
 W2_abs_change_norm_unc = []
 W2_gap = []
+W2_epochs = []
 
 mean_zscore = []
 mean_zscore_unc = []
@@ -93,15 +95,11 @@ for object_name in object_names:
         object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
         SDSS_RA = object_data.iloc[0, 0]
         SDSS_DEC = object_data.iloc[0, 1]
-        SDSS_z = object_data.iloc[0, 2]
-        DESI_z = object_data.iloc[0, 9]
     #For CLAGN:
     elif my_object == 1:
         object_data = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
         SDSS_RA = object_data.iloc[0, 1]
         SDSS_DEC = object_data.iloc[0, 2]
-        SDSS_z = object_data.iloc[0, 3]
-        DESI_z = object_data.iloc[0, 3]
 
     # Automatically querying catalogues
     coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works.
@@ -294,6 +292,24 @@ for object_name in object_names:
     else:
         W2_data = [ (0,0,0) ]
 
+    #removing some epochs:
+    if my_object == 0:
+        if object_name in AGN_outlier_flux_names:
+            AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names) if name == object_name]
+            for index in AGN_outlier_indices:
+                if AGN_outlier_flux_band[index] == 'W1':
+                    del W1_data[AGN_outlier_flux_epoch[index]-1] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
+                elif AGN_outlier_flux_band[index] == 'W2':
+                    del W2_data[AGN_outlier_flux_epoch[index]-1]
+    elif my_object == 1:
+        if object_name in CLAGN_outlier_flux_names:
+            CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names) if name == object_name]
+            for index in CLAGN_outlier_indices:
+                if CLAGN_outlier_flux_band[index] == 'W1':
+                    del W1_data[CLAGN_outlier_flux_epoch[index]-1]
+                elif CLAGN_outlier_flux_band[index] == 'W2':
+                    del W2_data[CLAGN_outlier_flux_epoch[index]-1]
+
     #want a minimum of 9 (out of ~24 possible) epochs to conduct analysis on.
     if len(W1_data) > 8:
         m = 0
@@ -307,7 +323,8 @@ for object_name in object_names:
         print('Not enough epochs in W1 & W2')
         continue
 
-    fig = plt.figure(figsize=(12,7))
+    if save_figures == 1:
+        fig = plt.figure(figsize=(12,7))
     if m == 0 and n == 0:
         min_mjd = min([W1_data[0][1], W2_data[0][1]])
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
@@ -316,20 +333,23 @@ for object_name in object_names:
         W1_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W1_data, W1_averages_flux)] #See document in week 5 folder for conversion.
         W2_averages_flux = [flux(tup[0], W2_k, W2_wl) for tup in W2_data]
         W2_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W2_data, W2_averages_flux)]
-        plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
-        plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W1 (3.4\u03bcm)')
+        if save_figures == 1:
+            plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
+            plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W1 (3.4\u03bcm)')
     elif n == 0:
         min_mjd = W2_data[0][1]
         W2_av_mjd_date = [tup[1] - min_mjd for tup in W2_data]
         W2_averages_flux = [flux(tup[0], W2_k, W2_wl) for tup in W2_data]
         W2_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W2_data, W2_averages_flux)]
-        plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
+        if save_figures == 1:
+            plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
     elif m == 0:
         min_mjd = W1_data[0][1]
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
         W1_averages_flux = [flux(tup[0], W1_k, W1_wl) for tup in W1_data]
         W1_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W1_data, W1_averages_flux)]
-        plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W1 (3.4\u03bcm)')
+        if save_figures == 1:
+            plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W1 (3.4\u03bcm)')
 
     if save_figures == 1:
         plt.xlabel('Days since first observation', fontsize = 26)
@@ -345,30 +365,12 @@ for object_name in object_names:
         elif my_object == 1:
             fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
 
-    #removing some epochs:
-    if my_object == 0:
-        if object_name in AGN_outlier_flux_names:
-            AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names) if name == object_name]
-            for index in AGN_outlier_indices:
-                if AGN_outlier_flux_band[index] == 'W1':
-                    del W1_data[index]
-                elif AGN_outlier_flux_band[index] == 'W2':
-                    del W2_data[index]
-    elif my_object == 1:
-        if object_name in CLAGN_outlier_flux_names:
-            CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names) if name == object_name]
-            for index in CLAGN_outlier_indices:
-                if CLAGN_outlier_flux_band[index] == 'W1':
-                    del W1_data[index]
-                elif CLAGN_outlier_flux_band[index] == 'W2':
-                    del W2_data[index]
-
     if m == 0: #Good W1 if true
         if n == 0: #Good W2 if true
             #Good W1 & W2
             object_names_list.append(object_name)
-            SDSS_redshifts.append(SDSS_z)
-            DESI_redshifts.append(DESI_z)
+            W1_epochs.append(len(W1_data))
+            W2_epochs.append(len(W2_data))
             
             W1_median_dev.append(median_abs_deviation(W1_averages_flux))
             W1_median_unc.append(np.nanmedian(W1_av_uncs_flux))
@@ -472,8 +474,8 @@ for object_name in object_names:
         else: 
             #good W1, bad W2
             object_names_list.append(object_name)
-            SDSS_redshifts.append(SDSS_z)
-            DESI_redshifts.append(DESI_z)
+            W1_epochs.append(len(W1_data))
+            W2_epochs.append(len(W2_data))
 
             W1_median_dev.append(median_abs_deviation(W1_averages_flux))
             W1_median_unc.append(np.nanmedian(W1_av_uncs_flux))
@@ -566,8 +568,8 @@ for object_name in object_names:
         if n == 0: #Good W2 if true
             #Bad W1, good W2
             object_names_list.append(object_name)
-            SDSS_redshifts.append(SDSS_z)
-            DESI_redshifts.append(DESI_z)
+            W1_epochs.append(len(W1_data))
+            W2_epochs.append(len(W2_data))
             
             W1_low.append(np.nan)
 
@@ -691,8 +693,8 @@ quantifying_change_data = {
 
     "W1 Gap": W1_gap, #21
     "W2 Gap": W2_gap, #22
-    "SDSS Redshift": SDSS_redshifts, #23
-    "DESI Redshift": DESI_redshifts, #24
+    "W1 Epochs": W1_epochs, #23
+    "W2 Epochs": W2_epochs, #24
     "W1 2nd lowest Flux": W1_low, #25
     "W2 2nd lowest Flux": W2_low, #26
     "W1 median_abs_dev of Flux": W1_median_dev, #27
