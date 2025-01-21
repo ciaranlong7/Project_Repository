@@ -24,7 +24,7 @@ c = 299792458
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-object_name = '152517.57+401357.6' #Object A - assigned to me
+# object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
 # object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
@@ -42,7 +42,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
 # object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score (120)
 # object_name = '163826.34+382512.1' #Object O - chosen because not a CLAGN, but has enourmous normalised flux change
-object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
+# object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
 # object_name = '121542.99+574702.3' #Object Q - chosen because not a CLAGN, but has a large normalised flux change.
 # object_name = '125449.57+574805.3' #Object R - chosen because not a CLAGN, but has a spurious measurement
 # object_name = '100523.31+024536.0' #Object S - chosen because has an uncertainty of 0 in its min epoch
@@ -50,7 +50,7 @@ object_name = '141535.46+022338.7' #Object P - chosen because of very high z sco
 # object_name = '131630.87+211915.1' #Object U - chosen because non-CLAGN and has a z score of 458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
 # object_name = '112015.67+542742.9'
-object_name = '114703.29+532340.4'
+object_name = '111938.02+513315.5'
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
 # object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
@@ -71,7 +71,9 @@ option = 1
 MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
+main_plot = 1 #main plot, with MIR, SDSS & DESI
+
+my_object = 0 #0 = AGN. 1 = CLAGN
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -124,6 +126,15 @@ else:
     SDSS_z = object_data.iloc[0, 2]
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
+
+AGN_outlier_flux = pd.read_excel('AGN_outlier_flux.xlsx')
+AGN_outlier_flux_names = AGN_outlier_flux.iloc[:, 0].tolist()
+AGN_outlier_flux_band = AGN_outlier_flux.iloc[:, 1]
+AGN_outlier_flux_epoch = AGN_outlier_flux.iloc[:, 2]
+CLAGN_outlier_flux = pd.read_excel('CLAGN_outlier_flux.xlsx')
+CLAGN_outlier_flux_names = CLAGN_outlier_flux.iloc[:, 0].tolist()
+CLAGN_outlier_flux_band = CLAGN_outlier_flux.iloc[:, 1]
+CLAGN_outlier_flux_epoch = CLAGN_outlier_flux.iloc[:, 2]
 
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
@@ -692,6 +703,117 @@ for i in range(len(W2_mag)):
         p += 1
         continue
 
+#removing some epochs:
+if my_object == 0:
+    if object_name in AGN_outlier_flux_names:
+        AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names) if name == object_name]
+        if len(AGN_outlier_indices) == 1:
+            #1 bad epoch for this object        
+            index = AGN_outlier_indices[0]
+            if AGN_outlier_flux_band[index] == 'W1':
+                del W1_averages[AGN_outlier_flux_epoch[index]-1] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
+                del W1_av_mjd_date[AGN_outlier_flux_epoch[index]-1]
+                del W1_av_uncs[AGN_outlier_flux_epoch[index]-1]
+            elif AGN_outlier_flux_band[index] == 'W2':
+                del W2_averages[AGN_outlier_flux_epoch[index]-1]
+                del W2_av_mjd_date[AGN_outlier_flux_epoch[index]-1]
+                del W2_av_uncs[AGN_outlier_flux_epoch[index]-1]
+
+        elif len(AGN_outlier_indices) == 2:
+            #2 bad epochs for this object        
+            index_one = AGN_outlier_indices[0]
+            index_two = AGN_outlier_indices[1]
+            if AGN_outlier_flux_band[index_one] == 'W1':
+                del W1_averages[AGN_outlier_flux_epoch[index_one]-1]
+                del W1_av_mjd_date[AGN_outlier_flux_epoch[index_one]-1]
+                del W1_av_uncs[AGN_outlier_flux_epoch[index_one]-1]
+                if AGN_outlier_flux_band[index_two] == 'W1':
+                    if AGN_outlier_flux_epoch[index_one] < AGN_outlier_flux_epoch[index_two]:
+                        del W1_averages[AGN_outlier_flux_epoch[index_two]-2]
+                        del W1_av_mjd_date[AGN_outlier_flux_epoch[index_two]-2]
+                        del W1_av_uncs[AGN_outlier_flux_epoch[index_two]-2]
+                    else:
+                        del W1_averages[AGN_outlier_flux_epoch[index_two]-1]
+                        del W1_av_mjd_date[AGN_outlier_flux_epoch[index_two]-1]
+                        del W1_av_uncs[AGN_outlier_flux_epoch[index_two]-1]
+                elif AGN_outlier_flux_band[index_two] == 'W2':
+                    del W2_averages[AGN_outlier_flux_epoch[index_two]-1]
+                    del W2_av_mjd_date[AGN_outlier_flux_epoch[index_two]-1]
+                    del W2_av_uncs[AGN_outlier_flux_epoch[index_two]-1]
+
+            elif AGN_outlier_flux_band[index_one] == 'W2':
+                del W2_averages[AGN_outlier_flux_epoch[index_one]-1]
+                del W2_av_mjd_date[AGN_outlier_flux_epoch[index_one]-1]
+                del W2_av_uncs[AGN_outlier_flux_epoch[index_one]-1]
+                if AGN_outlier_flux_band[index_two] == 'W2':
+                    if AGN_outlier_flux_epoch[index_one] < AGN_outlier_flux_epoch[index_two]:
+                        del W2_averages[AGN_outlier_flux_epoch[index_two]-2]
+                        del W2_av_mjd_date[AGN_outlier_flux_epoch[index_two]-2]
+                        del W2_av_uncs[AGN_outlier_flux_epoch[index_two]-2]
+                    else:
+                        del W2_averages[AGN_outlier_flux_epoch[index_two]-1]
+                        del W2_av_mjd_date[AGN_outlier_flux_epoch[index_two]-1]
+                        del W2_av_uncs[AGN_outlier_flux_epoch[index_two]-1]
+                elif AGN_outlier_flux_band[index_two] == 'W1':
+                    del W1_averages[AGN_outlier_flux_epoch[index_two]-1]
+                    del W1_av_mjd_date[AGN_outlier_flux_epoch[index_two]-1]
+                    del W1_av_uncs[AGN_outlier_flux_epoch[index_two]-1]
+
+elif my_object == 1:
+    if object_name in CLAGN_outlier_flux_names:
+        CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names) if name == object_name]
+        if len(CLAGN_outlier_indices) == 1:
+            #1 bad epoch for this object        
+            index = CLAGN_outlier_indices[0]
+            if CLAGN_outlier_flux_band[index] == 'W1':
+                del W1_averages[CLAGN_outlier_flux_epoch[index]-1] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
+                del W1_av_mjd_date[CLAGN_outlier_flux_epoch[index]-1]
+                del W1_av_uncs[CLAGN_outlier_flux_epoch[index]-1]
+            elif CLAGN_outlier_flux_band[index] == 'W2':
+                del W2_averages[CLAGN_outlier_flux_epoch[index]-1]
+                del W2_av_mjd_date[CLAGN_outlier_flux_epoch[index]-1]
+                del W2_av_uncs[CLAGN_outlier_flux_epoch[index]-1]
+
+        elif len(CLAGN_outlier_indices) == 2:
+            #2 bad epochs for this object        
+            index_one = CLAGN_outlier_indices[0]
+            index_two = CLAGN_outlier_indices[1]
+            if CLAGN_outlier_flux_band[index_one] == 'W1':
+                del W1_averages[CLAGN_outlier_flux_epoch[index_one]-1]
+                del W1_av_mjd_date[CLAGN_outlier_flux_epoch[index_one]-1]
+                del W1_av_uncs[CLAGN_outlier_flux_epoch[index_one]-1]
+                if CLAGN_outlier_flux_band[index_two] == 'W1':
+                    if CLAGN_outlier_flux_epoch[index_one] < CLAGN_outlier_flux_epoch[index_two]:
+                        del W1_averages[CLAGN_outlier_flux_epoch[index_two]-2]
+                        del W1_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-2]
+                        del W1_av_uncs[CLAGN_outlier_flux_epoch[index_two]-2]
+                    else:
+                        del W1_averages[CLAGN_outlier_flux_epoch[index_two]-1]
+                        del W1_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-1]
+                        del W1_av_uncs[CLAGN_outlier_flux_epoch[index_two]-1]
+                elif CLAGN_outlier_flux_band[index_two] == 'W2':
+                    del W2_averages[CLAGN_outlier_flux_epoch[index_two]-1]
+                    del W2_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-1]
+                    del W2_av_uncs[CLAGN_outlier_flux_epoch[index_two]-1]
+
+            elif CLAGN_outlier_flux_band[index_one] == 'W2':
+                del W2_averages[CLAGN_outlier_flux_epoch[index_one]-1]
+                del W2_av_mjd_date[CLAGN_outlier_flux_epoch[index_one]-1]
+                del W2_av_uncs[CLAGN_outlier_flux_epoch[index_one]-1]
+                if CLAGN_outlier_flux_band[index_two] == 'W2':
+                    if CLAGN_outlier_flux_epoch[index_one] < CLAGN_outlier_flux_epoch[index_two]:
+                        del W2_averages[CLAGN_outlier_flux_epoch[index_two]-2]
+                        del W2_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-2]
+                        del W2_av_uncs[CLAGN_outlier_flux_epoch[index_two]-2]
+                    else:
+                        del W2_averages[CLAGN_outlier_flux_epoch[index_two]-1]
+                        del W2_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-1]
+                        del W2_av_uncs[CLAGN_outlier_flux_epoch[index_two]-1]
+                elif CLAGN_outlier_flux_band[index_two] == 'W1':
+                    del W1_averages[CLAGN_outlier_flux_epoch[index_two]-1]
+                    del W1_av_mjd_date[CLAGN_outlier_flux_epoch[index_two]-1]
+                    del W1_av_uncs[CLAGN_outlier_flux_epoch[index_two]-1]
+
 # # Changing mjd date to days since start:
 min_mjd = min([W1_av_mjd_date[0], W2_av_mjd_date[0]])
 SDSS_mjd = SDSS_mjd - min_mjd
@@ -1190,7 +1312,7 @@ if main_plot == 1:
     ax1.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 16, loc='center')
     ax1.tick_params(axis='both', which='major', labelsize = 16)
     ax1.set_title(f'Light Curve (WISEA J{object_name})', fontsize = 22)
-    ax1.legend(loc='upper left', fontsize = 18)
+    ax1.legend(loc='upper center', fontsize = 18)
     ax1.grid(True, linestyle='--', alpha=0.5)
 
     # Bottom left plot spanning 2 rows and 1 column (ax2)
@@ -1249,7 +1371,7 @@ if main_plot == 1:
     ax3.set_title('DESI Spectrum', fontsize = 14)
     ax3.legend(loc='upper right', fontsize = 18)
 
-    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.1, right=0.975, hspace=1.5, wspace=0)
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.125, right=0.975, hspace=1.5, wspace=0)
     #top and bottom adjust the vertical space on the top and bottom of the figure.
     #left and right adjust the horizontal space on the left and right sides.
     #hspace and wspace adjust the spacing between rows and columns, respectively.

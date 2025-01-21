@@ -2,7 +2,10 @@ import pandas as pd
 from unTimely_Catalog_tools import unTimelyCatalogExplorer
 
 # object_name = '125449.57+574805.3' #Object R - chosen because not a CLAGN, but has a spurious measurement
-object_name = '121449.54+572734.1' #Object Y - chosen because of enourmous NFD (nearly 7)
+# object_name = '121449.54+572734.1' #Object Y - chosen because of enourmous NFD (nearly 7)
+# object_name = '161506.85+544612.3'
+object_name = '102144.38+331709.1'
+# object_name = '095037.35+324121.8'
 
 parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -16,6 +19,8 @@ if len(object_data) == 0: #If a CLAGN; CLAGN are not in parent sample
 else:
     SDSS_RA = object_data.iloc[0, 0]
     SDSS_DEC = object_data.iloc[0, 1]
+
+print(object_name)
 
 ucx = unTimelyCatalogExplorer(directory='C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/unTimely Charts', cache=True, show_progress=True, timeout=300, suppress_console_output=False,
                               catalog_base_url='https://unwise.me/data/neo7/untimely-catalog/',

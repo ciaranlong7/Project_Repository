@@ -64,6 +64,10 @@ AGN_W2_median_flux_unc = AGN_quantifying_change_data.iloc[:, 31].tolist()
 AGN_W2_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
 AGN_names_analysis = AGN_quantifying_change_data.iloc[:, 0].tolist()
 
+indices = [i for i, num in enumerate(AGN_zscores) if num > 8 and num < 15]
+for index in indices:
+    print(AGN_names_analysis[index])
+
 AGN_new_norm_diff = []
 for i in range(len(AGN_quantifying_change_data)):
     AGN_new_norm_diff.append(AGN_norm_flux_diff[i]/AGN_W1_median_flux_unc[i])
@@ -300,10 +304,10 @@ plt.grid(True, linestyle='--', alpha=0.5)
 ax = plt.gca()
 plt.tight_layout()
 #For median uncs data:
-plt.text(0.99, 0.33, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.99, 0.25, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.1, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.1, 0.82, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
 # The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
 # (0,0 is lower-left and 1,1 is upper-right).
 plt.show()

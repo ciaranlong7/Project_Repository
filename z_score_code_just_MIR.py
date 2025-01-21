@@ -20,13 +20,13 @@ CLAGN_outlier_flux_names = CLAGN_outlier_flux.iloc[:, 0].tolist()
 CLAGN_outlier_flux_band = CLAGN_outlier_flux.iloc[:, 1]
 CLAGN_outlier_flux_epoch = CLAGN_outlier_flux.iloc[:, 2]
 
-my_object = 1 #0 = AGN. 1 = CLAGN
+my_object = 0 #0 = AGN. 1 = CLAGN
 if my_object == 0:
     object_names = AGN_sample.iloc[:, 3]
 elif my_object == 1:
     object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
 
-save_figures = 0 #set to 1 to save figures
+save_figures = 1 #set to 1 to save figures
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -86,6 +86,7 @@ else:
     print('select a valid min SNR - 10, 3 or 2.')
 
 g = 0
+object_names = ['125731.87+272313.3']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -296,19 +297,72 @@ for object_name in object_names:
     if my_object == 0:
         if object_name in AGN_outlier_flux_names:
             AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names) if name == object_name]
-            for index in AGN_outlier_indices:
+            if len(AGN_outlier_indices) == 1:
+                #1 bad epoch for this object        
+                index = AGN_outlier_indices[0]
                 if AGN_outlier_flux_band[index] == 'W1':
                     del W1_data[AGN_outlier_flux_epoch[index]-1] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
                 elif AGN_outlier_flux_band[index] == 'W2':
                     del W2_data[AGN_outlier_flux_epoch[index]-1]
+
+            elif len(AGN_outlier_indices) == 2:
+                #2 bad epochs for this object        
+                index_one = AGN_outlier_indices[0]
+                index_two = AGN_outlier_indices[1]
+                if AGN_outlier_flux_band[index_one] == 'W1':
+                    del W1_data[AGN_outlier_flux_epoch[index_one]-1]
+                    if AGN_outlier_flux_band[index_two] == 'W1':
+                        if AGN_outlier_flux_epoch[index_one] < AGN_outlier_flux_epoch[index_two]:
+                            del W1_data[AGN_outlier_flux_epoch[index_two]-2]
+                        else:
+                            del W1_data[AGN_outlier_flux_epoch[index_two]-1]
+                    elif AGN_outlier_flux_band[index_two] == 'W2':
+                        del W2_data[AGN_outlier_flux_epoch[index_two]-1]
+
+                elif AGN_outlier_flux_band[index_one] == 'W2':
+                    del W2_data[AGN_outlier_flux_epoch[index_one]-1]
+                    if AGN_outlier_flux_band[index_two] == 'W2':
+                        if AGN_outlier_flux_epoch[index_one] < AGN_outlier_flux_epoch[index_two]:
+                            del W2_data[AGN_outlier_flux_epoch[index_two]-2]
+                        else:
+                            del W2_data[AGN_outlier_flux_epoch[index_two]-1]
+                    elif AGN_outlier_flux_band[index_two] == 'W1':
+                        del W1_data[AGN_outlier_flux_epoch[index_two]-1]
+
     elif my_object == 1:
         if object_name in CLAGN_outlier_flux_names:
             CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names) if name == object_name]
-            for index in CLAGN_outlier_indices:
+            if len(CLAGN_outlier_indices) == 1:
+                #1 bad epoch for this object        
+                index = CLAGN_outlier_indices[0]
                 if CLAGN_outlier_flux_band[index] == 'W1':
-                    del W1_data[CLAGN_outlier_flux_epoch[index]-1]
+                    del W1_data[CLAGN_outlier_flux_epoch[index]-1] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
                 elif CLAGN_outlier_flux_band[index] == 'W2':
                     del W2_data[CLAGN_outlier_flux_epoch[index]-1]
+
+            elif len(CLAGN_outlier_indices) == 2:
+                #2 bad epochs for this object        
+                index_one = CLAGN_outlier_indices[0]
+                index_two = CLAGN_outlier_indices[1]
+                if CLAGN_outlier_flux_band[index_one] == 'W1':
+                    del W1_data[CLAGN_outlier_flux_epoch[index_one]-1]
+                    if CLAGN_outlier_flux_band[index_two] == 'W1':
+                        if CLAGN_outlier_flux_epoch[index_one] < CLAGN_outlier_flux_epoch[index_two]:
+                            del W1_data[CLAGN_outlier_flux_epoch[index_two]-2]
+                        else:
+                            del W1_data[CLAGN_outlier_flux_epoch[index_two]-1]
+                    elif CLAGN_outlier_flux_band[index_two] == 'W2':
+                        del W2_data[CLAGN_outlier_flux_epoch[index_two]-1]
+
+                elif CLAGN_outlier_flux_band[index_one] == 'W2':
+                    del W2_data[CLAGN_outlier_flux_epoch[index_one]-1]
+                    if CLAGN_outlier_flux_band[index_two] == 'W2':
+                        if CLAGN_outlier_flux_epoch[index_one] < CLAGN_outlier_flux_epoch[index_two]:
+                            del W2_data[CLAGN_outlier_flux_epoch[index_two]-2]
+                        else:
+                            del W2_data[CLAGN_outlier_flux_epoch[index_two]-1]
+                    elif CLAGN_outlier_flux_band[index_two] == 'W1':
+                        del W1_data[CLAGN_outlier_flux_epoch[index_two]-1]
 
     #want a minimum of 9 (out of ~24 possible) epochs to conduct analysis on.
     if len(W1_data) > 8:
@@ -360,10 +414,11 @@ for object_name in object_names:
         plt.legend(loc = 'upper left', fontsize = 25)
         plt.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
-        if my_object == 0:
-            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        elif my_object == 1:
-            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        plt.show()
+        # if my_object == 0:
+        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        # elif my_object == 1:
+        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
 
     if m == 0: #Good W1 if true
         if n == 0: #Good W2 if true
