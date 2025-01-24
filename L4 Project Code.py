@@ -24,7 +24,7 @@ c = 299792458
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-# object_name = '152517.57+401357.6' #Object A - assigned to me
+object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
 # object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
@@ -49,8 +49,7 @@ c = 299792458
 # object_name = '114249.08+544709.7' #Object T - chosen because non-CLAGN and has a z score of 141
 # object_name = '131630.87+211915.1' #Object U - chosen because non-CLAGN and has a z score of 458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
-# object_name = '112015.67+542742.9'
-object_name = '111938.02+513315.5'
+# object_name = '082012.50+352053.8'
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
 # object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
@@ -60,18 +59,21 @@ object_name = '111938.02+513315.5'
 # object_name = '160730.20+560305.5' #Object W - chosen because a CLAGN that exhibits no MIR change over SDSS-DESI range, but does exhibit a change after
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
 
+# object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
+
+
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads
 #option 3 = download just sdss spectrum from the internet
 #option 4 = download both sdss & desi spectra from the internet
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 1
+option = 2
 
 #Selecting which plots you want. Set = 1 if you want that plot
-MIR_only = 1 #plot with just MIR data on it
+MIR_only = 0 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 
 my_object = 0 #0 = AGN. 1 = CLAGN
 
@@ -1149,8 +1151,8 @@ if MIR_only == 1:
     # Flux
     plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
     plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W1 (3.4\u03bcm)')
-    # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-    # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+    plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+    plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
     # Labels and Titles
     plt.xlabel('Days since first observation', fontsize = 26)
     plt.xticks(fontsize=26)
@@ -1161,8 +1163,8 @@ if MIR_only == 1:
     # Flux
     # plt.ylim(0, 1)
     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-    # plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
-    plt.title(f'AGN Mid-IR Light Curve', fontsize = 28)
+    plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
+    # plt.title(f'AGN Mid-IR Light Curve', fontsize = 28)
     plt.legend(loc = 'best', fontsize = 25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
@@ -1181,7 +1183,7 @@ if SDSS_DESI == 1:
         common_ymax = 0
 
     plt.figure(figsize=(12,7))
-    # plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
+    plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
     plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
     # if SDSS_min <= H_alpha <= SDSS_max:
     #     plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
@@ -1269,8 +1271,8 @@ if SDSS_DESI_comb == 1:
     #     plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     # if SDSS_min <= C4 <= SDSS_max or DESI_min <= C4 <= DESI_max:
     #     plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-    # if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
-    #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    # # if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
+    # #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
     # if SDSS_min <= Ly_alpha <= SDSS_max or DESI_min <= Ly_alpha <= DESI_max:
     #     plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     # if SDSS_min <= Ly_beta <= SDSS_max or DESI_min <= Ly_beta <= DESI_max:
@@ -1280,7 +1282,8 @@ if SDSS_DESI_comb == 1:
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-    plt.title(f'SDSS & DESI Spectrum - {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
+    plt.title(f'SDSS & DESI Spectra - {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
+    # plt.title(f'SDSS & DESI Spectra (WISEA J{object_name})', fontsize = 28)
     # plt.legend(loc = 'best', fontsize = 25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()

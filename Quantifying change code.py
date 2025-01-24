@@ -282,35 +282,35 @@ print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.3f}% of AG
 # plt.show()
 
 
-# # #Creating a 2d plot for normalised flux difference & z score:
-plt.figure(figsize=(12, 7))
-plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
-plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
-# plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
-# plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
-plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
-plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 50)
-# plt.ylim(0, 5)
-plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
-plt.xticks(fontsize=26)
-plt.yticks(fontsize=26)
-plt.xlabel("Z-Score", fontsize = 26)
-plt.ylabel("Normalised Flux Difference", fontsize = 26)
-plt.title("Investigating MIR Variability in AGN", fontsize = 28)
-plt.legend(loc = 'best', fontsize=25)
-plt.grid(True, linestyle='--', alpha=0.5)
-ax = plt.gca()
-plt.tight_layout()
-#For median uncs data:
-plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
-# (0,0 is lower-left and 1,1 is upper-right).
-plt.show()
+# # # #Creating a 2d plot for normalised flux difference & z score:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
+# plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
+# # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
+# # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
+# plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
+# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+# # plt.xlim(0, 50)
+# # plt.ylim(0, 5)
+# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+# plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
+# plt.xticks(fontsize=26)
+# plt.yticks(fontsize=26)
+# plt.xlabel("Z-Score", fontsize = 26)
+# plt.ylabel("Normalised Flux Difference", fontsize = 26)
+# plt.title("Characterising MIR Variability in AGN", fontsize = 28)
+# plt.legend(loc = 'best', fontsize=25)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# ax = plt.gca()
+# plt.tight_layout()
+# #For median uncs data:
+# plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+# plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+# plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+# plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+# # The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
+# # (0,0 is lower-left and 1,1 is upper-right).
+# plt.show()
 
 
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:
@@ -367,22 +367,72 @@ plt.show()
 # plt.show()
 
 
-# # # #Creating a 2d plot of z score vs redshift:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red',  label='CLAGN')
-# plt.scatter(CLAGN_W1_median_flux_unc, CLAGN_redshifts, color='red',  label='CLAGN')
-# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 1.05*max(CLAGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts))
-# plt.xticks(fontsize=24)
-# plt.yticks(fontsize=24)
-# plt.xlabel("Z-Score", fontsize = 24)
-# plt.ylabel("Redshift", fontsize = 24)
-# plt.title("Redshift vs Z-Score", fontsize = 24)
-# plt.legend(loc = 'best', fontsize=22)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
+# # #Creating a 2d plot of z score vs redshift:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red',  label='CLAGN')
+plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_zscores))
+plt.ylim(0, 1.05*max(CLAGN_redshifts))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("Z-Score", fontsize = 24)
+plt.ylabel("Redshift", fontsize = 24)
+plt.title("Redshift vs Z-Score", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
+
+
+# # #Creating a 2d plot of NFD vs redshift:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
+plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff))
+plt.ylim(0, 1.05*max(CLAGN_redshifts))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("NFD", fontsize = 24)
+plt.ylabel("Redshift", fontsize = 24)
+plt.title("Redshift vs NFD", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
+
+
+# # #Creating a 2d plot of Z-score vs W1 low flux:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_zscores, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_zscores))
+plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("Z-Score", fontsize = 24)
+plt.ylabel("W1 Low Flux", fontsize = 24)
+plt.title("W1 Low Flux vs Z-Score", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
+
+
+# # #Creating a 2d plot of NFD vs W1 low flux:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_norm_flux_diff, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff))
+plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("NFD", fontsize = 24)
+plt.ylabel("W1 Low Flux", fontsize = 24)
+plt.title("W1 Low Flux vs NFD", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
 
 
 # # # # #Creating a 2d plot of redshift vs unc:
@@ -421,7 +471,7 @@ plt.show()
 # plt.show()
 
 
-# # # # #Creating a 2d plot of zscore vs z score unc:
+# # # # #Creating a 2d plot of NFD vs NFD unc:
 # plt.figure(figsize=(12, 7))
 # plt.scatter(AGN_norm_flux_diff_unc, AGN_norm_flux_diff, color='blue',  label='Non-CL AGN')
 # plt.scatter(CLAGN_norm_flux_diff_unc, CLAGN_norm_flux_diff, color='red',  label='CLAGN')
