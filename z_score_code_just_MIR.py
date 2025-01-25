@@ -86,7 +86,6 @@ else:
     print('select a valid min SNR - 10, 3 or 2.')
 
 g = 0
-object_names = ['125731.87+272313.3']
 for object_name in object_names:
     print(g)
     print(object_name)

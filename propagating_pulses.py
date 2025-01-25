@@ -28,9 +28,9 @@ def electric_field_tz(E_z_t0, t, dz):
     return modulus_E_z_t
 
 ####Different possible inputs below:
-def gauss(z_points, b, a):
+def gauss(z_points, E_0, b, a):
     #a cannot equal 0
-    E_z_t0 = np.array([np.exp(-((z-b)**2)/(a**2))for z in z_points])
+    E_z_t0 = np.array([E_0*np.exp(-((z-b)**2)/(a**2))for z in z_points])
     return E_z_t0
 
 def rect(z_points, min, max, height):
