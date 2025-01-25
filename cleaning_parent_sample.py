@@ -64,10 +64,19 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # parent_sample = pd.read_csv('combined_guo_parent_sample.csv')
 # print(f'Objects in parent sample, before duplicates removed = {len(parent_sample)}')
-# columns_to_check = parent_samplecolumns[[10]] #checking DESI name
+# columns_to_check = parent_sample.columns[[3, 10]] #checking SDSS name, DESI name
 # parent_sample = parent_sample.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in parent sample, after duplicates removed = {len(parent_sample)}')
 
+# columns_to_check = parent_sample.columns[[10]]
+# different_desi = parent_sample.drop_duplicates(subset=columns_to_check)
+# print(len(different_desi)) #different desi contains only different desi names, but some duplicate sdss
+# columns_to_check = different_desi.columns[[3]]
+# different_sdss = different_desi.drop_duplicates(subset=columns_to_check)
+# print(len(different_sdss)) #different sdss contains only different desi and sdss names. Some of the desi names that were in different desi have been removed
+
+# desi_names_desi_df = different_desi.iloc[:, 10].tolist()
+# desi_names_sdss_df = different_sdss.iloc[:, 10].tolist()
 
 # ## Checking redshift
 # parent_sample = pd.read_csv('combined_guo_parent_sample.csv')
@@ -77,7 +86,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # print(f'Objects in parent sample with same redshift for SDSS & DESI = {len(same_redshift)}')
 # print(f'Objects in parent sample with different redshift for SDSS & DESI = {len(different_redshift)}')
 
-# columns_to_check = parent_samplecolumns[[10]] #checking DESI name
+# columns_to_check = parent_sample.columns[[10]] #checking DESI name
 # same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in cleaned sample after duplicates removed = {len(same_redshift)}')
 
@@ -144,6 +153,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # ## Now constructing the sample of 280 AGN:
 # guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
 # guo_CLAGN = guo_CLAGN.dropna(subset=[guo_CLAGN.columns[0]]) #removing the 8 CLAGN with 2 CL lines
+# parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 
 # AGN_Sample = []
 # # Iterate through each row in guo_CLAGN
@@ -189,3 +199,40 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #         AGN_Sample_three.append(parent_row)
 # output_df_three = pd.DataFrame(AGN_Sample_three)
 # output_df_three.to_csv('AGN_Sample_three.csv', index=False)
+
+# #Final clean check
+# guo_sample = pd.read_csv('guo23_parent_sample.csv')
+# parent_sample = pd.read_csv('combined_guo_parent_sample.csv')
+# print(f'Objects in parent sample, before desi duplicate names removed = {len(parent_sample)}')
+# columns_to_check = parent_sample.columns[[10]] #checking DESI name
+# parent_sample = parent_sample.drop_duplicates(subset=columns_to_check)
+# print(f'Objects in parent sample, after desi duplicate names removed = {len(parent_sample)}')
+
+# desi_names_to_match = parent_sample.iloc[:, 10]
+
+# print(f'Rows in massive Guo sample: {len(guo_sample)}')
+# filtered_guo_sample = guo_sample[guo_sample.iloc[:, 11].isin(desi_names_to_match)]
+# print(f'Rows in Guo sample with public desi: {len(filtered_guo_sample)}')
+
+# same_redshift = filtered_guo_sample[np.abs(filtered_guo_sample.iloc[:, 3] - filtered_guo_sample.iloc[:, 10]) <= 0.01]
+# different_redshift = filtered_guo_sample[np.abs(filtered_guo_sample.iloc[:, 3] - filtered_guo_sample.iloc[:, 10]) > 0.01]
+
+# print(f'Objects in parent sample with same redshift for SDSS & DESI = {len(same_redshift)}')
+# print(f'Objects in parent sample with different redshift for SDSS & DESI = {len(different_redshift)}')
+
+
+# columns_to_check = filtered_guo_sample.columns[[11]] #checking DESI name
+# same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
+# print(f'Objects in cleaned sample after desi duplicates removed = {len(same_redshift)}')
+# columns_to_check = filtered_guo_sample.columns[[4]] #checking sdss name
+# same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
+# print(f'Objects in cleaned sample after desi and sdss duplicates removed = {len(same_redshift)}')
+
+# same_redshift.to_csv('clean_parent_sample.csv', index=False)
+# different_redshift.to_csv('outside_redshift_sample.csv', index=False)
+
+# Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
+# object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
+# no_CLAGN = same_redshift[~same_redshift.iloc[:, 4].isin(object_names)]
+# print(f'Objects in cleaned sample after CLAGN removed = {len(no_CLAGN)}')
+# same_redshift.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)

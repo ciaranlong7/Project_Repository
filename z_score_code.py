@@ -566,7 +566,7 @@ for object_name in object_names:
     DESI_max = max(desi_lamb)
 
     #UV analysis
-    if SDSS_min < 3000 and SDSS_max > 3920 and DESI_min < 3000 and DESI_max > 3920:
+    if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
         closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
         sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
@@ -586,11 +586,13 @@ for object_name in object_names:
 
         if np.median(sdss_blue_flux_interp) > np.median(desi_blue_flux_smooth): #want turned-on minus turned-off if a CLAGN
             flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            norm_factor = np.median(desi_blue_flux_smooth[-25:]) #normalise by the median of the last 25 values in the off state
+            flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+            norm_factor = np.median(flux_for_norm)
             UV_NFD = [flux/norm_factor for flux in flux_diff]
         else:
             flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            norm_factor = np.median(sdss_blue_flux_interp[-25:]) #normalise by the median of the last 25 values in the off state
+            flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
+            norm_factor = np.median(flux_for_norm)
             UV_NFD = [flux/norm_factor for flux in flux_diff]
 
         median_UV_NFD.append(np.median(UV_NFD))
@@ -950,7 +952,6 @@ for object_name in object_names:
     # Convert the data into a DataFrame
     df = pd.DataFrame(quantifying_change_data)
 
-    #max unc:
     if my_object == 0:
         df.to_csv(f"AGN_Quantifying_Change_sample_{my_sample}.csv", index=False)
     elif my_object == 1:

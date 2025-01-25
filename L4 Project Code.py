@@ -61,6 +61,8 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
+object_name = '133344.70+335622.7'
+
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -104,7 +106,6 @@ max_day_gap = 250 #max day gap to linearly interpolate over
 
 parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
-object_name = '133344.70+335622.7'
 object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
 if len(object_data) == 0: #If a CLAGN; CLAGN are not in parent sample
     parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
@@ -374,7 +375,7 @@ print(SDSS_max)
 print(DESI_min)
 print(DESI_max)
 
-if SDSS_min < 3000 and SDSS_max > 4130 and DESI_min < 3000 and DESI_max > 4130:
+if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
 
     closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
@@ -392,86 +393,52 @@ if SDSS_min < 3000 and SDSS_max > 4130 and DESI_min < 3000 and DESI_max > 4130:
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
     sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
     sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
-    sdss_interp_fn_smooth = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
-    sdss_blue_flux_interp_smooth = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
-    print(f'SDSS median UV flux = {np.median(sdss_blue_flux)}')
-    print(f'SDSS median smoothed UV flux = {np.median(sdss_blue_flux_smooth)}')
-    print(f'DESI median UV flux = {np.median(desi_blue_flux)}')
-    print(f'DESI median smoothed UV flux = {np.median(desi_blue_flux_smooth)}')
-
-    if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
-        flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
-        flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 4110 <= desi_lamb[i] <= 4130]
-        norm_factor = np.median(flux_for_norm)
-        print(f'Norm factor = {norm_factor}')
-        UV_NFD = [flux/norm_factor for flux in flux_diff]
-    else:
-        flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
-        flux_for_norm = [sdss_flux[i] for i in range(len(sdss_lamb)) if 4110 <= sdss_lamb[i] <= 4130]
-        norm_factor = np.median(flux_for_norm)
-        print(f'Norm factor = {norm_factor}')
-        UV_NFD = [flux/norm_factor for flux in flux_diff]
-    
     if np.median(sdss_blue_flux_smooth) > np.median(desi_blue_flux_smooth): #want high-state minus low-state
         flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-        flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 4110 <= desi_lamb[i] <= 4130]
+        flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
-        print(f'Smooth Norm factor = {norm_factor}')
-        UV_NFD_smooth = [flux/norm_factor for flux in flux_diff]
+        UV_NFD = [flux/norm_factor for flux in flux_diff]
     else:
         flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-        flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 4110 <= sdss_lamb[i] <= 4130]
+        flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
-        print(f'Smooth Norm factor = {norm_factor}')
-        UV_NFD_smooth = [flux/norm_factor for flux in flux_diff]
+        UV_NFD = [flux/norm_factor for flux in flux_diff]
+    
+    if UV_NFD_plot == 1:
+        fig = plt.figure(figsize=(12, 7))
+        gs = GridSpec(5, 2, figure=fig)  # 5 rows, 2 columns
 
-    print(f'Median UV NFD = {np.median(UV_NFD)} ± {median_abs_deviation(UV_NFD)}')
-    print(f'Median UV NFD Smoothed= {np.median(UV_NFD_smooth)} ± {median_abs_deviation(UV_NFD_smooth)}')
+        common_ymin = 0
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
 
-    plt.figure(figsize=(12,7))
-    plt.plot(desi_blue_lamb, UV_NFD, color = 'red', alpha = 0.3, label = 'Unsmoothed')
-    plt.plot(desi_blue_lamb, UV_NFD_smooth, color = 'red', label = 'Smoothed')
-    plt.xlabel('Wavelength / Å')
-    plt.ylabel('Turned On Flux - Turned Off Flux (Normalised) / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$')
-    plt.title('UV NFD')
-    plt.legend(loc = 'upper right')
-    plt.show()
+        ax1 = fig.add_subplot(gs[0:3, :])
+        ax1.plot(desi_blue_lamb, UV_NFD, color = 'red', label = f'{round(DESI_mjd -SDSS_mjd)} days between observations')
+        ax1.set_xlabel('Wavelength / Å')
+        ax1.set_ylabel('Turned On Flux - Turned Off Flux (Normalised)')
+        ax1.set_title(f'Normalised Accretion Disk Flux Contribution ({object_name})')
 
-#     if UV_NFD_plot == 1:
-#         fig = plt.figure(figsize=(12, 7))
-#         gs = GridSpec(5, 2, figure=fig)  # 5 rows, 2 columns
+        ax2 = fig.add_subplot(gs[3:, 0])
+        ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
+        ax2.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
+        ax2.set_xlabel('Wavelength / Å')
+        ax2.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$')
+        ax2.set_ylim(common_ymin, common_ymax)
+        ax2.set_title('Gaussian Smoothed Plot of SDSS Spectrum')
 
-#         common_ymin = 0
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
+        ax3 = fig.add_subplot(gs[3:, 1])
+        ax3.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
+        ax3.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
+        ax3.set_xlabel('Wavelength / Å')
+        ax3.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$')
+        ax3.set_ylim(common_ymin, common_ymax)
+        ax3.set_title('Gaussian Smoothed Plot of DESI Spectrum')
 
-#         ax1 = fig.add_subplot(gs[0:3, :])
-#         ax1.plot(desi_blue_lamb, UV_NFD, color = 'red', label = f'{round(DESI_mjd -SDSS_mjd)} days between observations')
-#         ax1.set_xlabel('Wavelength / Å')
-#         ax1.set_ylabel('Turned On Flux - Turned Off Flux (Normalised)')
-#         ax1.set_title(f'Normalised Accretion Disk Flux Contribution ({object_name})')
-
-#         ax2 = fig.add_subplot(gs[3:, 0])
-#         ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
-#         ax2.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
-#         ax2.set_xlabel('Wavelength / Å')
-#         ax2.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$')
-#         ax2.set_ylim(common_ymin, common_ymax)
-#         ax2.set_title('Gaussian Smoothed Plot of SDSS Spectrum')
-
-#         ax3 = fig.add_subplot(gs[3:, 1])
-#         ax3.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
-#         ax3.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
-#         ax3.set_xlabel('Wavelength / Å')
-#         ax3.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$')
-#         ax3.set_ylim(common_ymin, common_ymax)
-#         ax3.set_title('Gaussian Smoothed Plot of DESI Spectrum')
-
-#         fig.subplots_adjust(top=0.95, bottom=0.1, left=0.1, right=0.95, hspace=1.25, wspace=0.2)
-#         #top and bottom adjust the vertical space on the top and bottom of the figure.
-#         #left and right adjust the horizontal space on the left and right sides.
-#         #hspace and wspace adjust the spacing between rows and columns, respectively.
-#         plt.show()
+        fig.subplots_adjust(top=0.95, bottom=0.1, left=0.1, right=0.95, hspace=1.25, wspace=0.2)
+        #top and bottom adjust the vertical space on the top and bottom of the figure.
+        #left and right adjust the horizontal space on the left and right sides.
+        #hspace and wspace adjust the spacing between rows and columns, respectively.
+        plt.show()
 
 
 #     #Histogram of the distribution of flux change values
