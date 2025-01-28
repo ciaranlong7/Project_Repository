@@ -200,6 +200,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # output_df_three = pd.DataFrame(AGN_Sample_three)
 # output_df_three.to_csv('AGN_Sample_three.csv', index=False)
 
+
 # #Final clean check
 # guo_sample = pd.read_csv('guo23_parent_sample.csv')
 # parent_sample = pd.read_csv('combined_guo_parent_sample.csv')
@@ -220,11 +221,11 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # print(f'Objects in parent sample with same redshift for SDSS & DESI = {len(same_redshift)}')
 # print(f'Objects in parent sample with different redshift for SDSS & DESI = {len(different_redshift)}')
 
-
-# columns_to_check = filtered_guo_sample.columns[[11]] #checking DESI name
+# same_redshift = same_redshift.drop(same_redshift.columns[0], axis=1) #drop old index column
+# columns_to_check = same_redshift.columns[[10]] #checking DESI name
 # same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in cleaned sample after desi duplicates removed = {len(same_redshift)}')
-# columns_to_check = filtered_guo_sample.columns[[4]] #checking sdss name
+# columns_to_check = same_redshift.columns[[3]] #checking sdss name
 # same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
 # print(f'Objects in cleaned sample after desi and sdss duplicates removed = {len(same_redshift)}')
 
@@ -233,6 +234,31 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 # object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
-# no_CLAGN = same_redshift[~same_redshift.iloc[:, 4].isin(object_names)]
+# no_CLAGN = same_redshift[~same_redshift.iloc[:, 3].isin(object_names)]
 # print(f'Objects in cleaned sample after CLAGN removed = {len(no_CLAGN)}')
-# same_redshift.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
+# no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
+
+
+# AGN_old_sample = pd.read_csv("AGN_Quantifying_Change_sample_1.csv")
+# AGN_sample = pd.read_csv("AGN_Quantifying_Change_just_MIR_max_uncs.csv")
+
+# names_old = AGN_old_sample.iloc[:, 0]
+# names = AGN_sample.iloc[:, 0]
+
+# difference = set(names) - set(names_old)
+
+# if difference:
+#     print(f"The names in AGN_sample that are not in AGN_old_sample are: {difference}")
+
+
+# ## Combining the three data frames created
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_sample_1.csv')
+# print(len(quantifying_change))
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_sample_1_extra.csv')
+# print(len(quantifying_change_extra))
+# quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v2.csv')
+# print(len(quantifying_change_extra_v2))
+# quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
+# print(len(quantifying_change_extra_v3))
+# combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
+# combined_df.to_csv('AGN_Quantifying_Change_sample_1.csv', index=False)

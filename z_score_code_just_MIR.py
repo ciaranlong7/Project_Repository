@@ -44,36 +44,38 @@ W1_max = []
 W1_max_unc = []
 W1_min = []
 W1_min_unc = []
+W1_high_unc = []
 W1_low = []
+W1_low_unc = []
 W1_median_dev = []
-W1_median_unc = []
-W1_median_dev_unc = []
 W1_abs_change = []
 W1_abs_change_unc = []
 W1_abs_change_norm = []
 W1_abs_change_norm_unc = []
-W1_gap = []
+W1_max_mjd = []
+W1_min_mjd = []
 W1_epochs = []
 
 W2_max = []
 W2_max_unc = []
 W2_min = []
 W2_min_unc = []
+W2_high_unc = []
 W2_low = []
+W2_low_unc = []
 W2_median_dev = []
-W2_median_unc = []
-W2_median_dev_unc = []
 W2_abs_change = []
 W2_abs_change_unc = []
 W2_abs_change_norm = []
 W2_abs_change_norm_unc = []
-W2_gap = []
+W2_max_mjd = []
+W2_min_mjd = []
 W2_epochs = []
 
 mean_zscore = []
 mean_zscore_unc = []
-mean_norm_flux_change = []
-mean_norm_flux_change_unc = []
+mean_NFD = []
+mean_NFD_unc = []
 
 Min_SNR = 3 #Options are 10, 3, or 2. #A (SNR>10), B (3<SNR<10) or C (2<SNR<3)
 if Min_SNR == 10: #Select Min_SNR on line above.
@@ -413,11 +415,10 @@ for object_name in object_names:
         plt.legend(loc = 'upper left', fontsize = 25)
         plt.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
-        plt.show()
-        # if my_object == 0:
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        # elif my_object == 1:
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        if my_object == 0:
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        elif my_object == 1:
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
 
     if m == 0: #Good W1 if true
         if n == 0: #Good W2 if true
@@ -427,19 +428,17 @@ for object_name in object_names:
             W2_epochs.append(len(W2_data))
             
             W1_median_dev.append(median_abs_deviation(W1_averages_flux))
-            W1_median_unc.append(np.nanmedian(W1_av_uncs_flux))
-            W1_median_dev_unc.append(median_abs_deviation(W1_av_uncs_flux))
 
             W2_median_dev.append(median_abs_deviation(W2_averages_flux))
-            W2_median_unc.append(np.nanmedian(W2_av_uncs_flux))
-            W2_median_dev_unc.append(median_abs_deviation(W2_av_uncs_flux))
 
             W1_largest = sorted(W1_averages_flux, reverse=True)[0]
             W1_largest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_largest)] #NOT the largest unc. This is the unc in the largest flux value
             W1_smallest = sorted(W1_averages_flux)[0]
             W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
 
+            W1_high_unc.append(W1_largest_unc)
             W1_low.append(W1_smallest)
+            W1_low_unc.append(W1_smallest_unc)
 
             #uncertainty in absolute flux change
             W1_abs = abs(W1_largest-W1_smallest)
@@ -464,14 +463,17 @@ for object_name in object_names:
             W1_abs_change_norm.append(W1_abs_norm)
             W1_abs_change_norm_unc.append(W1_abs_norm_unc)
 
-            W1_gap.append(abs(W1_av_mjd_date[W1_averages_flux.index(W1_largest)] - W1_av_mjd_date[W1_averages_flux.index(W1_smallest)]))
+            W1_max_mjd.append(W1_av_mjd_date[W1_averages_flux.index(W1_largest)] + min_mjd)
+            W1_min_mjd.append(W1_av_mjd_date[W1_averages_flux.index(W1_smallest)] + min_mjd)
 
             W2_largest = sorted(W2_averages_flux, reverse=True)[0]
             W2_largest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_largest)]
             W2_smallest = sorted(W2_averages_flux)[0]
             W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
 
+            W2_high_unc.append(W2_largest_unc)
             W2_low.append(W2_smallest)
+            W2_low_unc.append(W2_smallest_unc)
 
             W2_abs = abs(W2_largest-W2_smallest)
             W2_abs_unc = np.sqrt(W2_largest_unc**2 + W2_smallest_unc**2)
@@ -493,7 +495,8 @@ for object_name in object_names:
             W2_abs_change_norm.append(W2_abs_norm)
             W2_abs_change_norm_unc.append(W2_abs_norm_unc)
 
-            W2_gap.append(abs(W2_av_mjd_date[W2_averages_flux.index(W2_largest)] - W2_av_mjd_date[W2_averages_flux.index(W2_smallest)]))
+            W2_max_mjd.append(W2_av_mjd_date[W2_averages_flux.index(W2_largest)] + min_mjd)
+            W2_min_mjd.append(W2_av_mjd_date[W2_averages_flux.index(W2_smallest)] + min_mjd)
 
             zscores = np.sort([abs(W1_z_score_max), abs(W1_z_score_min), abs(W2_z_score_max), abs(W2_z_score_min)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_max_unc, W1_z_score_min_unc, W2_z_score_max_unc, W2_z_score_min_unc])
@@ -516,14 +519,14 @@ for object_name in object_names:
             norm_f_ch = np.sort([W1_abs_norm, W2_abs_norm])
             norm_f_ch_unc = np.sort([W1_abs_norm_unc, W2_abs_norm_unc])
             if np.isnan(norm_f_ch[0]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be nan
-                mean_norm_flux_change_unc.append(np.nan)
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be nan
+                mean_NFD_unc.append(np.nan)
             elif np.isnan(norm_f_ch[1]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
-                mean_norm_flux_change_unc.append(abs(norm_f_ch_unc[0]))
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
+                mean_NFD_unc.append(abs(norm_f_ch_unc[0]))
             else:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch))
-                mean_norm_flux_change_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
+                mean_NFD.append(np.nanmean(norm_f_ch))
+                mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
             
         else: 
             #good W1, bad W2
@@ -532,20 +535,20 @@ for object_name in object_names:
             W2_epochs.append(len(W2_data))
 
             W1_median_dev.append(median_abs_deviation(W1_averages_flux))
-            W1_median_unc.append(np.nanmedian(W1_av_uncs_flux))
-            W1_median_dev_unc.append(median_abs_deviation(W1_av_uncs_flux))
 
+            W2_high_unc.append(np.nan)
             W2_low.append(np.nan)
+            W2_low_unc.append(np.nan)
             W2_median_dev.append(np.nan)
-            W2_median_unc.append(np.nan)
-            W2_median_dev_unc.append(np.nan)
 
             W1_largest = sorted(W1_averages_flux, reverse=True)[0]
             W1_largest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_largest)]
             W1_smallest = sorted(W1_averages_flux)[0]
             W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
 
+            W1_high_unc.append(W1_largest_unc)
             W1_low.append(W1_smallest)
+            W1_low_unc.append(W1_smallest_unc)
 
             W1_abs = abs(W1_largest-W1_smallest)
             W1_abs_unc = np.sqrt(W1_largest_unc**2 + W1_smallest_unc**2)
@@ -567,7 +570,8 @@ for object_name in object_names:
             W1_abs_change_norm.append(W1_abs_norm)
             W1_abs_change_norm_unc.append(W1_abs_norm_unc)
 
-            W1_gap.append(abs(W1_av_mjd_date[W1_averages_flux.index(W1_largest)] - W1_av_mjd_date[W1_averages_flux.index(W1_smallest)]))
+            W1_max_mjd.append(W1_av_mjd_date[W1_averages_flux.index(W1_largest)] + min_mjd)
+            W1_min_mjd.append(W1_av_mjd_date[W1_averages_flux.index(W1_smallest)] + min_mjd)
 
             W2_z_score_max = np.nan
             W2_z_score_max_unc = np.nan
@@ -586,7 +590,8 @@ for object_name in object_names:
             W2_abs_change_norm.append(np.nan)
             W2_abs_change_norm_unc.append(np.nan)
 
-            W2_gap.append(np.nan)
+            W2_max_mjd.append(np.nan)
+            W2_min_mjd.append(np.nan)
 
             zscores = np.sort([abs(W1_z_score_max), abs(W1_z_score_min), abs(W2_z_score_max), abs(W2_z_score_min)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_max_unc, W1_z_score_min_unc, W2_z_score_max_unc, W2_z_score_min_unc])
@@ -609,14 +614,14 @@ for object_name in object_names:
             norm_f_ch = np.sort([W1_abs_norm, W2_abs_norm])
             norm_f_ch_unc = np.sort([W1_abs_norm_unc, W2_abs_norm_unc])
             if np.isnan(norm_f_ch[0]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be nan
-                mean_norm_flux_change_unc.append(np.nan)
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be nan
+                mean_NFD_unc.append(np.nan)
             elif np.isnan(norm_f_ch[1]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
-                mean_norm_flux_change_unc.append(abs(norm_f_ch_unc[0]))
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
+                mean_NFD_unc.append(abs(norm_f_ch_unc[0]))
             else:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch))
-                mean_norm_flux_change_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
+                mean_NFD.append(np.nanmean(norm_f_ch))
+                mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
 
     else: #Bad W1
         if n == 0: #Good W2 if true
@@ -625,15 +630,13 @@ for object_name in object_names:
             W1_epochs.append(len(W1_data))
             W2_epochs.append(len(W2_data))
             
+            W1_high_unc.append(np.nan)
             W1_low.append(np.nan)
+            W1_low_unc.append(np.nan)
 
             W1_median_dev.append(np.nan)
-            W1_median_unc.append(np.nan)
-            W1_median_dev_unc.append(np.nan)
 
             W2_median_dev.append(median_abs_deviation(W2_averages_flux))
-            W2_median_unc.append(np.nanmedian(W2_av_uncs_flux))
-            W2_median_dev_unc.append(median_abs_deviation(W2_av_uncs_flux))
 
             W1_z_score_max = np.nan
             W1_z_score_max_unc = np.nan
@@ -652,14 +655,17 @@ for object_name in object_names:
             W1_abs_change_norm.append(np.nan)
             W1_abs_change_norm_unc.append(np.nan)
 
-            W1_gap.append(np.nan)
+            W1_max_mjd.append(np.nan)
+            W1_min_mjd.append(np.nan)
 
             W2_largest = sorted(W2_averages_flux, reverse=True)[0]
             W2_largest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_largest)]
             W2_smallest = sorted(W2_averages_flux)[0]
             W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
 
+            W2_high_unc.append(W2_largest_unc)
             W2_low.append(W2_smallest)
+            W2_low_unc.append(W2_smallest_unc)
 
             W2_abs = abs(W2_largest-W2_smallest)
             W2_abs_unc = np.sqrt(W2_largest_unc**2 + W2_smallest_unc**2)
@@ -681,7 +687,8 @@ for object_name in object_names:
             W2_abs_change_norm.append(W2_abs_norm)
             W2_abs_change_norm_unc.append(W2_abs_norm_unc)
 
-            W2_gap.append(abs(W2_av_mjd_date[W2_averages_flux.index(W2_largest)] - W2_av_mjd_date[W2_averages_flux.index(W2_smallest)]))
+            W2_max_mjd.append(W2_av_mjd_date[W2_averages_flux.index(W2_largest)] + min_mjd)
+            W2_min_mjd.append(W2_av_mjd_date[W2_averages_flux.index(W2_smallest)] + min_mjd)
 
             zscores = np.sort([abs(W1_z_score_max), abs(W1_z_score_min), abs(W2_z_score_max), abs(W2_z_score_min)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_max_unc, W1_z_score_min_unc, W2_z_score_max_unc, W2_z_score_min_unc])
@@ -704,14 +711,14 @@ for object_name in object_names:
             norm_f_ch = np.sort([W1_abs_norm, W2_abs_norm])
             norm_f_ch_unc = np.sort([W1_abs_norm_unc, W2_abs_norm_unc])
             if np.isnan(norm_f_ch[0]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be nan
-                mean_norm_flux_change_unc.append(np.nan)
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be nan
+                mean_NFD_unc.append(np.nan)
             elif np.isnan(norm_f_ch[1]) == True:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
-                mean_norm_flux_change_unc.append(abs(norm_f_ch_unc[0]))
+                mean_NFD.append(np.nanmean(norm_f_ch)) #will be norm_f_ch[0]
+                mean_NFD_unc.append(abs(norm_f_ch_unc[0]))
             else:
-                mean_norm_flux_change.append(np.nanmean(norm_f_ch))
-                mean_norm_flux_change_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
+                mean_NFD.append(np.nanmean(norm_f_ch))
+                mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
   
         else:
             #bad W1, bad W2. Should've already 'continued' above to save time.
@@ -742,21 +749,24 @@ quantifying_change_data = {
 
     "Mean Z Score": mean_zscore, #17
     "Mean Z Score Unc": mean_zscore_unc, #18
-    "Mean Normalised Flux Change": mean_norm_flux_change, #19
-    "Mean Normalised Flux Change Unc": mean_norm_flux_change_unc, #20
+    "Mean Normalised Flux Change": mean_NFD, #19
+    "Mean Normalised Flux Change Unc": mean_NFD_unc, #20
 
-    "W1 Gap": W1_gap, #21
-    "W2 Gap": W2_gap, #22
-    "W1 Epochs": W1_epochs, #23
-    "W2 Epochs": W2_epochs, #24
-    "W1 2nd lowest Flux": W1_low, #25
-    "W2 2nd lowest Flux": W2_low, #26
-    "W1 median_abs_dev of Flux": W1_median_dev, #27
-    "W1 Median Unc": W1_median_unc, #28
-    "W1 median_abs_dev of Uncs": W1_median_dev_unc, #29
-    "W2 median_abs_dev of Flux": W2_median_dev, #30
-    "W2 Median Unc": W2_median_unc, #31
-    "W2 median_abs_dev of Uncs": W2_median_dev_unc, #32
+    #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
+    "W1 Max mjd": W1_max_mjd, #21 (#25)
+    "W1 Min mjd": W1_min_mjd, #22 (#26)
+    "W2 Max mjd": W2_max_mjd, #23 (#27)
+    "W2 Min mjd": W2_min_mjd, #24 (#28)
+    "W1 Epochs": W1_epochs, #25 (#29)
+    "W2 Epochs": W2_epochs, #26 (#30)
+    "W1 Min Flux": W1_low, #27 (#31)
+    "W1 Min Flux Unc": W1_low_unc, #28 (#32)
+    "W1 Max Flux Unc": W1_high_unc, #29 (#33)
+    "W2 Min Flux": W2_low, #30 (#34)
+    "W2 Min Flux Unc": W2_low_unc, #31 (#35)
+    "W2 Max Flux Unc": W2_high_unc, #32 (#36)
+    "W1 median_abs_dev of Flux": W1_median_dev, #33 (#27)
+    "W2 median_abs_dev of Flux": W2_median_dev, #34 (#30)
 }
 
 # Convert the data into a DataFrame

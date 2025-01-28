@@ -33,19 +33,19 @@ CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th colum
 CLAGN_zscore_uncs = CLAGN_quantifying_change_data.iloc[:, 18].tolist()
 CLAGN_norm_flux_diff = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
 CLAGN_norm_flux_diff_unc = CLAGN_quantifying_change_data.iloc[:, 20].tolist()
-CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
-CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
-CLAGN_W1_median_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
-CLAGN_W1_median_dev_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
-CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
-CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-CLAGN_W2_median_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
-CLAGN_W2_median_dev_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
-CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+# CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
+# CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
+# CLAGN_W1_median_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
+# CLAGN_W1_median_dev_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
+# CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
+# CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+# CLAGN_W2_median_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+# CLAGN_W2_median_dev_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+# CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
 
-CLAGN_new_norm_diff = []
-for i in range(len(CLAGN_quantifying_change_data)):
-    CLAGN_new_norm_diff.append(CLAGN_norm_flux_diff[i]/CLAGN_W1_median_flux_unc[i])
+# CLAGN_new_norm_diff = []
+# for i in range(len(CLAGN_quantifying_change_data)):
+#     CLAGN_new_norm_diff.append(CLAGN_norm_flux_diff[i]/CLAGN_W1_median_flux_unc[i])
 
 # AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv')
 AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs.csv')
@@ -54,55 +54,56 @@ AGN_zscores = AGN_quantifying_change_data.iloc[:, 17].tolist()
 AGN_zscore_uncs = AGN_quantifying_change_data.iloc[:, 18].tolist()
 AGN_norm_flux_diff = AGN_quantifying_change_data.iloc[:, 19].tolist()
 AGN_norm_flux_diff_unc = AGN_quantifying_change_data.iloc[:, 20].tolist()
-AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 25].tolist()
-AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
-AGN_W1_median_flux_unc = AGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
-AGN_W1_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
-AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 26].tolist()
-AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 30].tolist()
-AGN_W2_median_flux_unc = AGN_quantifying_change_data.iloc[:, 31].tolist()
-AGN_W2_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
-AGN_names_analysis = AGN_quantifying_change_data.iloc[:, 0].tolist()
+# AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 25].tolist()
+# AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 27].tolist() #median_abs_dev of flux for an object in W1 band
+# AGN_W1_median_flux_unc = AGN_quantifying_change_data.iloc[:, 28].tolist() #median of uncs for an object's flux in W1 band
+# AGN_W1_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 29].tolist() #median_abs_dev of uncs for an object's flux in W1 band
+# AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 26].tolist()
+# AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 30].tolist()
+# AGN_W2_median_flux_unc = AGN_quantifying_change_data.iloc[:, 31].tolist()
+# AGN_W2_median_dev_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
+# AGN_names_analysis = AGN_quantifying_change_data.iloc[:, 0].tolist()
 
-indices = [i for i, num in enumerate(AGN_zscores) if num > 8 and num < 15]
-for index in indices:
-    print(AGN_names_analysis[index])
+# indices = [i for i, num in enumerate(AGN_zscores) if num > 8 and num < 15]
+# for index in indices:
+#     print(AGN_names_analysis[index])
 
-AGN_new_norm_diff = []
-for i in range(len(AGN_quantifying_change_data)):
-    AGN_new_norm_diff.append(AGN_norm_flux_diff[i]/AGN_W1_median_flux_unc[i])
+# AGN_new_norm_diff = []
+# for i in range(len(AGN_quantifying_change_data)):
+#     AGN_new_norm_diff.append(AGN_norm_flux_diff[i]/AGN_W1_median_flux_unc[i])
 
-print(f'CLAGN W1 median 2nd lowest flux = {np.nanmedian(CLAGN_W1_low_flux):.4f}')
-print(f'CLAGN W1 median median_abs_dev flux = {np.nanmedian(CLAGN_W1_median_dev_flux):.5f}')
-print(f'CLAGN W1 median uncertainty in flux = {np.nanmedian(CLAGN_W1_median_flux_unc):.5f}')
-print(f'CLAGN W1 median median_abs_deviation uncertainties in flux = {np.nanmedian(CLAGN_W1_median_dev_flux_unc):.4f}')
-print(f'CLAGN W2 median 2nd lowest flux = {np.nanmedian(CLAGN_W2_low_flux):.4f}')
-print(f'CLAGN W2 median median_abs_dev flux = {np.nanmedian(CLAGN_W2_median_dev_flux):.5f}')
-print(f'CLAGN W2 median uncertainty in flux = {np.nanmedian(CLAGN_W2_median_flux_unc):.5f}')
-print(f'CLAGN W2 median median_abs_deviation uncertainties in flux = {np.nanmedian(CLAGN_W2_median_dev_flux_unc):.4f}')
+# print(f'CLAGN W1 median 2nd lowest flux = {np.nanmedian(CLAGN_W1_low_flux):.4f}')
+# print(f'CLAGN W1 median median_abs_dev flux = {np.nanmedian(CLAGN_W1_median_dev_flux):.5f}')
+# print(f'CLAGN W1 median uncertainty in flux = {np.nanmedian(CLAGN_W1_median_flux_unc):.5f}')
+# print(f'CLAGN W1 median median_abs_deviation uncertainties in flux = {np.nanmedian(CLAGN_W1_median_dev_flux_unc):.4f}')
+# print(f'CLAGN W2 median 2nd lowest flux = {np.nanmedian(CLAGN_W2_low_flux):.4f}')
+# print(f'CLAGN W2 median median_abs_dev flux = {np.nanmedian(CLAGN_W2_median_dev_flux):.5f}')
+# print(f'CLAGN W2 median uncertainty in flux = {np.nanmedian(CLAGN_W2_median_flux_unc):.5f}')
+# print(f'CLAGN W2 median median_abs_deviation uncertainties in flux = {np.nanmedian(CLAGN_W2_median_dev_flux_unc):.4f}')
 
-print(f'AGN W1 median 2nd lowest flux = {np.nanmedian(AGN_W1_low_flux):.4f}')
-print(f'AGN W1 median median_abs_dev flux = {np.nanmedian(AGN_W1_median_dev_flux):.5f}')
-print(f'AGN W1 median uncertainty in flux = {np.nanmedian(AGN_W1_median_flux_unc):.5f}')
-print(f'AGN W1 median median_abs_deviation uncertainties in flux = {np.nanmedian(AGN_W1_median_dev_flux_unc):.4f}')
-print(f'AGN W2 median 2nd lowest flux = {np.nanmedian(AGN_W2_low_flux):.4f}')
-print(f'AGN W2 median median_abs_dev flux = {np.nanmedian(AGN_W2_median_dev_flux):.5f}')
-print(f'AGN W2 median uncertainty in flux = {np.nanmedian(AGN_W2_median_flux_unc):.5f}')
-print(f'AGN W2 median median_abs_deviation uncertainties in flux = {np.nanmedian(AGN_W2_median_dev_flux_unc):.4f}')
+# print(f'AGN W1 median 2nd lowest flux = {np.nanmedian(AGN_W1_low_flux):.4f}')
+# print(f'AGN W1 median median_abs_dev flux = {np.nanmedian(AGN_W1_median_dev_flux):.5f}')
+# print(f'AGN W1 median uncertainty in flux = {np.nanmedian(AGN_W1_median_flux_unc):.5f}')
+# print(f'AGN W1 median median_abs_deviation uncertainties in flux = {np.nanmedian(AGN_W1_median_dev_flux_unc):.4f}')
+# print(f'AGN W2 median 2nd lowest flux = {np.nanmedian(AGN_W2_low_flux):.4f}')
+# print(f'AGN W2 median median_abs_dev flux = {np.nanmedian(AGN_W2_median_dev_flux):.5f}')
+# print(f'AGN W2 median uncertainty in flux = {np.nanmedian(AGN_W2_median_flux_unc):.5f}')
+# print(f'AGN W2 median median_abs_deviation uncertainties in flux = {np.nanmedian(AGN_W2_median_dev_flux_unc):.4f}')
 
-CLAGN_redshifts = []
-for object_name in CLAGN_names_analysis:
-    object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
-    redshift = object_row.iloc[0, 3]
-    CLAGN_redshifts.append(redshift)
+# CLAGN_redshifts = []
+# for object_name in CLAGN_names_analysis:
+#     object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+#     redshift = object_row.iloc[0, 3]
+#     CLAGN_redshifts.append(redshift)
 
-AGN_redshifts = []
-for object_name in AGN_names_analysis:
-    object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
-    if len(object_data) == 0:
-        print(object_name)
-    redshift = object_data.iloc[0, 2]
-    AGN_redshifts.append(redshift)
+# AGN_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+# AGN_redshifts = []
+# for object_name in AGN_names_analysis:
+#     object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+#     if len(object_data) == 0:
+#         print(object_name)
+#     redshift = object_data.iloc[0, 2]
+#     AGN_redshifts.append(redshift)
 
 median_CLAGN_redshift = np.nanmedian(CLAGN_redshifts)
 median_AGN_redshift = np.nanmedian(AGN_redshifts)
@@ -282,35 +283,35 @@ print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.3f}% of AG
 # plt.show()
 
 
-# # # #Creating a 2d plot for normalised flux difference & z score:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
-# plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
-# # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
-# # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
-# plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
-# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# # plt.xlim(0, 50)
-# # plt.ylim(0, 5)
-# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
-# plt.xticks(fontsize=26)
-# plt.yticks(fontsize=26)
-# plt.xlabel("Z-Score", fontsize = 26)
-# plt.ylabel("Normalised Flux Difference", fontsize = 26)
-# plt.title("Characterising MIR Variability in AGN", fontsize = 28)
-# plt.legend(loc = 'best', fontsize=25)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# ax = plt.gca()
-# plt.tight_layout()
-# #For median uncs data:
-# plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-# plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-# plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# # The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
-# # (0,0 is lower-left and 1,1 is upper-right).
-# plt.show()
+# # #Creating a 2d plot for normalised flux difference & z score:
+plt.figure(figsize=(12, 7))
+plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
+plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
+# plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
+# plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
+plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
+plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 50)
+# plt.ylim(0, 5)
+plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
+plt.xticks(fontsize=26)
+plt.yticks(fontsize=26)
+plt.xlabel("Z-Score", fontsize = 26)
+plt.ylabel("Normalised Flux Difference", fontsize = 26)
+plt.title("Characterising MIR Variability in AGN", fontsize = 28)
+plt.legend(loc = 'best', fontsize=25)
+plt.grid(True, linestyle='--', alpha=0.5)
+ax = plt.gca()
+plt.tight_layout()
+#For median uncs data:
+plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+# The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
+# (0,0 is lower-left and 1,1 is upper-right).
+plt.show()
 
 
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:
@@ -366,73 +367,127 @@ print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.3f}% of AG
 # plt.tight_layout()
 # plt.show()
 
-
-# # #Creating a 2d plot of z score vs redshift:
-plt.figure(figsize=(12, 7))
-plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red',  label='CLAGN')
-plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-plt.xlim(0, 1.05*max(CLAGN_zscores))
-plt.ylim(0, 1.05*max(CLAGN_redshifts))
-plt.xticks(fontsize=24)
-plt.yticks(fontsize=24)
-plt.xlabel("Z-Score", fontsize = 24)
-plt.ylabel("Redshift", fontsize = 24)
-plt.title("Redshift vs Z-Score", fontsize = 24)
-plt.legend(loc = 'best', fontsize=22)
-plt.grid(True, linestyle='--', alpha=0.5)
-plt.tight_layout()
-plt.show()
-
-
-# # #Creating a 2d plot of NFD vs redshift:
-plt.figure(figsize=(12, 7))
-plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
-plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
-plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff))
-plt.ylim(0, 1.05*max(CLAGN_redshifts))
-plt.xticks(fontsize=24)
-plt.yticks(fontsize=24)
-plt.xlabel("NFD", fontsize = 24)
-plt.ylabel("Redshift", fontsize = 24)
-plt.title("Redshift vs NFD", fontsize = 24)
-plt.legend(loc = 'best', fontsize=22)
-plt.grid(True, linestyle='--', alpha=0.5)
-plt.tight_layout()
-plt.show()
+# # # #Creating a 2d plot of redshift vs z score:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
+# plt.scatter(AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel("Z-Score", fontsize = 24)
+# plt.ylabel("Redshift", fontsize = 24)
+# plt.title("Redshift vs Z-Score", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
 
 
-# # #Creating a 2d plot of Z-score vs W1 low flux:
-plt.figure(figsize=(12, 7))
-plt.scatter(CLAGN_zscores, CLAGN_W1_low_flux, color='red',  label='CLAGN')
-plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-plt.xlim(0, 1.05*max(CLAGN_zscores))
-plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
-plt.xticks(fontsize=24)
-plt.yticks(fontsize=24)
-plt.xlabel("Z-Score", fontsize = 24)
-plt.ylabel("W1 Low Flux", fontsize = 24)
-plt.title("W1 Low Flux vs Z-Score", fontsize = 24)
-plt.legend(loc = 'best', fontsize=22)
-plt.grid(True, linestyle='--', alpha=0.5)
-plt.tight_layout()
-plt.show()
+# # # #Creating a 2d plot of redshift vs 1/(z score):
+# inverse_CLAGN_zscores = [1/z for z in CLAGN_zscores]
+# inverse_AGN_zscores = [1/z for z in AGN_zscores]
+
+# #line of best fit:
+# fit_params_CLAGN = np.polyfit(inverse_CLAGN_zscores, CLAGN_redshifts, 1)  # Degree 1 for a linear fit
+# slope_CLAGN, intercept_CLAGN = fit_params_CLAGN
+# y_fit_CLAGN = slope_CLAGN*np.array(inverse_CLAGN_zscores)+intercept_CLAGN
+# fit_params_AGN = np.polyfit(inverse_AGN_zscores, AGN_redshifts, 1)  # Degree 1 for a linear fit
+# slope_AGN, intercept_AGN = fit_params_AGN
+# y_fit_AGN = slope_AGN*np.array(inverse_AGN_zscores)+intercept_AGN
+# combined_zscores = inverse_CLAGN_zscores+inverse_AGN_zscores
+# combined_redshifts = CLAGN_redshifts+AGN_redshifts
+# fit_params_both = np.polyfit(combined_zscores, combined_redshifts, 1)  # Degree 1 for a linear fit
+# slope_both, intercept_both = fit_params_both
+# y_fit_both = slope_both*np.array(combined_zscores)+intercept_both
+
+# plt.figure(figsize=(12, 7))
+# plt.scatter(inverse_CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
+# plt.scatter(inverse_AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+# plt.plot(inverse_CLAGN_zscores, y_fit_CLAGN, color="red", label=f"CLAGN: y={slope_CLAGN:.2f}x+{intercept_CLAGN:.2f}")
+# plt.plot(inverse_AGN_zscores, y_fit_AGN, color="blue", label=f"AGN: y={slope_AGN:.2f}x+{intercept_AGN:.2f}")
+# plt.plot(combined_zscores, y_fit_both, color="black", label=f"Comb: y={slope_both:.2f}x+{intercept_both:.2f}")
+# plt.xlim(0, 1.05*max(inverse_CLAGN_zscores+inverse_AGN_zscores))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel(r"$\frac{1}{Z-Score}$", fontsize = 24)
+# plt.ylabel("Redshift", fontsize = 24)
+# plt.title(r"Redshift vs $\frac{1}{Z-Score}$", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
 
 
-# # #Creating a 2d plot of NFD vs W1 low flux:
-plt.figure(figsize=(12, 7))
-plt.scatter(CLAGN_norm_flux_diff, CLAGN_W1_low_flux, color='red',  label='CLAGN')
-plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
-plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff))
-plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
-plt.xticks(fontsize=24)
-plt.yticks(fontsize=24)
-plt.xlabel("NFD", fontsize = 24)
-plt.ylabel("W1 Low Flux", fontsize = 24)
-plt.title("W1 Low Flux vs NFD", fontsize = 24)
-plt.legend(loc = 'best', fontsize=22)
-plt.grid(True, linestyle='--', alpha=0.5)
-plt.tight_layout()
-plt.show()
+# # # #Creating a 2d plot of NFD vs redshift:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
+# plt.scatter(AGN_norm_flux_diff, AGN_redshifts, color='blue',  label='Non-CL AGN')
+# plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel("NFD", fontsize = 24)
+# plt.ylabel("Redshift", fontsize = 24)
+# plt.title("Redshift vs NFD", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
+
+
+# # # #Creating a 2d plot of Z-score vs W1 low flux:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(CLAGN_zscores, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 1.05*max(CLAGN_zscores))
+# plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel("Z-Score", fontsize = 24)
+# plt.ylabel("W1 Low Flux", fontsize = 24)
+# plt.title("W1 Low Flux vs Z-Score", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
+
+
+# # # #Creating a 2d plot of NFD vs W1 low flux:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(CLAGN_norm_flux_diff, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+# plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff))
+# plt.ylim(0, 1.05*max(CLAGN_W1_low_flux))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel("NFD", fontsize = 24)
+# plt.ylabel("W1 Low Flux", fontsize = 24)
+# plt.title("W1 Low Flux vs NFD", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
+
+
+# # # #Creating a 2d plot of W1 low flux vs Redshift:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(CLAGN_redshifts, CLAGN_W1_low_flux, s=100, color='red',  label='CLAGN')
+# plt.scatter(AGN_redshifts, AGN_W1_low_flux, color='blue',  label='Non-CL AGN')
+# plt.xlim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
+# plt.xticks(fontsize=24)
+# plt.yticks(fontsize=24)
+# plt.xlabel("Redshift", fontsize = 24)
+# plt.ylabel("W1 Low Flux", fontsize = 24)
+# plt.title("W1 Low Flux vs Redshift", fontsize = 24)
+# plt.legend(loc = 'best', fontsize=22)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# plt.show()
 
 
 # # # # #Creating a 2d plot of redshift vs unc:

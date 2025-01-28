@@ -40,13 +40,13 @@ CLAGN_outlier_flux_names = CLAGN_outlier_flux.iloc[:, 0].tolist()
 CLAGN_outlier_flux_band = CLAGN_outlier_flux.iloc[:, 1]
 CLAGN_outlier_flux_epoch = CLAGN_outlier_flux.iloc[:, 2]
 
-
 if my_object == 0:
-    object_names = AGN_sample.iloc[:, 3]
+    object_names = AGN_sample.iloc[:, 3].tolist()
+    object_names = object_names[221:]
 elif my_object == 1:
     object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
 
-save_figures = 0 #set to 1 to save figures
+save_figures = 1 #set to 1 to save figures
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -502,6 +502,7 @@ for object_name in object_names:
         if save_figures == 1:
             plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'red', capsize=5, label = u'W2 (4.6\u03bcm)')
     elif m == 0:
+        min_mjd = W1_data[0][1]
         SDSS_mjd = SDSS_mjd - min_mjd
         DESI_mjd = DESI_mjd - min_mjd
         min_mjd = W1_data[0][1]
@@ -531,14 +532,15 @@ for object_name in object_names:
         desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
     elif my_object == 1:
         #SDSS
-        try:
-            SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
+        try:        
+            SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd_for_dnl:.0f}-{SDSS_fiberid}.fits'
             SDSS_file_path = f'clagn_spectra/{SDSS_file}'
             with fits.open(SDSS_file_path) as hdul:
                 subset = hdul[1]
                 sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
                 sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
         except FileNotFoundError as e:
+            print('SDSS File not found - trying download')
             sdss_lamb, sdss_flux = get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd_for_dnl, coord, SDSS_plate, SDSS_fiberid)
         #DESI
         try:
@@ -548,6 +550,7 @@ for object_name in object_names:
             desi_lamb = DESI_spec.iloc[:, 0]
             desi_flux = DESI_spec.iloc[:, 1]
         except FileNotFoundError as e:
+            print('DESI File not found - trying download')
             desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
 
     ebv = sfd.ebv(coord)
@@ -558,12 +561,26 @@ for object_name in object_names:
 
     sdss_lamb = (sdss_lamb/(1+SDSS_z))
     desi_lamb = (desi_lamb/(1+DESI_z))
-    Gaus_smoothed_SDSS = convolve(sdss_flux, gaussian_kernel)
-    Gaus_smoothed_DESI = convolve(desi_flux, gaussian_kernel)
-    SDSS_min = min(sdss_lamb)
-    SDSS_max = max(sdss_lamb)
-    DESI_min = min(desi_lamb)
-    DESI_max = max(desi_lamb)
+    if len(sdss_flux) > 0:
+        Gaus_smoothed_SDSS = convolve(sdss_flux, gaussian_kernel)
+    else:
+        Gaus_smoothed_SDSS = []
+    if len(desi_flux) > 0:
+        Gaus_smoothed_DESI = convolve(desi_flux, gaussian_kernel)
+    else:
+        Gaus_smoothed_DESI = []
+    if len(sdss_lamb) > 0:
+        SDSS_min = min(sdss_lamb)
+        SDSS_max = max(sdss_lamb)
+    else:
+        SDSS_min = 0
+        SDSS_max = 1
+    if len(desi_lamb) > 0:
+        DESI_min = min(desi_lamb)
+        DESI_max = max(desi_lamb)
+    else:
+        DESI_min = 0
+        DESI_max = 1
 
     #UV analysis
     if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
@@ -953,6 +970,6 @@ for object_name in object_names:
     df = pd.DataFrame(quantifying_change_data)
 
     if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_sample_{my_sample}.csv", index=False)
+        df.to_csv(f"AGN_Quantifying_Change_sample_{my_sample}_extra_v3.csv", index=False)
     elif my_object == 1:
-        df.to_csv(f"CLAGN_Quantifying_Change_sample_{my_sample}.csv", index=False)
+        df.to_csv(f"CLAGN_Quantifying_Change_sample_{my_sample}.csv", index=False)  

@@ -61,8 +61,6 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
-object_name = '133344.70+335622.7'
-
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -72,12 +70,12 @@ object_name = '133344.70+335622.7'
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 5
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
-MIR_only = 0 #plot with just MIR data on it
+MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0
 
@@ -369,11 +367,6 @@ if len(desi_lamb) > 0:
 else:
     DESI_min = 0
     DESI_max = 1
-
-print(SDSS_min)
-print(SDSS_max)
-print(DESI_min)
-print(DESI_max)
 
 if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
 

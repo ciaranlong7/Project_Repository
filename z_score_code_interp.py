@@ -24,11 +24,11 @@ parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 AGN_sample = pd.read_csv("AGN_Sample.csv")
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 
-# #When changing object names list from CLAGN to AGN - I must change the files I am saving to at the bottom as well.
-# object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
-
-#When changing object names list from CLAGN to AGN - I must change the files I am saving to at the bottom as well.
-object_names = AGN_sample.iloc[:, 3]
+my_object = 0 #0 = AGN. 1 = CLAGN
+if my_object == 0:
+    object_names = AGN_sample.iloc[:, 3]
+elif my_object == 1:
+    object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
         k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -1143,6 +1143,7 @@ quantifying_change_data = {
 # Convert the data into a DataFrame
 df = pd.DataFrame(quantifying_change_data)
 
-#Creating a csv file of my data
-# df.to_csv("CLAGN_Quantifying_Change.csv", index=False)
-df.to_csv("AGN_Quantifying_Change.csv", index=False)
+if my_object == 0:
+    df.to_csv("AGN_Quantifying_Change.csv", index=False)
+elif my_object == 1:
+    df.to_csv("CLAGN_Quantifying_Change.csv", index=False)
