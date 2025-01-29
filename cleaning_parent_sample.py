@@ -252,13 +252,14 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 
 # ## Combining the three data frames created
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_sample_1.csv')
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
 # print(len(quantifying_change))
-# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_sample_1_extra.csv')
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3_extra.csv')
 # print(len(quantifying_change_extra))
-# quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v2.csv')
-# print(len(quantifying_change_extra_v2))
-# quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
-# print(len(quantifying_change_extra_v3))
-# combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
-# combined_df.to_csv('AGN_Quantifying_Change_sample_1.csv', index=False)
+# # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v2.csv')
+# # print(len(quantifying_change_extra_v2))
+# # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
+# # print(len(quantifying_change_extra_v3))
+# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
+# combined_df = pd.concat([quantifying_change, quantifying_change_extra], ignore_index=True)
+# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
