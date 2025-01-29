@@ -26,11 +26,11 @@ print(f'Median CLAGN sample redshift = {median_CLAGN_redshift:.3f}')
 print(f'Median AGN sample redshift = {median_AGN_redshift:.3f}')
 
 #Quantifying change data
-CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_sample_1.csv')
-# CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+# CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_sample_1.csv')
+CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
 # #Eliminating objects dimmer than 0.5 in W1 band. Keeps np.nan objects
 # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
-# print(f'Number of CLAGN Analysed: {len(CLAGN_quantifying_change_data)}')
+print(f'Number of CLAGN Analysed: {len(CLAGN_quantifying_change_data)}')
 CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
 CLAGN_zscore_uncs = CLAGN_quantifying_change_data.iloc[:, 18].tolist()
 CLAGN_norm_flux_diff = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
@@ -50,8 +50,8 @@ CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
 
 CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
 
-AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_sample_1.csv')
-# AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs.csv')
+AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# # AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs.csv')
 # # #Eliminating objects dimmer than 0.5 in W1 band. Keeps np.nan objects
 # AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
 # print(f'Number of AGN Analysed: {len(AGN_quantifying_change_data)}')
@@ -351,76 +351,76 @@ plt.show()
 # plt.show()
 
 
-# # # #Creating a 2d plot of redshift vs z score:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
-# plt.scatter(AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
-# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
-# plt.xticks(fontsize=24)
-# plt.yticks(fontsize=24)
-# plt.xlabel("Z-Score", fontsize = 24)
-# plt.ylabel("Redshift", fontsize = 24)
-# plt.title("Redshift vs Z-Score", fontsize = 24)
-# plt.legend(loc = 'best', fontsize=22)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
+# # #Creating a 2d plot of redshift vs z score:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
+plt.scatter(AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("Z-Score", fontsize = 24)
+plt.ylabel("Redshift", fontsize = 24)
+plt.title("Redshift vs Z-Score", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
 
 
-# # # #Creating a 2d plot of redshift vs 1/(z score):
-# inverse_CLAGN_zscores = [1/z for z in CLAGN_zscores]
-# inverse_AGN_zscores = [1/z for z in AGN_zscores]
+# # #Creating a 2d plot of redshift vs 1/(z score):
+inverse_CLAGN_zscores = [1/z for z in CLAGN_zscores]
+inverse_AGN_zscores = [1/z for z in AGN_zscores]
 
-# #line of best fit:
-# fit_params_CLAGN = np.polyfit(inverse_CLAGN_zscores, CLAGN_redshifts, 1)  # Degree 1 for a linear fit
-# slope_CLAGN, intercept_CLAGN = fit_params_CLAGN
-# y_fit_CLAGN = slope_CLAGN*np.array(inverse_CLAGN_zscores)+intercept_CLAGN
-# fit_params_AGN = np.polyfit(inverse_AGN_zscores, AGN_redshifts, 1)  # Degree 1 for a linear fit
-# slope_AGN, intercept_AGN = fit_params_AGN
-# y_fit_AGN = slope_AGN*np.array(inverse_AGN_zscores)+intercept_AGN
-# combined_zscores = inverse_CLAGN_zscores+inverse_AGN_zscores
-# combined_redshifts = CLAGN_redshifts+AGN_redshifts
-# fit_params_both = np.polyfit(combined_zscores, combined_redshifts, 1)  # Degree 1 for a linear fit
-# slope_both, intercept_both = fit_params_both
-# y_fit_both = slope_both*np.array(combined_zscores)+intercept_both
+#line of best fit:
+fit_params_CLAGN = np.polyfit(inverse_CLAGN_zscores, CLAGN_redshifts, 1)  # Degree 1 for a linear fit
+slope_CLAGN, intercept_CLAGN = fit_params_CLAGN
+y_fit_CLAGN = slope_CLAGN*np.array(inverse_CLAGN_zscores)+intercept_CLAGN
+fit_params_AGN = np.polyfit(inverse_AGN_zscores, AGN_redshifts, 1)  # Degree 1 for a linear fit
+slope_AGN, intercept_AGN = fit_params_AGN
+y_fit_AGN = slope_AGN*np.array(inverse_AGN_zscores)+intercept_AGN
+combined_zscores = inverse_CLAGN_zscores+inverse_AGN_zscores
+combined_redshifts = CLAGN_redshifts+AGN_redshifts
+fit_params_both = np.polyfit(combined_zscores, combined_redshifts, 1)  # Degree 1 for a linear fit
+slope_both, intercept_both = fit_params_both
+y_fit_both = slope_both*np.array(combined_zscores)+intercept_both
 
-# plt.figure(figsize=(12, 7))
-# plt.scatter(inverse_CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
-# plt.scatter(inverse_AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
-# plt.plot(inverse_CLAGN_zscores, y_fit_CLAGN, color="red", label=f"CLAGN: y={slope_CLAGN:.2f}x+{intercept_CLAGN:.2f}")
-# plt.plot(inverse_AGN_zscores, y_fit_AGN, color="blue", label=f"AGN: y={slope_AGN:.2f}x+{intercept_AGN:.2f}")
-# plt.plot(combined_zscores, y_fit_both, color="black", label=f"Comb: y={slope_both:.2f}x+{intercept_both:.2f}")
-# plt.xlim(0, 1.05*max(inverse_CLAGN_zscores+inverse_AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
-# plt.xticks(fontsize=24)
-# plt.yticks(fontsize=24)
-# plt.xlabel(r"$\frac{1}{Z-Score}$", fontsize = 24)
-# plt.ylabel("Redshift", fontsize = 24)
-# plt.title(r"Redshift vs $\frac{1}{Z-Score}$", fontsize = 24)
-# plt.legend(loc = 'best', fontsize=22)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
+plt.figure(figsize=(12, 7))
+plt.scatter(inverse_CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
+plt.scatter(inverse_AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+plt.plot(inverse_CLAGN_zscores, y_fit_CLAGN, color="red", label=f"CLAGN: y={slope_CLAGN:.2f}x+{intercept_CLAGN:.2f}")
+plt.plot(inverse_AGN_zscores, y_fit_AGN, color="blue", label=f"AGN: y={slope_AGN:.2f}x+{intercept_AGN:.2f}")
+plt.plot(combined_zscores, y_fit_both, color="black", label=f"Comb: y={slope_both:.2f}x+{intercept_both:.2f}")
+plt.xlim(0, 1.05*max(inverse_CLAGN_zscores+inverse_AGN_zscores))
+plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel(r"$\frac{1}{Z-Score}$", fontsize = 24)
+plt.ylabel("Redshift", fontsize = 24)
+plt.title(r"Redshift vs $\frac{1}{Z-Score}$", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
 
 
-# # # #Creating a 2d plot of NFD vs redshift:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
-# plt.scatter(AGN_norm_flux_diff, AGN_redshifts, color='blue',  label='Non-CL AGN')
-# plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
-# plt.xticks(fontsize=24)
-# plt.yticks(fontsize=24)
-# plt.xlabel("NFD", fontsize = 24)
-# plt.ylabel("Redshift", fontsize = 24)
-# plt.title("Redshift vs NFD", fontsize = 24)
-# plt.legend(loc = 'best', fontsize=22)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
+# # #Creating a 2d plot of NFD vs redshift:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
+plt.scatter(AGN_norm_flux_diff, AGN_redshifts, color='blue',  label='Non-CL AGN')
+plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
+plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("NFD", fontsize = 24)
+plt.ylabel("Redshift", fontsize = 24)
+plt.title("Redshift vs NFD", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
 
 
 # # # #Creating a 2d plot of Z-score vs W1 low flux:
@@ -457,21 +457,21 @@ plt.show()
 # plt.show()
 
 
-# # # #Creating a 2d plot of W1 low flux vs Redshift:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_redshifts, CLAGN_W1_low_flux, s=100, color='red',  label='CLAGN')
-# plt.scatter(AGN_redshifts, AGN_W1_low_flux, color='blue',  label='Non-CL AGN')
-# plt.xlim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
-# plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
-# plt.xticks(fontsize=24)
-# plt.yticks(fontsize=24)
-# plt.xlabel("Redshift", fontsize = 24)
-# plt.ylabel("W1 Low Flux", fontsize = 24)
-# plt.title("W1 Low Flux vs Redshift", fontsize = 24)
-# plt.legend(loc = 'best', fontsize=22)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# plt.show()
+# # #Creating a 2d plot of W1 low flux vs Redshift:
+plt.figure(figsize=(12, 7))
+plt.scatter(CLAGN_redshifts, CLAGN_W1_low_flux, s=100, color='red',  label='CLAGN')
+plt.scatter(AGN_redshifts, AGN_W1_low_flux, color='blue',  label='Non-CL AGN')
+plt.xlim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
+plt.xticks(fontsize=24)
+plt.yticks(fontsize=24)
+plt.xlabel("Redshift", fontsize = 24)
+plt.ylabel("W1 Low Flux", fontsize = 24)
+plt.title("W1 Low Flux vs Redshift", fontsize = 24)
+plt.legend(loc = 'best', fontsize=22)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
 
 
 # # # # #Creating a 2d plot of redshift vs unc:
