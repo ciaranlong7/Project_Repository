@@ -58,9 +58,9 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '160730.20+560305.5' #Object W - chosen because a CLAGN that exhibits no MIR change over SDSS-DESI range, but does exhibit a change after
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
+object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 ansd W2 NFD
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
-object_name = '121532.90+560919.0'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -70,13 +70,13 @@ object_name = '121532.90+560919.0'
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 1
+option = 2
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
+main_plot = 1 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
@@ -149,8 +149,8 @@ CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
 CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
 CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
 
-# AGN_outlier_flux_names_W1 = []
-# AGN_outlier_flux_names_W2 = []
+AGN_outlier_flux_names_W1 = []
+AGN_outlier_flux_names_W2 = []
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
 def find_closest_indices(x_vals, value):
@@ -749,7 +749,6 @@ if option >= 1 and option <= 4:
 
     #removing some epochs:
     if my_object == 0:
-        print('test1')
         if object_name in AGN_outlier_flux_names_W1:
             AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names_W1) if name == object_name]
             if len(AGN_outlier_indices) == 1:
@@ -1291,213 +1290,213 @@ if option >= 1 and option <= 4:
         plt.tight_layout()
         plt.show()
 
-# if SDSS_DESI == 1:
-#     # Plotting Individual SDSS & DESI Spectra individually
-#     common_ymin = 0
-#     if len(sdss_flux) > 0 and len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
-#     elif len(sdss_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
-#     elif len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
-#     else:
-#         common_ymax = 0
+if SDSS_DESI == 1:
+    # Plotting Individual SDSS & DESI Spectra individually
+    common_ymin = 0
+    if len(sdss_flux) > 0 and len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
+    elif len(sdss_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
+    elif len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
+    else:
+        common_ymax = 0
 
-#     plt.figure(figsize=(12,7))
-#     plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
-#     plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
-#     # if SDSS_min <= H_alpha <= SDSS_max:
-#     #     plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
-#     # if SDSS_min <= H_beta <= SDSS_max:
-#     #     plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
-#     # if SDSS_min <= Mg2 <= SDSS_max:
-#     #     plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
-#     # if SDSS_min <= C3_ <= SDSS_max:
-#     #     plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
-#     # if SDSS_min <= C4 <= SDSS_max:
-#     #     plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-#     # # if SDSS_min <= _O3_ <= SDSS_max:
-#     # #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
-#     # if SDSS_min <= Ly_alpha <= SDSS_max:
-#     #     plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
-#     # if SDSS_min <= Ly_beta <= SDSS_max:
-#     #     plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
-#     plt.ylim(common_ymin, common_ymax)
-#     plt.xlabel('Wavelength / Å', fontsize = 26)
-#     plt.xticks(fontsize=26)
-#     plt.yticks(fontsize=26)
-#     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-#     # plt.title(f'SDSS Spectrum (WISEA J{object_name})', fontsize = 28)
-#     plt.title(f'SDSS Spectrum', fontsize = 28)
-#     # plt.legend(loc = 'best', fontsize = 25)
-#     plt.grid(True, linestyle='--', alpha=0.5)
-#     plt.tight_layout()
-#     plt.show()
+    plt.figure(figsize=(12,7))
+    plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
+    plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
+    # if SDSS_min <= H_alpha <= SDSS_max:
+    #     plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+    # if SDSS_min <= H_beta <= SDSS_max:
+    #     plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+    # if SDSS_min <= Mg2 <= SDSS_max:
+    #     plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+    # if SDSS_min <= C3_ <= SDSS_max:
+    #     plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    # if SDSS_min <= C4 <= SDSS_max:
+    #     plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
+    # # if SDSS_min <= _O3_ <= SDSS_max:
+    # #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    # if SDSS_min <= Ly_alpha <= SDSS_max:
+    #     plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
+    # if SDSS_min <= Ly_beta <= SDSS_max:
+    #     plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
+    plt.ylim(common_ymin, common_ymax)
+    plt.xlabel('Wavelength / Å', fontsize = 26)
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+    # plt.title(f'SDSS Spectrum (WISEA J{object_name})', fontsize = 28)
+    plt.title(f'SDSS Spectrum', fontsize = 28)
+    # plt.legend(loc = 'best', fontsize = 25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
 
-#     plt.figure(figsize=(12,7))
-#     plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
-#     plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
-#     if DESI_min <= H_alpha <= DESI_max:
-#         plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
-#     if DESI_min <= H_beta <= DESI_max:
-#         plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
-#     if DESI_min <= Mg2 <= DESI_max:
-#         plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
-#     if DESI_min <= C3_ <= DESI_max:
-#         plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
-#     if DESI_min <= C4 <= DESI_max:
-#         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-#     # if DESI_min <= _O3_ <= DESI_max:
-#     #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
-#     if DESI_min <= Ly_alpha <= DESI_max:
-#         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
-#     if DESI_min <= Ly_beta <= DESI_max:
-#         plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
-#     plt.ylim(common_ymin, common_ymax)
-#     plt.xlabel('Wavelength / Å', fontsize = 26)
-#     plt.xticks(fontsize=26)
-#     plt.yticks(fontsize=26)
-#     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-#     plt.title(f'DESI Spectrum (WISEA J{object_name})', fontsize = 28)
-#     plt.legend(loc = 'best', fontsize = 25)
-#     plt.grid(True, linestyle='--', alpha=0.5)
-#     plt.tight_layout()
-#     plt.show()
-
-
-# if SDSS_DESI_comb == 1:
-#     # Plotting SDSS & DESI Spectra on same plot
-#     common_ymin = 0
-#     if len(sdss_flux) > 0 and len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
-#     elif len(sdss_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
-#     elif len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
-#     else:
-#         common_ymax = 0
-
-#     plt.figure(figsize=(12,7))
-#     plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
-#     plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
-#     plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
-#     plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
-#     if SDSS_min <= H_alpha <= SDSS_max or DESI_min <= H_alpha <= DESI_max:
-#         plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
-#     if SDSS_min <= H_beta <= SDSS_max or DESI_min <= H_beta <= DESI_max:
-#         plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
-#     if SDSS_min <= Mg2 <= SDSS_max or DESI_min <= Mg2 <= DESI_max:
-#         plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
-#     if SDSS_min <= C3_ <= SDSS_max or DESI_min <= C3_ <= DESI_max:
-#         plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
-#     if SDSS_min <= C4 <= SDSS_max or DESI_min <= C4 <= DESI_max:
-#         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-#     # if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
-#     #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
-#     if SDSS_min <= Ly_alpha <= SDSS_max or DESI_min <= Ly_alpha <= DESI_max:
-#         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
-#     if SDSS_min <= Ly_beta <= SDSS_max or DESI_min <= Ly_beta <= DESI_max:
-#         plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
-#     plt.ylim(common_ymin, common_ymax)
-#     plt.xlabel('Wavelength / Å', fontsize = 26)
-#     plt.xticks(fontsize=26)
-#     plt.yticks(fontsize=26)
-#     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-#     plt.title(f'SDSS & DESI Spectra - {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
-#     # plt.title(f'SDSS & DESI Spectra (WISEA J{object_name})', fontsize = 28)
-#     plt.legend(loc = 'best', fontsize = 25)
-#     plt.grid(True, linestyle='--', alpha=0.5)
-#     plt.tight_layout()
-#     plt.show()
+    plt.figure(figsize=(12,7))
+    plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
+    plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
+    if DESI_min <= H_alpha <= DESI_max:
+        plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+    if DESI_min <= H_beta <= DESI_max:
+        plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+    if DESI_min <= Mg2 <= DESI_max:
+        plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+    if DESI_min <= C3_ <= DESI_max:
+        plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    if DESI_min <= C4 <= DESI_max:
+        plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
+    # if DESI_min <= _O3_ <= DESI_max:
+    #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    if DESI_min <= Ly_alpha <= DESI_max:
+        plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
+    if DESI_min <= Ly_beta <= DESI_max:
+        plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
+    plt.ylim(common_ymin, common_ymax)
+    plt.xlabel('Wavelength / Å', fontsize = 26)
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+    plt.title(f'DESI Spectrum (WISEA J{object_name})', fontsize = 28)
+    plt.legend(loc = 'best', fontsize = 25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
 
 
-# if main_plot == 1:
-#     # Making a big figure with flux & SDSS, DESI spectra added in
-#     fig = plt.figure(figsize=(12, 7)) # (width, height)
-#     gs = GridSpec(5, 2, figure=fig)  # 5 rows, 2 columns
+if SDSS_DESI_comb == 1:
+    # Plotting SDSS & DESI Spectra on same plot
+    common_ymin = 0
+    if len(sdss_flux) > 0 and len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
+    elif len(sdss_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
+    elif len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
+    else:
+        common_ymax = 0
 
-#     common_ymin = 0
-#     if len(sdss_flux) > 0 and len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
-#     elif len(sdss_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
-#     elif len(desi_flux) > 0:
-#         common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
-#     else:
-#         common_ymax = 0
+    plt.figure(figsize=(12,7))
+    plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
+    plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
+    plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
+    plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
+    if SDSS_min <= H_alpha <= SDSS_max or DESI_min <= H_alpha <= DESI_max:
+        plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+    if SDSS_min <= H_beta <= SDSS_max or DESI_min <= H_beta <= DESI_max:
+        plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+    if SDSS_min <= Mg2 <= SDSS_max or DESI_min <= Mg2 <= DESI_max:
+        plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+    if SDSS_min <= C3_ <= SDSS_max or DESI_min <= C3_ <= DESI_max:
+        plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    if SDSS_min <= C4 <= SDSS_max or DESI_min <= C4 <= DESI_max:
+        plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
+    # if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
+    #     plt.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    if SDSS_min <= Ly_alpha <= SDSS_max or DESI_min <= Ly_alpha <= DESI_max:
+        plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
+    if SDSS_min <= Ly_beta <= SDSS_max or DESI_min <= Ly_beta <= DESI_max:
+        plt.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
+    plt.ylim(common_ymin, common_ymax)
+    plt.xlabel('Wavelength / Å', fontsize = 26)
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+    plt.title(f'SDSS & DESI Spectra - {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
+    # plt.title(f'SDSS & DESI Spectra (WISEA J{object_name})', fontsize = 28)
+    plt.legend(loc = 'best', fontsize = 25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
 
-#     # Top plot spanning two columns and three rows (ax1)
-#     ax1 = fig.add_subplot(gs[0:3, :])  # Rows 0 to 2, both columns
-#     ax1.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
-#     ax1.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color='blue', capsize=5, label=u'W1 (3.4\u03bcm)')
-#     ax1.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-#     ax1.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
-#     ax1.set_xlabel('Days since first observation', fontsize = 16)
-#     ax1.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 16, loc='center')
-#     ax1.tick_params(axis='both', which='major', labelsize = 16)
-#     ax1.set_title(f'Light Curve (WISEA J{object_name})', fontsize = 22)
-#     ax1.legend(loc='upper center', fontsize = 18)
-#     ax1.grid(True, linestyle='--', alpha=0.5)
 
-#     # Bottom left plot spanning 2 rows and 1 column (ax2)
-#     ax2 = fig.add_subplot(gs[3:, 0])  # Rows 3 to 4, first column
-#     ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
-#     ax2.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
-#     if SDSS_min <= H_alpha <= SDSS_max:
-#         ax2.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
-#     if SDSS_min <= H_beta <= SDSS_max:
-#         ax2.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
-#     if SDSS_min <= Mg2 <= SDSS_max:
-#         ax2.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
-#     if SDSS_min <= C3_ <= SDSS_max:
-#         ax2.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
-#     if SDSS_min <= C4 <= SDSS_max:
-#         ax2.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-#     # if SDSS_min <= _O3_ <= SDSS_max:
-#     #     ax2.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
-#     if SDSS_min <= Ly_alpha <= SDSS_max:
-#         ax2.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
-#     if SDSS_min <= Ly_beta <= SDSS_max:
-#         ax2.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
-#     ax2.set_xlabel('Wavelength / Å', fontsize = 16)
-#     ax2.set_ylim(common_ymin, common_ymax)
-#     ax2.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 15)
-#     ax2.tick_params(axis='both', which='major', labelsize=16)
-#     # ax2.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
-#     ax2.set_title('SDSS Spectrum', fontsize = 14)
-#     ax2.legend(loc='upper right', fontsize = 18)
+if main_plot == 1:
+    # Making a big figure with flux & SDSS, DESI spectra added in
+    fig = plt.figure(figsize=(12, 7)) # (width, height)
+    gs = GridSpec(5, 2, figure=fig)  # 5 rows, 2 columns
 
-#     # Bottom right plot spanning 2 rows and 1 column (ax3)
-#     ax3 = fig.add_subplot(gs[3:, 1])  # Rows 3 to 4, second column
-#     ax3.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
-#     ax3.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
-#     if DESI_min <= H_alpha <= DESI_max:
-#         ax3.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
-#     if DESI_min <= H_beta <= DESI_max:
-#         ax3.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
-#     if DESI_min <= Mg2 <= DESI_max:
-#         ax3.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
-#     if DESI_min <= C3_ <= DESI_max:
-#         ax3.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
-#     if DESI_min <= C4 <= DESI_max:
-#         ax3.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-#     # if DESI_min <= _O3_ <= DESI_max:
-#     #     ax3.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
-#     if DESI_min <= Ly_alpha <= DESI_max:
-#         ax3.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
-#     if DESI_min <= Ly_beta <= DESI_max:
-#         ax3.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
-#     ax3.set_xlabel('Wavelength / Å', fontsize = 16)
-#     ax3.set_ylim(common_ymin, common_ymax)
-#     ax3.set_yticks([])
-#     ax3.tick_params(axis='x', which='major', labelsize=16)
-#     # ax3.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
-#     ax3.set_title('DESI Spectrum', fontsize = 14)
-#     ax3.legend(loc='upper right', fontsize = 18)
+    common_ymin = 0
+    if len(sdss_flux) > 0 and len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
+    elif len(sdss_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist())
+    elif len(desi_flux) > 0:
+        common_ymax = 1.05*max(Gaus_smoothed_DESI.tolist())
+    else:
+        common_ymax = 0
 
-#     fig.subplots_adjust(top=0.9, bottom=0.1, left=0.125, right=0.975, hspace=1.5, wspace=0)
-#     #top and bottom adjust the vertical space on the top and bottom of the figure.
-#     #left and right adjust the horizontal space on the left and right sides.
-#     #hspace and wspace adjust the spacing between rows and columns, respectively.
+    # Top plot spanning two columns and three rows (ax1)
+    ax1 = fig.add_subplot(gs[0:3, :])  # Rows 0 to 2, both columns
+    ax1.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
+    ax1.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color='blue', capsize=5, label=u'W1 (3.4\u03bcm)')
+    ax1.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+    ax1.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+    ax1.set_xlabel('Days since first observation', fontsize = 16)
+    ax1.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 16, loc='center')
+    ax1.tick_params(axis='both', which='major', labelsize = 16)
+    ax1.set_title(f'Light Curve (WISEA J{object_name})', fontsize = 22)
+    ax1.legend(loc='upper center', fontsize = 18)
+    ax1.grid(True, linestyle='--', alpha=0.5)
 
-#     plt.show()
+    # Bottom left plot spanning 2 rows and 1 column (ax2)
+    ax2 = fig.add_subplot(gs[3:, 0])  # Rows 3 to 4, first column
+    ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
+    ax2.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
+    if SDSS_min <= H_alpha <= SDSS_max:
+        ax2.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+    if SDSS_min <= H_beta <= SDSS_max:
+        ax2.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+    if SDSS_min <= Mg2 <= SDSS_max:
+        ax2.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+    if SDSS_min <= C3_ <= SDSS_max:
+        ax2.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    if SDSS_min <= C4 <= SDSS_max:
+        ax2.axvline(C4, linewidth=2, color='violet', label = 'C IV')
+    # if SDSS_min <= _O3_ <= SDSS_max:
+    #     ax2.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    if SDSS_min <= Ly_alpha <= SDSS_max:
+        ax2.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
+    if SDSS_min <= Ly_beta <= SDSS_max:
+        ax2.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
+    ax2.set_xlabel('Wavelength / Å', fontsize = 16)
+    ax2.set_ylim(common_ymin, common_ymax)
+    ax2.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 15)
+    ax2.tick_params(axis='both', which='major', labelsize=16)
+    # ax2.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
+    ax2.set_title('SDSS Spectrum', fontsize = 14)
+    ax2.legend(loc='upper right', fontsize = 18)
+
+    # Bottom right plot spanning 2 rows and 1 column (ax3)
+    ax3 = fig.add_subplot(gs[3:, 1])  # Rows 3 to 4, second column
+    ax3.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
+    ax3.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
+    if DESI_min <= H_alpha <= DESI_max:
+        ax3.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+    if DESI_min <= H_beta <= DESI_max:
+        ax3.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+    if DESI_min <= Mg2 <= DESI_max:
+        ax3.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+    if DESI_min <= C3_ <= DESI_max:
+        ax3.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    if DESI_min <= C4 <= DESI_max:
+        ax3.axvline(C4, linewidth=2, color='violet', label = 'C IV')
+    # if DESI_min <= _O3_ <= DESI_max:
+    #     ax3.axvline(_O3_, linewidth=2, color='grey', label = '[O III]')
+    if DESI_min <= Ly_alpha <= DESI_max:
+        ax3.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
+    if DESI_min <= Ly_beta <= DESI_max:
+        ax3.axvline(Ly_beta, linewidth=2, color='purple', label = u'Ly\u03B2')
+    ax3.set_xlabel('Wavelength / Å', fontsize = 16)
+    ax3.set_ylim(common_ymin, common_ymax)
+    ax3.set_yticks([])
+    ax3.tick_params(axis='x', which='major', labelsize=16)
+    # ax3.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
+    ax3.set_title('DESI Spectrum', fontsize = 14)
+    ax3.legend(loc='upper right', fontsize = 18)
+
+    fig.subplots_adjust(top=0.9, bottom=0.1, left=0.125, right=0.975, hspace=1.5, wspace=0)
+    #top and bottom adjust the vertical space on the top and bottom of the figure.
+    #left and right adjust the horizontal space on the left and right sides.
+    #hspace and wspace adjust the spacing between rows and columns, respectively.
+
+    plt.show()

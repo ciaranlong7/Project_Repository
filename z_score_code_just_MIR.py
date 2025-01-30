@@ -38,7 +38,7 @@ if my_object == 0:
     object_names = AGN_sample.iloc[:, 3]
 elif my_object == 1:
     object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
-    object_names = object_names[41:]
+    # object_names = object_names[41:]
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -103,6 +103,7 @@ object_names = pd.read_excel('Names_to_redo.xlsx')
 object_names = set(object_names.iloc[:, 0].tolist())
 
 g = 0
+object_names = ['155021.33+432712.6']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -512,12 +513,13 @@ for object_name in object_names:
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Flux vs Time (WISEA J{object_name})', fontsize = 28)
         plt.tight_layout()
-        if my_object == 0:
-            # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        elif my_object == 1:
-            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        plt.close(fig)
+        plt.show()
+        # if my_object == 0:
+        #     # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        # elif my_object == 1:
+        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        # plt.close(fig)
 
     if m == 0: #Good W1 if true
         if n == 0: #Good W2 if true
@@ -818,61 +820,62 @@ for object_name in object_names:
             else:
                 mean_NFD.append(np.nanmean(norm_f_ch))
                 mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
+    
+    print(mean_NFD)
+    # quantifying_change_data = {
+    #     "Object": object_names_list, #0
 
-    quantifying_change_data = {
-        "Object": object_names_list, #0
+    #     "W1 Z Score using Max Unc": W1_max, #1
+    #     "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
+    #     "W1 Z Score using Min Unc": W1_min, #3
+    #     "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
+    #     "W1 Flux Change": W1_abs_change, #5
+    #     "W1 Flux Change Unc": W1_abs_change_unc, #6
+    #     "W1 NFD": W1_abs_change_norm, #7
+    #     "W1 NFD Unc": W1_abs_change_norm_unc, #8
 
-        "W1 Z Score using Max Unc": W1_max, #1
-        "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
-        "W1 Z Score using Min Unc": W1_min, #3
-        "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
-        "W1 Flux Change": W1_abs_change, #5
-        "W1 Flux Change Unc": W1_abs_change_unc, #6
-        "W1 NFD": W1_abs_change_norm, #7
-        "W1 NFD Unc": W1_abs_change_norm_unc, #8
+    #     "W2 Z Score using Max Unc": W2_max, #9
+    #     "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
+    #     "W2 Z Score using Min Unc": W2_min, #11
+    #     "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
+    #     "W2 Flux Change": W2_abs_change, #13
+    #     "W2 Flux Change Unc": W2_abs_change_unc, #14
+    #     "W2 NFD": W2_abs_change_norm, #15
+    #     "W2 NFD Unc": W2_abs_change_norm_unc, #16
 
-        "W2 Z Score using Max Unc": W2_max, #9
-        "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
-        "W2 Z Score using Min Unc": W2_min, #11
-        "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
-        "W2 Flux Change": W2_abs_change, #13
-        "W2 Flux Change Unc": W2_abs_change_unc, #14
-        "W2 NFD": W2_abs_change_norm, #15
-        "W2 NFD Unc": W2_abs_change_norm_unc, #16
+    #     "Mean Z Score": mean_zscore, #17
+    #     "Mean Z Score Unc": mean_zscore_unc, #18
+    #     "Mean NFD": mean_NFD, #19
+    #     "Mean NFD Unc": mean_NFD_unc, #20
 
-        "Mean Z Score": mean_zscore, #17
-        "Mean Z Score Unc": mean_zscore_unc, #18
-        "Mean NFD": mean_NFD, #19
-        "Mean NFD Unc": mean_NFD_unc, #20
+    #     #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
+    #     "W1 First mjd": W1_first_mjd, #21 (#25)
+    #     "W1 Last mjd": W1_last_mjd, #22 (#26)
+    #     "W2 First mjd": W2_first_mjd, #23 (#27)
+    #     "W2 Last mjd": W2_last_mjd, #24 (#28)
+    #     "W1 Epochs": W1_epochs, #25 (#29)
+    #     "W2 Epochs": W2_epochs, #26 (#30)
+    #     "W1 Min Flux": W1_low, #27 (#31)
+    #     "W1 Min Flux Unc": W1_low_unc, #28 (#32)
+    #     "W1 Max Flux Unc": W1_high_unc, #29 (#33)
+    #     "W2 Min Flux": W2_low, #30 (#34)
+    #     "W2 Min Flux Unc": W2_low_unc, #31 (#35)
+    #     "W2 Max Flux Unc": W2_high_unc, #32 (#36)
+    #     "W1 median_abs_dev of Flux": W1_median_dev, #33 (#37)
+    #     "W2 median_abs_dev of Flux": W2_median_dev, #34 (#38)
+    # }
 
-        #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
-        "W1 First mjd": W1_first_mjd, #21 (#25)
-        "W1 Last mjd": W1_last_mjd, #22 (#26)
-        "W2 First mjd": W2_first_mjd, #23 (#27)
-        "W2 Last mjd": W2_last_mjd, #24 (#28)
-        "W1 Epochs": W1_epochs, #25 (#29)
-        "W2 Epochs": W2_epochs, #26 (#30)
-        "W1 Min Flux": W1_low, #27 (#31)
-        "W1 Min Flux Unc": W1_low_unc, #28 (#32)
-        "W1 Max Flux Unc": W1_high_unc, #29 (#33)
-        "W2 Min Flux": W2_low, #30 (#34)
-        "W2 Min Flux Unc": W2_low_unc, #31 (#35)
-        "W2 Max Flux Unc": W2_high_unc, #32 (#36)
-        "W1 median_abs_dev of Flux": W1_median_dev, #33 (#27)
-        "W2 median_abs_dev of Flux": W2_median_dev, #34 (#30)
-    }
+    # # Convert the data into a DataFrame
+    # df = pd.DataFrame(quantifying_change_data)
 
-    # Convert the data into a DataFrame
-    df = pd.DataFrame(quantifying_change_data)
+    # # #median unc
+    # # if my_object == 0:
+    # #     df.to_csv("AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
+    # # elif my_object == 1:
+    # #     df.to_csv("CLAGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
 
-    # #median unc
+    # #max unc:
     # if my_object == 0:
-    #     df.to_csv("AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
+    #     df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_Extra.csv", index=False)
     # elif my_object == 1:
-    #     df.to_csv("CLAGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
-
-    #max unc:
-    if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_Extra.csv", index=False)
-    elif my_object == 1:
-        df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs_extra.csv", index=False)
+    #     df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs_extra.csv", index=False)

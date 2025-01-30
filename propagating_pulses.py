@@ -40,7 +40,7 @@ def rect(z_points, min, max, height):
 dz = 0.01  #Spatial resolution (how far apart points are plotted)
 z_points = np.arange(-3, 20, dz)  # min,max of z-axis for the plot
 
-E_z_t0 = gauss(z_points, 0, 1) 
+E_z_t0 = gauss(z_points, 0, 1, 1) 
 E_z_t0 = rect(z_points, 0, 1, 5)
 
 t = 0.1

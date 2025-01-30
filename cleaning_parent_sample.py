@@ -271,6 +271,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
 # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
+# Names_to_redo = ['121532.90+560919.0']
 # # for name in Names_to_redo:
 # #     print(name)
 # quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
