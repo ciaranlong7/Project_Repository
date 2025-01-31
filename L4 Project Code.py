@@ -58,7 +58,9 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '160730.20+560305.5' #Object W - chosen because a CLAGN that exhibits no MIR change over SDSS-DESI range, but does exhibit a change after
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
-object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 ansd W2 NFD
+# object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 ansd W2 NFD
+
+# object_name = '083901.00+232352.4'
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
@@ -70,14 +72,19 @@ object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 2
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
+MIR_epoch = 1 #Single epoch plot - set m & n below
 MIR_only = 1 #plot with just MIR data on it
+MIR_only_mag = 1 #plot with just MIR data on it (mag) 
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0
+
+m = 0 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
+n = 10 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -136,21 +143,27 @@ else:
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
 
-AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
-AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
-AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
-AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
-AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
-AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
-CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1.xlsx')
-CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2.xlsx')
-CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
-CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
-CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
-CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
+# AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1_10arc.xlsx')
+# AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2_10arc.xlsx')
+# AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
+# AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
+# AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
+# AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
+# CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1_10arc.xlsx')
+# CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2_10arc.xlsx')
+# CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
+# CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
+# CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
+# CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
 
 AGN_outlier_flux_names_W1 = []
 AGN_outlier_flux_names_W2 = []
+AGN_outlier_flux_W1_epoch = []
+AGN_outlier_flux_W2_epoch = []
+CLAGN_outlier_flux_names_W1 = []
+CLAGN_outlier_flux_names_W2 = []
+CLAGN_outlier_flux_W1_epoch = []
+CLAGN_outlier_flux_W2_epoch = []
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
 def find_closest_indices(x_vals, value):
@@ -497,9 +510,9 @@ if option >= 1 and option <= 4:
     WISE_data = WISE_query.to_pandas()
     NEO_data = NEOWISE_query.to_pandas()
 
-    # # # checking out which index corresponds to which column
-    # for idx, col in enumerate(NEO_data.columns):
-    #     print(f"Index {idx}: {col}")
+    # # checking out which index corresponds to which column
+    for idx, col in enumerate(WISE_data.columns):
+        print(f"Index {idx}: {col}")
 
     WISE_data = WISE_data.sort_values(by=WISE_data.columns[10]) #sort in ascending mjd
     NEO_data = NEO_data.sort_values(by=NEO_data.columns[42]) #sort in ascending mjd
@@ -556,7 +569,6 @@ if option >= 1 and option <= 4:
     W1_av_uncs = []
     W1_epoch_dps = []
     W1_av_mjd_date = []
-    m = 3 # Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
     p = 0
     for i in range(len(W1_mag)):
         if i == 0: #first reading - store and move on
@@ -656,7 +668,6 @@ if option >= 1 and option <= 4:
     W2_av_uncs = []
     W2_av_mjd_date = []
     W2_epoch_dps = []
-    n = 0 # Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
     p = 0
     for i in range(len(W2_mag)):
         if i == 0: #first reading - store and move on
@@ -1127,35 +1138,37 @@ if option >= 1 and option <= 4:
     # plt.show()
 
 
-    # # Specifically looking at a particular epoch:
-    # # Change 'm = _' and 'n = _' in above code to change which epoch you look at. m = 0 represents epoch 1.
-    # # (measurements are taken with a few days hence considered repeats)
-    # # Create a figure with two subplots (1 row, 2 columns)
-    # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7), sharex=False)
-    # # sharex = True explanation:
-    # # Both subplots will have the same x-axis limits and tick labels.
-    # # Any changes to the x-axis range (e.g., zooming or setting limits) in one subplot will automatically apply to the other subplot.
+    # Specifically looking at a particular epoch:
+    # Change 'm = _' and 'n = _' in above code to change which epoch you look at. m = 0 represents epoch 1.
+    # (measurements are taken with a few days hence considered repeats)
+    # Create a figure with two subplots (1 row, 2 columns)
+    if MIR_epoch == 1:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7), sharex=False)
+        # sharex = True explanation:
+        # Both subplots will have the same x-axis limits and tick labels.
+        # Any changes to the x-axis range (e.g., zooming or setting limits) in one subplot will automatically apply to the other subplot.
 
-    # data_point_W1 = list(range(1, len(one_epoch_W1) + 1))
-    # data_point_W2 = list(range(1, len(one_epoch_W2) + 1))
+        data_point_W1 = list(range(1, len(one_epoch_W1) + 1))
+        data_point_W2 = list(range(1, len(one_epoch_W2) + 1))
 
-    # # Plot in the first subplot (ax1)
-    # ax1.errorbar(data_point_W1, W1_one_epoch_flux, yerr=W1_one_epoch_uncs_flux, fmt='o', color='blue', capsize=5, label=u'W1 (3.4\u03bcm)')
-    # ax1.set_title('W1')
-    # ax1.set_xlabel('Data Point')
-    # ax1.set_ylabel('Flux')
-    # ax1.legend(loc='upper left')
+        # Plot in the first subplot (ax1)
+        ax1.errorbar(data_point_W1, W1_one_epoch_flux, yerr=W1_one_epoch_uncs_flux, fmt='o', color='blue', capsize=5, label=u'W1 (3.4\u03bcm)')
+        ax1.set_title('W1')
+        ax1.set_xlabel('Data Point')
+        ax1.set_ylabel('Flux')
+        ax1.legend(loc='upper left')
 
-    # # Plot in the second subplot (ax2)
-    # ax2.errorbar(data_point_W2, W2_one_epoch_flux, yerr=W2_one_epoch_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
-    # ax2.set_title('W2')
-    # ax2.set_xlabel('Data Point')
-    # ax2.set_ylabel('Flux')
-    # ax2.legend(loc='upper left')
+        # Plot in the second subplot (ax2)
+        print(W2_one_epoch_flux)
+        ax2.errorbar(data_point_W2, W2_one_epoch_flux, yerr=W2_one_epoch_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
+        ax2.set_title('W2')
+        ax2.set_xlabel('Data Point')
+        ax2.set_ylabel('Flux')
+        ax2.legend(loc='upper left')
 
-    # fig.suptitle(f'W1 & W2 band Measurements at Epoch {m+1} and {n+1} respectively - {W1_av_mjd_date[m]:.0f} {W1_av_mjd_date[n]:.0f} Days Since First Observation respectively', fontsize=16)
-    # plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make space for the main title
-    # plt.show()
+        fig.suptitle(f'W1 & W2 band Measurements at Epoch {m+1} and {n+1} respectively - {W1_av_mjd_date[m]:.0f}, {W1_av_mjd_date[n]:.0f} Days Since First Observation respectively', fontsize=16)
+        plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make space for the main title
+        plt.show()
 
 
     # #Plotting a histogram of a single epoch
@@ -1262,33 +1275,42 @@ if option >= 1 and option <= 4:
     # plt.show()
 
 
+    if MIR_only_mag == 1:
+        # Plotting average W1 & W2 mags (or flux) vs days since first observation
+        plt.figure(figsize=(12,7))
+        plt.errorbar(W2_av_mjd_date, W2_averages, yerr=W2_av_uncs, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        plt.errorbar(W1_av_mjd_date, W1_averages, yerr=W1_av_uncs, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)') # fmt='o' makes the data points appear as circles.
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.xlabel('Days since first observation', fontsize = 26)
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+        plt.ylabel('Magnitude')
+        plt.title(f'Light Curve (WISEA J{object_name})')
+        plt.legend(loc = 'best', fontsize = 25)
+        plt.tight_layout()
+        plt.show()
+
+
     if MIR_only == 1:
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
-        # # Mag
-        # plt.errorbar(W2_av_mjd_date, W2_averages, yerr=W2_av_uncs, fmt='o', color = 'blue', capsize=5, label = u'W2 (4.6\u03bcm)')
-        # plt.errorbar(W1_av_mjd_date, W1_averages, yerr=W1_av_uncs, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)') # fmt='o' makes the data points appear as circles.
-        # Flux
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
         # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
         # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
-        # Labels and Titles
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.xticks(fontsize=26)
         plt.yticks(fontsize=26)
-        # # Mag
-        # plt.ylabel('Magnitude')
-        # plt.title(f'W1 & W2 magnitude vs Time (SNR \u2265 {Min_SNR})')
-        # Flux
         # plt.ylim(0, 1)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
         # plt.title(f'AGN Mid-IR Light Curve', fontsize = 28)
-        # plt.legend(loc = 'best', fontsize = 25)
+        plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()
+
 
 if SDSS_DESI == 1:
     # Plotting Individual SDSS & DESI Spectra individually
