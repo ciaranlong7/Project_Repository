@@ -9,7 +9,7 @@ from astroquery.ipac.irsa import Irsa
 c = 299792458
 
 my_object = 0 #0 = AGN. 1 = CLAGN
-my_sample = 1 #set which AGN sample you want
+my_sample = 3 #set which AGN sample you want
 save_figures = 1 #set to 1 to save figures
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
@@ -21,18 +21,20 @@ if my_sample == 2:
 if my_sample == 3:
     AGN_sample = pd.read_csv("AGN_Sample_three.csv")
 
-AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
-AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
-AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
-AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
-AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
-AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
-CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1.xlsx')
-CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2.xlsx')
-CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
-CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
-CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
-CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
+if my_object == 0:
+    AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
+    AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
+    AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
+    AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
+    AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
+    AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
+elif my_object == 1:
+    CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1.xlsx')
+    CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2.xlsx')
+    CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
+    CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
+    CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
+    CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
 
 if my_object == 0:
     object_names = AGN_sample.iloc[:, 3]
@@ -67,6 +69,7 @@ W1_abs_change_norm_unc = []
 W1_first_mjd = []
 W1_last_mjd = []
 W1_epochs = []
+W1_mean_uncs = []
 
 W2_max = []
 W2_max_unc = []
@@ -83,6 +86,7 @@ W2_abs_change_norm_unc = []
 W2_first_mjd = []
 W2_last_mjd = []
 W2_epochs = []
+W2_mean_uncs = []
 
 mean_zscore = []
 mean_zscore_unc = []
@@ -99,11 +103,8 @@ elif Min_SNR == 2:
 else:
     print('select a valid min SNR - 10, 3 or 2.')
 
-object_names = pd.read_excel('Names_to_redo.xlsx')
-object_names = set(object_names.iloc[:, 0].tolist())
-
 g = 0
-object_names = ['155021.33+432712.6']
+object_names = ['153837.03+435132.3','161222.79+543154.9','142542.91+545710.1','121234.41+573124.8']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -121,8 +122,8 @@ for object_name in object_names:
 
     # Automatically querying catalogues
     coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works.
-    WISE_query = Irsa.query_region(coordinates=coord, catalog="allwise_p3as_mep", spatial="Cone", radius=10 * u.arcsec)
-    NEOWISE_query = Irsa.query_region(coordinates=coord, catalog="neowiser_p1bs_psd", spatial="Cone", radius=10 * u.arcsec)
+    WISE_query = Irsa.query_region(coordinates=coord, catalog="allwise_p3as_mep", spatial="Cone", radius=2 * u.arcsec)
+    NEOWISE_query = Irsa.query_region(coordinates=coord, catalog="neowiser_p1bs_psd", spatial="Cone", radius=2 * u.arcsec)
     WISE_data = WISE_query.to_pandas()
     NEO_data = NEOWISE_query.to_pandas()
 
@@ -150,17 +151,21 @@ for object_name in object_names:
 
     mjd_date_W1 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
     W1_mag = filtered_WISE_rows.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
+    W1_flux = [flux(mag, W1_k, W1_wl) for mag in W1_mag]
     W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
-    W1_mag = list(zip(W1_mag, mjd_date_W1, W1_unc))
-    W1_mag = [tup for tup in W1_mag if not np.isnan(tup[0])] #removing instances where the mag value is NaN
+    W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
+    W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
+    W1_flux = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
     mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
     W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
+    W2_flux = [flux(mag, W2_k, W2_wl) for mag in W2_mag]
     W2_unc = filtered_WISE_rows.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
-    W2_mag = list(zip(W2_mag, mjd_date_W2, W2_unc))
-    W2_mag = [tup for tup in W2_mag if not np.isnan(tup[0])]
+    W2_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W2_unc, W2_flux)]
+    W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
+    W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
 
-    if len(W1_mag) < 2 and len(W2_mag) < 2: #checking if there is enough data
+    if len(W1_all) < 2 and len(W2_all) < 2: #checking if there is enough data
         print('No W1 & W2 data')
         continue
 
@@ -170,145 +175,123 @@ for object_name in object_names:
     #2. There are 2 or more data points.
 
     # W1 data first
-    if len(W1_mag) > 1:
+    W1_mean_unc_counter = []
+    if len(W1_all) > 1:
         W1_list = []
         W1_unc_list = []
         W1_mjds = []
         W1_data = []
-        for i in range(len(W1_mag)):
+        c = 0
+        for i in range(len(W1_all)):
             if i == 0: #first reading - store and move on
-                W1_list.append(W1_mag[i][0])
-                W1_mjds.append(W1_mag[i][1])
-                W1_unc_list.append(W1_mag[i][2])
+                W1_list.append(W1_all[i][0])
+                W1_mjds.append(W1_all[i][1])
+                W1_unc_list.append(W1_all[i][2])
                 continue
-            elif i == len(W1_mag) - 1: #final data point
-                if W1_mag[i][1] - W1_mag[i-1][1] < 100: #checking if final data point is in the same epoch as previous
-                    W1_list.append(W1_mag[i][0])
-                    W1_mjds.append(W1_mag[i][1])
-                    W1_unc_list.append(W1_mag[i][2])
-
-                    # #Median unc
-                    # if len(W1_list) > 1:
-                    #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), median_abs_deviation(W1_list) ) )
-                    # else:
-                    #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), W1_unc_list[0] ) )
-
-                    #max unc:
+            elif i == len(W1_all) - 1: #final data point
+                if W1_all[i][1] - W1_all[i-1][1] < 100: #checking if final data point is in the same epoch as previous
+                    W1_list.append(W1_all[i][0])
+                    W1_mjds.append(W1_all[i][1])
+                    W1_unc_list.append(W1_all[i][2])
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
+                    if mean_unc > median_unc:
+                        c+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
+                    W1_mean_unc_counter.append(c)
                     continue
                 else: #final data point is in an epoch of its own
-                    # #median unc
-                    # if len(W1_list) > 1:
-                    #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), median_abs_deviation(W1_list) ) )
-                    # else:
-                    #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), W1_unc_list[0] ) )
-
-                    #Max unc
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
+                    if mean_unc > median_unc:
+                        c+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
-                    W1_data.append( ( np.median(W1_mag[i][0]), np.median(W1_mag[i][1]), W1_mag[i][2] ) )
+                    W1_data.append( ( np.median(W1_all[i][0]), np.median(W1_all[i][1]), W1_all[i][2] ) )
+                    W1_mean_unc_counter.append(c)
                     continue
-            elif W1_mag[i][1] - W1_mag[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
-                W1_list.append(W1_mag[i][0])
-                W1_mjds.append(W1_mag[i][1])
-                W1_unc_list.append(W1_mag[i][2])
+            elif W1_all[i][1] - W1_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
+                W1_list.append(W1_all[i][0])
+                W1_mjds.append(W1_all[i][1])
+                W1_unc_list.append(W1_all[i][2])
                 continue
             else: #if the gap is bigger than 100 days, then take the averages and reset the lists.
-                # #Median Unc
-                # if len(W1_list) > 1:
-                #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), median_abs_deviation(W1_list) ) )
-                # else:
-                #     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), W1_unc_list[0] ) )
-
-                #Max unc
                 mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                 median_unc = median_abs_deviation(W1_list)
+                if mean_unc > median_unc:
+                    c+=1
                 W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
                 W1_list = []
                 W1_mjds = []
                 W1_unc_list = []
-                W1_list.append(W1_mag[i][0])
-                W1_mjds.append(W1_mag[i][1])
-                W1_unc_list.append(W1_mag[i][2])
+                W1_list.append(W1_all[i][0])
+                W1_mjds.append(W1_all[i][1])
+                W1_unc_list.append(W1_all[i][2])
                 continue
         #out of for loop now
     else:
         W1_data = [ (0,0,0) ]
+        W1_mean_unc_counter.append(np.nan)
 
     # W2 data second
-    if len(W2_mag) > 1:
+    W2_mean_unc_counter = []    
+    if len(W2_all) > 1:
         W2_list = []
         W2_unc_list = []
         W2_mjds = []
         W2_data = []
-        for i in range(len(W2_mag)):
+        c = 0
+        for i in range(len(W2_all)):
             if i == 0: #first reading - store and move on
-                W2_list.append(W2_mag[i][0])
-                W2_mjds.append(W2_mag[i][1])
-                W2_unc_list.append(W2_mag[i][2])
+                W2_list.append(W2_all[i][0])
+                W2_mjds.append(W2_all[i][1])
+                W2_unc_list.append(W2_all[i][2])
                 continue
-            elif i == len(W2_mag) - 1: #if final data point, close the epoch
-                if W2_mag[i][1] - W2_mag[i-1][1] < 100: #checking if final data point is in the same epoch as previous
-                    W2_list.append(W2_mag[i][0])
-                    W2_mjds.append(W2_mag[i][1])
-                    W2_unc_list.append(W2_mag[i][2])
-
-                    # #Median Unc
-                    # if len(W2_list) > 1:
-                    #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), median_abs_deviation(W2_list) ) )
-                    # else:
-                    #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), W2_unc_list[0] ) )
-
-                    #max unc:
+            elif i == len(W2_all) - 1: #if final data point, close the epoch
+                if W2_all[i][1] - W2_all[i-1][1] < 100: #checking if final data point is in the same epoch as previous
+                    W2_list.append(W2_all[i][0])
+                    W2_mjds.append(W2_all[i][1])
+                    W2_unc_list.append(W2_all[i][2])
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
+                    if mean_unc > median_unc:
+                        c+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
+                    W2_mean_unc_counter.append(c)
                     continue
                 else: #final data point is in an epoch of its own
-                    # #Median Unc
-                    # if len(W2_list) > 1:
-                    #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), median_abs_deviation(W2_list) ) )
-                    # else:
-                    #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), W2_unc_list[0] ) )
-
-                    #max Unc
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
+                    if mean_unc > median_unc:
+                        c+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
-                    W2_data.append( ( np.median(W2_mag[i][0]), np.median(W2_mag[i][1]), W2_mag[i][2] ) )
+                    W2_data.append( ( np.median(W2_all[i][0]), np.median(W2_all[i][1]), W2_all[i][2] ) )
+                    W2_mean_unc_counter.append(c)
                     continue
-            elif W2_mag[i][1] - W2_mag[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
-                W2_list.append(W2_mag[i][0])
-                W2_mjds.append(W2_mag[i][1])
-                W2_unc_list.append(W2_mag[i][2])
+            elif W2_all[i][1] - W2_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
+                W2_list.append(W2_all[i][0])
+                W2_mjds.append(W2_all[i][1])
+                W2_unc_list.append(W2_all[i][2])
                 continue
             else: #if the gap is bigger than 100 days, then take the averages and reset the lists.
-                # #Median Unc
-                # if len(W2_list) > 1:
-                #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), median_abs_deviation(W2_list) ) )
-                # else:
-                #     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), W2_unc_list[0] ) )
-
-                #max Unc
                 mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                 median_unc = median_abs_deviation(W2_list)
+                if mean_unc > median_unc:
+                    c+=1
                 W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
                 W2_list = []
                 W2_mjds = []
                 W2_unc_list = []
-                W2_list.append(W2_mag[i][0])
-                W2_mjds.append(W2_mag[i][1])
-                W2_unc_list.append(W2_mag[i][2])
+                W2_list.append(W2_all[i][0])
+                W2_mjds.append(W2_all[i][1])
+                W2_unc_list.append(W2_all[i][2])
                 continue
     else:
         W2_data = [ (0,0,0) ]
+        W2_mean_unc_counter.append(np.nan)
 
     #removing some epochs:
     if my_object == 0:
@@ -484,25 +467,25 @@ for object_name in object_names:
         min_mjd = min([W1_data[0][1], W2_data[0][1]])
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
         W2_av_mjd_date = [tup[1] - min_mjd for tup in W2_data]
-        W1_averages_flux = [flux(tup[0], W1_k, W1_wl) for tup in W1_data]
-        W1_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W1_data, W1_averages_flux)] #See document in week 5 folder for conversion.
-        W2_averages_flux = [flux(tup[0], W2_k, W2_wl) for tup in W2_data]
-        W2_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W2_data, W2_averages_flux)]
+        W1_averages_flux = [tup[0] for tup in W1_data]
+        W1_av_uncs_flux = [tup[2] for tup in W1_data]
+        W2_averages_flux = [tup[0] for tup in W2_data]
+        W2_av_uncs_flux = [tup[2] for tup in W2_data]
         if save_figures == 1:
             plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
             plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
     elif n == 0:
         min_mjd = W2_data[0][1]
         W2_av_mjd_date = [tup[1] - min_mjd for tup in W2_data]
-        W2_averages_flux = [flux(tup[0], W2_k, W2_wl) for tup in W2_data]
-        W2_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W2_data, W2_averages_flux)]
+        W2_averages_flux = [tup[0] for tup in W2_data]
+        W2_av_uncs_flux = [tup[2] for tup in W2_data]
         if save_figures == 1:
             plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
     elif m == 0:
         min_mjd = W1_data[0][1]
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
-        W1_averages_flux = [flux(tup[0], W1_k, W1_wl) for tup in W1_data]
-        W1_av_uncs_flux = [((tup[2]*np.log(10))/(2.5))*flux for tup, flux in zip(W1_data, W1_averages_flux)]
+        W1_averages_flux = [tup[0] for tup in W1_data]
+        W1_av_uncs_flux = [tup[2] for tup in W1_data]
         if save_figures == 1:
             plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
 
@@ -513,18 +496,19 @@ for object_name in object_names:
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Flux vs Time (WISEA J{object_name})', fontsize = 28)
         plt.tight_layout()
-        plt.show()
-        # if my_object == 0:
-        #     # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        # elif my_object == 1:
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        # plt.close(fig)
+        if my_object == 0:
+            # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        elif my_object == 1:
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
     if m == 0: #Good W1 if true
         if n == 0: #Good W2 if true
             #Good W1 & W2
             object_names_list.append(object_name)
+            W1_mean_uncs.append(W1_mean_unc_counter[0])
+            W2_mean_uncs.append(W2_mean_unc_counter[0])
             W1_epochs.append(len(W1_data))
             W2_epochs.append(len(W2_data))
             
@@ -632,6 +616,8 @@ for object_name in object_names:
         else: 
             #good W1, bad W2
             object_names_list.append(object_name)
+            W1_mean_uncs.append(W1_mean_unc_counter[0])
+            W2_mean_uncs.append(W2_mean_unc_counter[0])
             W1_epochs.append(len(W1_data))
             W2_epochs.append(len(W2_data))
 
@@ -728,6 +714,8 @@ for object_name in object_names:
         if n == 0: #Good W2 if true
             #Bad W1, good W2
             object_names_list.append(object_name)
+            W1_mean_uncs.append(W1_mean_unc_counter[0])
+            W2_mean_uncs.append(W2_mean_unc_counter[0])
             W1_epochs.append(len(W1_data))
             W2_epochs.append(len(W2_data))
             
@@ -821,61 +809,56 @@ for object_name in object_names:
                 mean_NFD.append(np.nanmean(norm_f_ch))
                 mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
     
-    print(mean_NFD)
-    # quantifying_change_data = {
-    #     "Object": object_names_list, #0
+    quantifying_change_data = {
+        "Object": object_names_list, #0
 
-    #     "W1 Z Score using Max Unc": W1_max, #1
-    #     "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
-    #     "W1 Z Score using Min Unc": W1_min, #3
-    #     "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
-    #     "W1 Flux Change": W1_abs_change, #5
-    #     "W1 Flux Change Unc": W1_abs_change_unc, #6
-    #     "W1 NFD": W1_abs_change_norm, #7
-    #     "W1 NFD Unc": W1_abs_change_norm_unc, #8
+        "W1 Z Score using Max Unc": W1_max, #1
+        "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
+        "W1 Z Score using Min Unc": W1_min, #3
+        "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
+        "W1 Flux Change": W1_abs_change, #5
+        "W1 Flux Change Unc": W1_abs_change_unc, #6
+        "W1 NFD": W1_abs_change_norm, #7
+        "W1 NFD Unc": W1_abs_change_norm_unc, #8
 
-    #     "W2 Z Score using Max Unc": W2_max, #9
-    #     "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
-    #     "W2 Z Score using Min Unc": W2_min, #11
-    #     "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
-    #     "W2 Flux Change": W2_abs_change, #13
-    #     "W2 Flux Change Unc": W2_abs_change_unc, #14
-    #     "W2 NFD": W2_abs_change_norm, #15
-    #     "W2 NFD Unc": W2_abs_change_norm_unc, #16
+        "W2 Z Score using Max Unc": W2_max, #9
+        "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
+        "W2 Z Score using Min Unc": W2_min, #11
+        "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
+        "W2 Flux Change": W2_abs_change, #13
+        "W2 Flux Change Unc": W2_abs_change_unc, #14
+        "W2 NFD": W2_abs_change_norm, #15
+        "W2 NFD Unc": W2_abs_change_norm_unc, #16
 
-    #     "Mean Z Score": mean_zscore, #17
-    #     "Mean Z Score Unc": mean_zscore_unc, #18
-    #     "Mean NFD": mean_NFD, #19
-    #     "Mean NFD Unc": mean_NFD_unc, #20
+        "Mean Z Score": mean_zscore, #17
+        "Mean Z Score Unc": mean_zscore_unc, #18
+        "Mean NFD": mean_NFD, #19
+        "Mean NFD Unc": mean_NFD_unc, #20
 
-    #     #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
-    #     "W1 First mjd": W1_first_mjd, #21 (#25)
-    #     "W1 Last mjd": W1_last_mjd, #22 (#26)
-    #     "W2 First mjd": W2_first_mjd, #23 (#27)
-    #     "W2 Last mjd": W2_last_mjd, #24 (#28)
-    #     "W1 Epochs": W1_epochs, #25 (#29)
-    #     "W2 Epochs": W2_epochs, #26 (#30)
-    #     "W1 Min Flux": W1_low, #27 (#31)
-    #     "W1 Min Flux Unc": W1_low_unc, #28 (#32)
-    #     "W1 Max Flux Unc": W1_high_unc, #29 (#33)
-    #     "W2 Min Flux": W2_low, #30 (#34)
-    #     "W2 Min Flux Unc": W2_low_unc, #31 (#35)
-    #     "W2 Max Flux Unc": W2_high_unc, #32 (#36)
-    #     "W1 median_abs_dev of Flux": W1_median_dev, #33 (#37)
-    #     "W2 median_abs_dev of Flux": W2_median_dev, #34 (#38)
-    # }
+        #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
+        "W1 First mjd": W1_first_mjd, #21 (#25)
+        "W1 Last mjd": W1_last_mjd, #22 (#26)
+        "W2 First mjd": W2_first_mjd, #23 (#27)
+        "W2 Last mjd": W2_last_mjd, #24 (#28)
+        "W1 Epochs": W1_epochs, #25 (#29)
+        "W2 Epochs": W2_epochs, #26 (#30)
+        "W1 Min Flux": W1_low, #27 (#31)
+        "W1 Min Flux Unc": W1_low_unc, #28 (#32)
+        "W1 Max Flux Unc": W1_high_unc, #29 (#33)
+        "W2 Min Flux": W2_low, #30 (#34)
+        "W2 Min Flux Unc": W2_low_unc, #31 (#35)
+        "W2 Max Flux Unc": W2_high_unc, #32 (#36)
+        "W1 median_abs_dev of Flux": W1_median_dev, #33 (#37)
+        "W2 median_abs_dev of Flux": W2_median_dev, #34 (#38)
+        "W1 Mean Unc Counter": W1_mean_uncs, #35 (#39)
+        "W2 Mean Unc Counter": W2_mean_uncs, #36 (#40)
+    }
 
-    # # Convert the data into a DataFrame
-    # df = pd.DataFrame(quantifying_change_data)
+    # Convert the data into a DataFrame
+    df = pd.DataFrame(quantifying_change_data)
 
-    # # #median unc
-    # # if my_object == 0:
-    # #     df.to_csv("AGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
-    # # elif my_object == 1:
-    # #     df.to_csv("CLAGN_Quantifying_Change_just_MIR_2nd_biggest_smallest.csv", index=False)
-
-    # #max unc:
-    # if my_object == 0:
-    #     df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_Extra.csv", index=False)
-    # elif my_object == 1:
-    #     df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs_extra.csv", index=False)
+    #max unc:
+    if my_object == 0:
+        df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_Extra.csv", index=False)
+    elif my_object == 1:
+        df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs_Extra.csv", index=False)

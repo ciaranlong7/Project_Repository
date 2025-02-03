@@ -251,13 +251,13 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     print(f"The names in AGN_sample that are not in AGN_old_sample are: {difference}")
 
 
-# ##Uncomment below - then check the AGN figures 'extra' folder for any spurious epochs. after that I have my complete AGN sample 1 results
-# ##Run quantifying change code - then I will have all up to date versions of my plots
+##Uncomment below - then check the AGN figures 'extra' folder for any spurious epochs. after that I have my complete AGN sample 1 results
+##Run quantifying change code - then I will have all up to date versions of my plots
 
 # # ## Combining the three data frames created
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
 # print(len(quantifying_change))
-# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1_Extra.csv')
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3_Extra.csv')
 # print(len(quantifying_change_extra))
 # # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v2.csv')
 # # print(len(quantifying_change_extra_v2))
@@ -265,15 +265,15 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # # print(len(quantifying_change_extra_v3))
 # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
 # combined_df = pd.concat([quantifying_change, quantifying_change_extra], ignore_index=True)
-# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
+# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
 
 ## Don't uncomment below this
 
-# Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
-# Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
-# Names_to_redo = ['121532.90+560919.0']
-# # for name in Names_to_redo:
-# #     print(name)
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
+# # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
+# Names_to_redo = ['153837.03+435132.3','161222.79+543154.9','142542.91+545710.1','121234.41+573124.8']
+# # # # for name in Names_to_redo:
+# # # #     print(name)
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
 # quantifying_change_filtered = quantifying_change[~quantifying_change.iloc[:, 0].isin(Names_to_redo)]
-# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
+# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)

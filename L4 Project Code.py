@@ -60,9 +60,9 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
 # object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 ansd W2 NFD
 
-object_name = '083901.00+232352.4'
-
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
+
+object_name = '161339.24+534552.0'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -75,7 +75,7 @@ object_name = '083901.00+232352.4'
 option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
-MIR_epoch = 1 #Single epoch plot - set m & n below
+MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only_mag = 0 #plot with just MIR data on it (mag) 
 MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
@@ -84,7 +84,7 @@ main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0
 
 m = 0 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
-n = 10 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
+n = 0 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -143,27 +143,29 @@ else:
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
 
-# AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1_10arc.xlsx')
-# AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2_10arc.xlsx')
-# AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
-# AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
-# AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
-# AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
-# CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1_10arc.xlsx')
-# CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2_10arc.xlsx')
-# CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
-# CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
-# CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
-# CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
+if my_object == 0:
+    AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
+    AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
+    AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
+    AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
+    AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
+    AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
+elif my_object == 1:
+    CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1.xlsx')
+    CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2.xlsx')
+    CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
+    CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
+    CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
+    CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
 
-AGN_outlier_flux_names_W1 = []
-AGN_outlier_flux_names_W2 = []
-AGN_outlier_flux_W1_epoch = []
-AGN_outlier_flux_W2_epoch = []
-CLAGN_outlier_flux_names_W1 = []
-CLAGN_outlier_flux_names_W2 = []
-CLAGN_outlier_flux_W1_epoch = []
-CLAGN_outlier_flux_W2_epoch = []
+# AGN_outlier_flux_names_W1 = []
+# AGN_outlier_flux_names_W2 = []
+# AGN_outlier_flux_W1_epoch = []
+# AGN_outlier_flux_W2_epoch = []
+# CLAGN_outlier_flux_names_W1 = []
+# CLAGN_outlier_flux_names_W2 = []
+# CLAGN_outlier_flux_W1_epoch = []
+# CLAGN_outlier_flux_W2_epoch = []
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
 def find_closest_indices(x_vals, value):
@@ -509,9 +511,9 @@ if option >= 1 and option <= 4:
     WISE_data = WISE_query.to_pandas()
     NEO_data = NEOWISE_query.to_pandas()
 
-    # # checking out which index corresponds to which column
-    for idx, col in enumerate(WISE_data.columns):
-        print(f"Index {idx}: {col}")
+    # # # checking out which index corresponds to which column
+    # for idx, col in enumerate(WISE_data.columns):
+    #     print(f"Index {idx}: {col}")
 
     WISE_data = WISE_data.sort_values(by=WISE_data.columns[10]) #sort in ascending mjd
     NEO_data = NEO_data.sort_values(by=NEO_data.columns[42]) #sort in ascending mjd
@@ -1066,12 +1068,12 @@ if option >= 1 and option <= 4:
 
     # # Plotting W1 flux Extinction Corrected Vs Uncorrected
     # inverse_W1_lamb = [1/3.4]*len(W1_averages_flux) #need units of inverse microns for extinguishing
-    # inverse_W2_lamb = [1/4.6]*len(W1_averages_flux)
+    # inverse_W2_lamb = [1/4.6]*len(W2_averages_flux)
     # W1_corrected_flux = W1_averages_flux/ext_model.extinguish(inverse_W1_lamb, Ebv=ebv) #divide to remove the effect of dust
     # W2_corrected_flux = W1_averages_flux/ext_model.extinguish(inverse_W2_lamb, Ebv=ebv)
 
     # plt.figure(figsize=(12,7))
-    # plt.errorbar(W2_av_mjd_date, W1_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'green', capsize=5, label = u'W2 (4.6\u03bcm) Uncorrected')
+    # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'green', capsize=5, label = u'W2 (4.6\u03bcm) Uncorrected')
     # plt.errorbar(W2_av_mjd_date, W2_corrected_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm) Corrected')
     # plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm) Uncorrected')
     # plt.errorbar(W1_av_mjd_date, W1_corrected_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm) Corrected')
@@ -1186,8 +1188,8 @@ if option >= 1 and option <= 4:
     if MIR_only == 1:
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
-        # plt.errorbar(W2_av_mjd_date, W1_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
-        plt.errorbar(W2_av_mjd_date, W1_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
         # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
         # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
