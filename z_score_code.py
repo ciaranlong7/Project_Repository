@@ -279,7 +279,7 @@ for object_name in object_names:
     W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
     W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
     W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
-    W1_flux = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
+    W1_all = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
     mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
     W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
@@ -299,13 +299,13 @@ for object_name in object_names:
     #2. There are 2 or more data points.
 
     # W1 data first
+    W1_mean_unc_counter = []
     if len(W1_all) > 1:
         W1_list = []
         W1_unc_list = []
         W1_mjds = []
         W1_data = []
-        W1_mean_unc_counter = []
-        c = 0
+        a = 0
         for i in range(len(W1_all)):
             if i == 0: #first reading - store and move on
                 W1_list.append(W1_all[i][0])
@@ -320,19 +320,19 @@ for object_name in object_names:
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
-                    W1_mean_unc_counter.append(c)
+                    W1_mean_unc_counter.append(a)
                     continue
                 else: #final data point is in an epoch of its own
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
                     W1_data.append( ( W1_all[i][0], W1_all[i][1], W1_all[i][2] ) )
-                    W1_mean_unc_counter.append(c)
+                    W1_mean_unc_counter.append(a)
                     continue
             elif W1_all[i][1] - W1_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
                 W1_list.append(W1_all[i][0])
@@ -343,7 +343,7 @@ for object_name in object_names:
                 mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                 median_unc = median_abs_deviation(W1_list)
                 if mean_unc > median_unc:
-                    c+=1
+                    a+=1
                 W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
                 W1_list = []
@@ -359,13 +359,13 @@ for object_name in object_names:
         W1_mean_unc_counter.append(np.nan)
 
     # W2 data second
+    W2_mean_unc_counter = []
     if len(W2_all) > 1:
         W2_list = []
         W2_unc_list = []
         W2_mjds = []
         W2_data = []
-        W2_mean_unc_counter = []
-        c = 0
+        a = 0
         for i in range(len(W2_all)):
             if i == 0: #first reading - store and move on
                 W2_list.append(W2_all[i][0])
@@ -380,19 +380,19 @@ for object_name in object_names:
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
-                    W2_mean_unc_counter.append(c)
+                    W2_mean_unc_counter.append(a)
                     continue
                 else: #final data point is in an epoch of its own
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
                     W2_data.append( ( W2_all[i][0], W2_all[i][1], W2_all[i][2] ) )
-                    W2_mean_unc_counter.append(c)
+                    W2_mean_unc_counter.append(a)
                     continue
             elif W2_all[i][1] - W2_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
                 W2_list.append(W2_all[i][0])
@@ -403,7 +403,7 @@ for object_name in object_names:
                 mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                 median_unc = median_abs_deviation(W2_list)
                 if mean_unc > median_unc:
-                    c+=1
+                    a+=1
                 W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
                 W2_list = []

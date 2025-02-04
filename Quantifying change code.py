@@ -3,7 +3,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
-my_sample = 3 #set which AGN sample you want
+my_sample = 1 #set which AGN sample you want
+brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
+my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
+MIR_UV = 1 #0=UV. 1=MIR only
+
+#plots:
+main_MIR = 0 #1 if want main zscore and NFD plot.
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -34,17 +40,72 @@ median_AGN_redshift = np.nanmedian(AGN_redshifts)
 print(f'Median CLAGN sample redshift = {median_CLAGN_redshift:.3f}')
 print(f'Median AGN sample redshift = {median_AGN_redshift:.3f}')
 
-#Quantifying change data
-CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-# #Eliminating objects dimmer than 0.5 in W1 band. Keeps np.nan objects
-# # With UV
-# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
-# Just MIR
-# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
-# #Keeping dim;eliminating bright:
-# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
-# #Criteria that must have more than 12 epochs in W1 and W2
-# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[(CLAGN_quantifying_change_data.iloc[:, 25] >= 13) & (CLAGN_quantifying_change_data.iloc[:, 26] >= 13)]
+#Quantifying change data - With UV
+if MIR_UV == 0:
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change.csv')
+    if brightness == 1:
+        # Only objects >= 0.5 min flux in W1 band
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
+    elif brightness == 0:
+        # Only objects < 0.5 min flux in W1 band
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] < 0.5]
+    #Redshift splitting:
+    if my_redshift == 0:
+        # Low redshift:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 41] <= 0.9]
+    elif my_redshift == 1:
+        # Medium redshift:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[(CLAGN_quantifying_change_data.iloc[:, 41] > 0.9) & (CLAGN_quantifying_change_data.iloc[:, 41] <= 1.8)]
+    elif my_redshift == 2:
+        # High Redshift
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 41] > 1.8]
+
+    CLAGN_norm_flux_diff_UV = CLAGN_quantifying_change_data.iloc[:, 21].tolist()
+    CLAGN_norm_flux_diff_UV_unc = CLAGN_quantifying_change_data.iloc[:, 22].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+    CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+    CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 33].tolist()
+    CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 37].tolist() #median_abs_dev of flux for an object in W1 band
+    CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
+    CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 35].tolist()
+    CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 36].tolist()
+    CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+
+#Quantifying change data - Just MIR
+elif MIR_UV == 1:
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    if brightness == 1:
+        # Only objects >= 0.5 min flux in W1 band
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    elif brightness == 0:
+        # Only objects < 0.5 min flux in W1 band
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    #Redshift splitting:
+    if my_redshift == 0:
+        # Low redshift:
+        # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 37] <= 0.9]
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 35] <= 0.9]
+    elif my_redshift == 1:
+        # Medium redshift:
+        # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[(CLAGN_quantifying_change_data.iloc[:, 37] > 0.9) & (CLAGN_quantifying_change_data.iloc[:, 37] <= 1.8)]
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[(CLAGN_quantifying_change_data.iloc[:, 35] > 0.9) & (CLAGN_quantifying_change_data.iloc[:, 35] <= 1.8)]
+    elif my_redshift == 2:
+        # High Redshift
+        # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 37] > 1.8]
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 35] > 1.8]
+
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+    CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
+    CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
+    CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 33].tolist() #median_abs_dev of flux for an object in W1 band
+    CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+    CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+    CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+    CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
+    CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
+    CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
+
+#Quantifying change data - Both With UV and Just MIR
 print(f'Number of CLAGN Analysed: {len(CLAGN_quantifying_change_data)}')
 CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
 CLAGN_zscore_uncs = CLAGN_quantifying_change_data.iloc[:, 18].tolist()
@@ -69,43 +130,62 @@ CLAGN_W2_zscore_mean = [
 ]
 CLAGN_W2_NFD = CLAGN_quantifying_change_data.iloc[:, 15].tolist()
 
-
-# # With UV
-# CLAGN_norm_flux_diff_UV = CLAGN_quantifying_change_data.iloc[:, 21].tolist()
-# CLAGN_norm_flux_diff_UV_unc = CLAGN_quantifying_change_data.iloc[:, 22].tolist()
-# CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
-# CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
-# CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 33].tolist()
-# CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 37].tolist() #median_abs_dev of flux for an object in W1 band
-# CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
-# CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 35].tolist()
-# CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 36].tolist()
-# CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
-
-#Just MIR
-CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
-CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
-CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
-CLAGN_W1_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 33].tolist() #median_abs_dev of flux for an object in W1 band
-CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
-CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
-CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
-CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
-CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
-
 CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
 
-AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
-# AGN_quantifying_change_data = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs.csv')
-# #Eliminating objects dimmer than 0.5 in W1 band. Keeps np.nan objects
-# #With UV
-# AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
-#Just MIR
-# AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
-# AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
-#Criteria that must have more than 12 epochs in W1 and W2
-# AGN_quantifying_change_data = AGN_quantifying_change_data[(AGN_quantifying_change_data.iloc[:, 25] >= 13) & (AGN_quantifying_change_data.iloc[:, 26] >= 13)]
+
+#Quantifying change data - With UV
+if MIR_UV == 0:
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}.csv')
+    if brightness == 1:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
+    elif brightness == 0:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] < 0.5]
+    #Redshift splitting:
+    if my_redshift == 0:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 41] <= 0.9]
+    elif my_redshift == 1:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[(AGN_quantifying_change_data.iloc[:, 41] > 0.9) & (AGN_quantifying_change_data.iloc[:, 41] > 1.8)]
+    elif my_redshift == 2:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 41] > 1.8]
+
+    AGN_norm_flux_diff_UV = AGN_quantifying_change_data.iloc[:, 21].tolist()
+    AGN_norm_flux_diff_UV_unc = AGN_quantifying_change_data.iloc[:, 22].tolist()
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
+    AGN_W1_low_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
+    AGN_W1_high_flux_unc = AGN_quantifying_change_data.iloc[:, 33].tolist()
+    AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 37].tolist() #median_abs_dev of flux for an object in W1 band
+    AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 34].tolist()
+    AGN_W2_low_flux_unc = AGN_quantifying_change_data.iloc[:, 35].tolist()
+    AGN_W2_high_flux_unc = AGN_quantifying_change_data.iloc[:, 36].tolist()
+    AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 38].tolist()
+
+#Quantifying change data - Just MIR
+elif MIR_UV == 1:
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    if brightness == 1:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    elif brightness == 0:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    if my_redshift == 0:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 37] <= 0.9]
+    elif my_redshift == 1:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[(AGN_quantifying_change_data.iloc[:, 37] > 0.9) & (AGN_quantifying_change_data.iloc[:, 37] > 1.8)]
+    elif my_redshift == 2:
+        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 37] > 1.8]
+
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 27].tolist()
+    AGN_W1_low_flux_unc = AGN_quantifying_change_data.iloc[:, 28].tolist()
+    AGN_W1_high_flux_unc = AGN_quantifying_change_data.iloc[:, 29].tolist()
+    AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 33].tolist() #median_abs_dev of flux for an object in W1 band
+    AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 30].tolist()
+    AGN_W2_low_flux_unc = AGN_quantifying_change_data.iloc[:, 31].tolist()
+    AGN_W2_high_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
+    AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 34].tolist()
+    AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 25].tolist()
+    AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 26].tolist()
+
+#Quantifying change data - Both With UV and Just MIR
 print(f'Number of AGN Analysed: {len(AGN_quantifying_change_data)}')
 AGN_zscores = AGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
 AGN_zscore_uncs = AGN_quantifying_change_data.iloc[:, 18].tolist()
@@ -119,7 +199,6 @@ AGN_W1_zscore_mean = [
     else np.nan  # Assign NaN if both are NaN
     for zmax, zmin in zip(AGN_W1_zscore_max, AGN_W1_zscore_min)
 ]
-AGN_W1_zscore_mean = [np.nanmean([abs(zmax), abs(zmin)]) for zmax, zmin in zip(AGN_W1_zscore_max, AGN_W1_zscore_min)]
 AGN_W1_NFD = AGN_quantifying_change_data.iloc[:, 7].tolist()
 AGN_W2_zscore_max = AGN_quantifying_change_data.iloc[:, 9].tolist()
 AGN_W2_zscore_min = AGN_quantifying_change_data.iloc[:, 11].tolist()
@@ -130,30 +209,6 @@ AGN_W2_zscore_mean = [
     for zmax, zmin in zip(AGN_W2_zscore_max, AGN_W2_zscore_min)
 ]
 AGN_W2_NFD = AGN_quantifying_change_data.iloc[:, 15].tolist()
-
-# # With UV
-# AGN_norm_flux_diff_UV = AGN_quantifying_change_data.iloc[:, 21].tolist()
-# AGN_norm_flux_diff_UV_unc = AGN_quantifying_change_data.iloc[:, 22].tolist()
-# AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
-# AGN_W1_low_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
-# AGN_W1_high_flux_unc = AGN_quantifying_change_data.iloc[:, 33].tolist()
-# AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 37].tolist() #median_abs_dev of flux for an object in W1 band
-# AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 34].tolist()
-# AGN_W2_low_flux_unc = AGN_quantifying_change_data.iloc[:, 35].tolist()
-# AGN_W2_high_flux_unc = AGN_quantifying_change_data.iloc[:, 36].tolist()
-# AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 38].tolist()
-
-#Just MIR
-AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 27].tolist()
-AGN_W1_low_flux_unc = AGN_quantifying_change_data.iloc[:, 28].tolist()
-AGN_W1_high_flux_unc = AGN_quantifying_change_data.iloc[:, 29].tolist()
-AGN_W1_median_dev_flux = AGN_quantifying_change_data.iloc[:, 33].tolist() #median_abs_dev of flux for an object in W1 band
-AGN_W2_low_flux = AGN_quantifying_change_data.iloc[:, 30].tolist()
-AGN_W2_low_flux_unc = AGN_quantifying_change_data.iloc[:, 31].tolist()
-AGN_W2_high_flux_unc = AGN_quantifying_change_data.iloc[:, 32].tolist()
-AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 34].tolist()
-AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 25].tolist()
-AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 26].tolist()
 
 AGN_names_analysis = AGN_quantifying_change_data.iloc[:, 0].tolist()
 
@@ -179,12 +234,10 @@ for object_name in CLAGN_names_analysis:
     redshift = object_row.iloc[0, 3]
     CLAGN_redshifts.append(redshift)
 
-AGN_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+clean_parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 AGN_redshifts = []
 for object_name in AGN_names_analysis:
-    object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
-    if len(object_data) == 0:
-        print(object_name)
+    object_data = clean_parent_sample[clean_parent_sample.iloc[:, 3] == object_name]
     redshift = object_data.iloc[0, 2]
     AGN_redshifts.append(redshift)
 
@@ -230,10 +283,10 @@ for normdiff in AGN_norm_flux_diff:
     if normdiff > three_sigma_norm_flux_diff:
         l += 1
 
-print(f'{i}/{len(CLAGN_zscores)}={i/len(CLAGN_zscores)*100:.2f}% of CLAGN above zscore threshold')
 print(f'{k}/{len(CLAGN_norm_flux_diff)}={k/len(CLAGN_norm_flux_diff)*100:.2f}% of CLAGN above NFD threshold')
-print(f'{j}/{len(AGN_zscores)}={j/len(AGN_zscores)*100:.2f}% of AGN above zscore threshold')
+print(f'{i}/{len(CLAGN_zscores)}={i/len(CLAGN_zscores)*100:.2f}% of CLAGN above zscore threshold')
 print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.2f}% of AGN above NFD threshold')
+print(f'{j}/{len(AGN_zscores)}={j/len(AGN_zscores)*100:.2f}% of AGN above zscore threshold')
 
 
 # ### BELOW INVESTIGATION CHECKS WHETHER ELIMINATING OBJECTS WITH A HIGH UNC RATIO (eg NFD_UNC/NFD) IMPROVES RESULTS.
@@ -367,34 +420,70 @@ print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.2f}% of AG
 
 
 # # #Creating a 2d plot for normalised flux difference & z score:
-plt.figure(figsize=(12, 7))
-plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
-plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
-# plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
-# plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
-plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
-plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 50)
-# plt.ylim(0, 5)
-plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
-plt.xticks(fontsize=26)
-plt.yticks(fontsize=26)
-plt.xlabel("Z-Score", fontsize = 26)
-plt.ylabel("Normalised Flux Difference", fontsize = 26)
-plt.title("Characterising MIR Variability in AGN", fontsize = 28)
-plt.legend(loc = 'best', fontsize=25)
-plt.grid(True, linestyle='--', alpha=0.5)
-ax = plt.gca()
-plt.tight_layout()
-#For median uncs data:
-plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
-# (0,0 is lower-left and 1,1 is upper-right).
-plt.show()
+if main_MIR == 1:
+    plt.figure(figsize=(12, 7))
+    plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
+    # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
+    # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
+    plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
+    plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+    plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+    plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.xlabel("Z-Score", fontsize = 26)
+    plt.ylabel("NFD", fontsize = 26)
+    plt.title(f"Characterising MIR Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    ax = plt.gca()
+    if my_sample == 1:
+        plt.text(0.99, 0.46, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.4, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.16, 0.95, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.16, 0.89, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    elif my_sample == 2:
+        plt.text(0.99, 0.52, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.46, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.64, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.58, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    elif my_sample == 3:
+        plt.text(0.99, 0.68, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.62, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.81, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.75, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+
+    # The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
+    # (0,0 is lower-left and 1,1 is upper-right).
+    plt.show()
+
+
+# # # #Creating a 2d plot for UV normalised flux difference & z score:
+# plt.figure(figsize=(12, 7))
+# plt.scatter(AGN_zscores, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
+# plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
+# # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
+# # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
+# plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
+# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+# plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
+# plt.xticks(fontsize=26)
+# plt.yticks(fontsize=26)
+# plt.xlabel("Z-Score", fontsize = 26)
+# plt.ylabel("UV NFD", fontsize = 26)
+# plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
+# plt.legend(loc = 'best', fontsize=25)
+# plt.grid(True, linestyle='--', alpha=0.5)
+# plt.tight_layout()
+# # ax = plt.gca()
+# # plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+# # plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+# # plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+# # plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+# plt.show()
 
 
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:
@@ -490,16 +579,16 @@ plt.show()
 
 # # # #Creating a 2d plot of NFD vs redshift:
 # plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_norm_flux_diff, CLAGN_redshifts, color='red',  label='CLAGN')
-# plt.scatter(AGN_norm_flux_diff, AGN_redshifts, color='blue',  label='Non-CL AGN')
+# plt.scatter(CLAGN_redshifts, CLAGN_norm_flux_diff, color='red',  label='CLAGN')
+# plt.scatter(AGN_redshifts, AGN_norm_flux_diff, color='blue',  label='Non-CL AGN')
 # plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
 # plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
 # plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
-# plt.xlabel("NFD", fontsize = 24)
-# plt.ylabel("Redshift", fontsize = 24)
-# plt.title("Redshift vs NFD", fontsize = 24)
+# plt.xlabel("Redshift", fontsize = 24)
+# plt.ylabel("NFD", fontsize = 24)
+# plt.title("NFD vs Redshift", fontsize = 24)
 # plt.legend(loc = 'best', fontsize=22)
 # plt.grid(True, linestyle='--', alpha=0.5)
 # plt.tight_layout()
@@ -611,11 +700,15 @@ plt.show()
 
 
 # ## Creating a plot of W1 NFD vs W2 NFD
+# max_W1 = max(CLAGN_W1_NFD+AGN_W1_NFD)
+# max_W2 = max(CLAGN_W2_NFD+AGN_W2_NFD)
+# x = np.linspace(0, min([max_W1, max_W2]), 100)
 # plt.figure(figsize=(12, 7))
 # plt.scatter(CLAGN_W1_NFD, CLAGN_W2_NFD, s=100, color='red',  label='CLAGN')
 # plt.scatter(AGN_W1_NFD, AGN_W2_NFD, color='blue',  label='Non-CL AGN')
-# plt.xlim(0, 1.05*max(CLAGN_W1_NFD+AGN_W1_NFD))
-# plt.ylim(0, 1.05*max(CLAGN_W2_NFD+AGN_W2_NFD))
+# plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
+# plt.xlim(0, 1.05*max_W1)
+# plt.ylim(0, 1.05*max_W2)
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel("W1 NFD", fontsize = 24)
@@ -628,11 +721,15 @@ plt.show()
 
 
 # # ## Creating a plot of W1 Zscore vs W2 Zscore
+# max_W1 = max(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean)
+# max_W2 = max(CLAGN_W2_zscore_mean+AGN_W2_zscore_mean)
+# x = np.linspace(0, min([max_W1, max_W2]), 100)
 # plt.figure(figsize=(12, 7))
 # plt.scatter(CLAGN_W1_zscore_mean, CLAGN_W2_zscore_mean, s=100, color='red',  label='CLAGN')
 # plt.scatter(AGN_W1_zscore_mean, AGN_W2_zscore_mean, color='blue',  label='Non-CL AGN')
-# plt.xlim(0, 1.05*max(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean))
-# plt.ylim(0, 1.05*max(CLAGN_W2_zscore_mean+AGN_W2_zscore_mean))
+# plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
+# plt.xlim(0, 1.05*max_W1)
+# plt.ylim(0, 1.05*max_W2)
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel("W1 Z-score", fontsize = 24)

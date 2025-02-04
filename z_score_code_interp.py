@@ -19,7 +19,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 c = 299792458
 
-my_object = 1 #0 = AGN. 1 = CLAGN
+my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0
 optical_analysis = 0 #set = 1 if you wish to do optical analysis. set = 0 if not
@@ -194,6 +194,11 @@ if optical_analysis == 1:
 
             sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
             sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+            header = hdul[0].header
+            mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
+            if SDSS_mjd - mjd_value > 2:
+                print(f"MJD from file header: {mjd_value}")
+                print(f"MJD from my csv: {SDSS_mjd}")
             return sdss_lamb, sdss_flux
                 
     #DESI spectrum retrieval method
@@ -324,7 +329,7 @@ for object_name in object_names:
     W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
     W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
     W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
-    W1_flux = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
+    W1_all = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
     mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
     W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
@@ -344,13 +349,13 @@ for object_name in object_names:
     #2. There are 2 or more data points.
 
     # W1 data first
+    W1_mean_unc_counter = []
     if len(W1_all) > 1:
         W1_list = []
         W1_unc_list = []
         W1_mjds = []
         W1_data = []
-        W1_mean_unc_counter = []
-        c = 0
+        a = 0
         for i in range(len(W1_all)):
             if i == 0: #first reading - store and move on
                 W1_list.append(W1_all[i][0])
@@ -365,19 +370,19 @@ for object_name in object_names:
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
-                    W1_mean_unc_counter.append(c)
+                    W1_mean_unc_counter.append(a)
                     continue
                 else: #final data point is in an epoch of its own
                     mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
                     W1_data.append( ( W1_all[i][0], W1_all[i][1], W1_all[i][2] ) )
-                    W1_mean_unc_counter.append(c)
+                    W1_mean_unc_counter.append(a)
                     continue
             elif W1_all[i][1] - W1_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
                 W1_list.append(W1_all[i][0])
@@ -388,7 +393,7 @@ for object_name in object_names:
                 mean_unc = (1/len(W1_unc_list))*np.sqrt(np.sum(np.square(W1_unc_list)))
                 median_unc = median_abs_deviation(W1_list)
                 if mean_unc > median_unc:
-                    c+=1
+                    a+=1
                 W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
                 W1_list = []
@@ -404,13 +409,13 @@ for object_name in object_names:
         W1_mean_unc_counter.append(np.nan)
 
     # W2 data second
+    W2_mean_unc_counter = []
     if len(W2_all) > 1:
         W2_list = []
         W2_unc_list = []
         W2_mjds = []
         W2_data = []
-        W2_mean_unc_counter = []
-        c = 0
+        a = 0
         for i in range(len(W2_all)):
             if i == 0: #first reading - store and move on
                 W2_list.append(W2_all[i][0])
@@ -425,19 +430,19 @@ for object_name in object_names:
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
-                    W2_mean_unc_counter.append(c)
+                    W2_mean_unc_counter.append(a)
                     continue
                 else: #final data point is in an epoch of its own
                     mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
-                        c+=1
+                        a+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
                     W2_data.append( ( W2_all[i][0], W2_all[i][1], W2_all[i][2] ) )
-                    W2_mean_unc_counter.append(c)
+                    W2_mean_unc_counter.append(a)
                     continue
             elif W2_all[i][1] - W2_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
                 W2_list.append(W2_all[i][0])
@@ -448,7 +453,7 @@ for object_name in object_names:
                 mean_unc = (1/len(W2_unc_list))*np.sqrt(np.sum(np.square(W2_unc_list)))
                 median_unc = median_abs_deviation(W2_list)
                 if mean_unc > median_unc:
-                    c+=1
+                    a+=1
                 W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
                 W2_list = []
@@ -652,6 +657,8 @@ for object_name in object_names:
         W2_averages_flux = [tup[0] for tup in W2_data]
         W2_av_uncs_flux = [tup[2] for tup in W2_data]
         if save_figures == 1:
+            plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--')
+            plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--')
             plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
             plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
 
@@ -667,6 +674,8 @@ for object_name in object_names:
         W2_averages_flux = [tup[0] for tup in W2_data]
         W2_av_uncs_flux = [tup[2] for tup in W2_data]
         if save_figures == 1:
+            plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--')
+            plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--')
             plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         
         before_SDSS_index_W2, after_SDSS_index_W2, w, ninety_first_SDSS_W2, ninety_last_SDSS_W2, ninety_before_SDSS_W2, ninety_after_SDSS_W2 = find_closest_indices(W2_av_mjd_date, SDSS_mjd)
@@ -681,6 +690,8 @@ for object_name in object_names:
         W1_averages_flux = [tup[0] for tup in W1_data]
         W1_av_uncs_flux = [tup[2] for tup in W1_data]
         if save_figures == 1:
+            plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--')
+            plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--')
             plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
 
         before_SDSS_index_W1, after_SDSS_index_W1, q, ninety_first_SDSS_W1, ninety_last_SDSS_W1, ninety_before_SDSS_W1, ninety_after_SDSS_W1 = find_closest_indices(W1_av_mjd_date, SDSS_mjd)
@@ -802,6 +813,8 @@ for object_name in object_names:
 
     SDSS_mjds.append(SDSS_mjd_for_dnl)
     DESI_mjds.append(DESI_mjd_for_dnl)
+    # print(W1_averages_flux)
+    # print(W2_averages_flux)
     if q == 0 and e == 0: #Good W1 if true
         if w == 0 and r == 0: #Good W2 if true
             #Good W1 & W2
@@ -1295,6 +1308,6 @@ for object_name in object_names:
     df = pd.DataFrame(quantifying_change_data)
 
     if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}.csv", index=False)
+        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV{optical_analysis}.csv", index=False)
     elif my_object == 1:
-        df.to_csv("CLAGN_Quantifying_Change.csv", index=False)
+        df.to_csv(f"CLAGN_Quantifying_Change_UV{optical_analysis}.csv", index=False)

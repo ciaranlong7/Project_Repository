@@ -150,36 +150,16 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
 
 
-## Now constructing the sample of 280 AGN:
-guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
-CLAGN_names = [object_name for object_name in guo_CLAGN.iloc[:, 0] if pd.notna(object_name)]
-parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
-no_duplicates_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
-
-AGN_Sample = []
-for CLAGN_name in CLAGN_names:
-    CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
-    CLAGN_z = CLAGN_data.iloc[0, 2]
-    # Calculates the difference between the every single parent z & this CLAGN's z
-    parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z) #Creates a new 'difference' row in parent_sample df
-    
-    # Get the 5 rows from the parent sample with the smallest differences
-    closest_rows = parent_sample.nsmallest(5, 'difference')
-    # print(closest_rows.index)
-    # print(closest_rows)
-    parent_sample = parent_sample.drop(closest_rows.index) #remove these 5 rows from the parent sample so they can't be selected on the next iteration
-
-    # Append these 5 rows to the output list
-    for _, parent_row in closest_rows.iterrows():
-        AGN_Sample.append(parent_row)
-output_df = pd.DataFrame(AGN_Sample)
-output_df.to_csv('AGN_Sample.csv', index=False)
-
+# ## Now constructing the sample of 280 AGN:
+# guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
+# CLAGN_names = [object_name for object_name in guo_CLAGN.iloc[:, 0] if pd.notna(object_name)]
+# parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+# no_duplicates_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 
 # AGN_Sample = []
-# # Iterate through each row in guo_CLAGN
-# for _, CLAGN_row in guo_CLAGN.iterrows():
-#     CLAGN_z = CLAGN_row.iloc[3]   
+# for CLAGN_name in CLAGN_names:
+#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
+#     CLAGN_z = CLAGN_data.iloc[0, 2]
 #     # Calculates the difference between the every single parent z & this CLAGN's z
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z) #Creates a new 'difference' row in parent_sample df
     
@@ -197,8 +177,9 @@ output_df.to_csv('AGN_Sample.csv', index=False)
 
 # AGN_Sample_two = []
 # #The 280 AGN in the first AGN_sample have already been removed
-# for _, CLAGN_row in guo_CLAGN.iterrows():
-#     CLAGN_z = CLAGN_row.iloc[3]
+# for CLAGN_name in CLAGN_names:
+#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
+#     CLAGN_z = CLAGN_data.iloc[0, 2]
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z)
 #     closest_rows = parent_sample.nsmallest(5, 'difference')
 #     parent_sample = parent_sample.drop(closest_rows.index)
@@ -210,8 +191,9 @@ output_df.to_csv('AGN_Sample.csv', index=False)
 
 # AGN_Sample_three = []
 # #The 560 AGN in the first & second AGN_sample have already been removed
-# for _, CLAGN_row in guo_CLAGN.iterrows():
-#     CLAGN_z = CLAGN_row.iloc[3]
+# for CLAGN_name in CLAGN_names:
+#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
+#     CLAGN_z = CLAGN_data.iloc[0, 2]
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z)
 #     closest_rows = parent_sample.nsmallest(5, 'difference')
 #     parent_sample = parent_sample.drop(closest_rows.index)
@@ -260,11 +242,11 @@ output_df.to_csv('AGN_Sample.csv', index=False)
 # no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
 
 
-# AGN_old_sample = pd.read_csv("AGN_Quantifying_Change_sample_1.csv")
-# AGN_sample = pd.read_csv("AGN_Quantifying_Change_just_MIR_max_uncs.csv")
+# AGN_old_sample = pd.read_csv("AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv")
+# AGN_sample = pd.read_csv("AGN_Sample.csv")
 
 # names_old = AGN_old_sample.iloc[:, 0]
-# names = AGN_sample.iloc[:, 0]
+# names = AGN_sample.iloc[:, 3]
 
 # difference = set(names) - set(names_old)
 
@@ -275,29 +257,30 @@ output_df.to_csv('AGN_Sample.csv', index=False)
 ##Uncomment below - then check the AGN figures 'extra' folder for any spurious epochs. after that I have my complete AGN sample 1 results
 ##Run quantifying change code - then I will have all up to date versions of my plots
 
-# # ## Combining the three data frames created
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
+# # # ## Combining the three data frames created
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
 # print(len(quantifying_change))
-# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3_Extra.csv')
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1_Extra.csv')
 # print(len(quantifying_change_extra))
-# # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v2.csv')
+# # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
 # # print(len(quantifying_change_extra_v2))
 # # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
 # # print(len(quantifying_change_extra_v3))
 # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
+# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2], ignore_index=True)
 # combined_df = pd.concat([quantifying_change, quantifying_change_extra], ignore_index=True)
-# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
+# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
 
 ## Don't uncomment below this
 
 # # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
 # # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
-# Names_to_redo = ['153837.03+435132.3','161222.79+543154.9','142542.91+545710.1','121234.41+573124.8']
-# # # # for name in Names_to_redo:
-# # # #     print(name)
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
+# Names_to_redo = ['162003.10+552822.4']
+# # # # # for name in Names_to_redo:
+# # # # #     print(name)
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv')
 # quantifying_change_filtered = quantifying_change[~quantifying_change.iloc[:, 0].isin(Names_to_redo)]
-# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
+# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv', index=False)
 
 
 # quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
@@ -324,10 +307,17 @@ output_df.to_csv('AGN_Sample.csv', index=False)
 
 # same_redshift.to_csv('guo23_parent_sample_no_duplicates.csv', index=False)
 
-# #Testing that all CLAGN remain in the no_duplicates sample.
+# #Testing that all CLAGN remain in the no_duplicates sample - I find one object isn't (213135.84+001517.0)
+# #Redshifts are about 0.015 apart. I just take the DESI redshift and then add this object back into the no duplicates sample.
 # Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
+# parent_sample_no_duplicates = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
+# parent_sample = pd.read_csv('guo23_parent_sample.csv')
+# parent_sample = parent_sample.drop(parent_sample.columns[0], axis=1) #get rid of index column
 # object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
 # for i, object_name in enumerate(object_names):
-#     object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
-#     print(i)
-#     print(object_data.iloc[0, 0]) #SDSS RA
+#     object_data = parent_sample_no_duplicates[parent_sample_no_duplicates.iloc[:, 3] == object_name]
+#     if len(object_data) == 0:
+#         object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
+#         object_data.iloc[0, 2] = object_data.iloc[0, 9] #sdss redshift becomes desi redshift.
+#         parent_sample_no_duplicates = pd.concat([parent_sample_no_duplicates, object_data], ignore_index=True)
+#         parent_sample_no_duplicates.to_csv('guo23_parent_sample_no_duplicates.csv', index=False)
