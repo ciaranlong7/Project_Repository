@@ -331,7 +331,7 @@ for object_name in object_names:
                         c+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
-                    W1_data.append( ( np.median(W1_all[i][0]), np.median(W1_all[i][1]), W1_all[i][2] ) )
+                    W1_data.append( ( W1_all[i][0], W1_all[i][1], W1_all[i][2] ) )
                     W1_mean_unc_counter.append(c)
                     continue
             elif W1_all[i][1] - W1_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
@@ -391,7 +391,7 @@ for object_name in object_names:
                         c+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
-                    W2_data.append( ( np.median(W2_all[i][0]), np.median(W2_all[i][1]), W2_all[i][2] ) )
+                    W2_data.append( ( W2_all[i][0], W2_all[i][1], W2_all[i][2] ) )
                     W2_mean_unc_counter.append(c)
                     continue
             elif W2_all[i][1] - W2_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)

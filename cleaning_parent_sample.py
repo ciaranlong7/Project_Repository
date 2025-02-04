@@ -150,15 +150,36 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
 
 
-# ## Now constructing the sample of 280 AGN:
-# guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
-# guo_CLAGN = guo_CLAGN.dropna(subset=[guo_CLAGN.columns[0]]) #removing the 8 CLAGN with 2 CL lines
-# parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+## Now constructing the sample of 280 AGN:
+guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
+CLAGN_names = [object_name for object_name in guo_CLAGN.iloc[:, 0] if pd.notna(object_name)]
+parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+no_duplicates_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
+
+AGN_Sample = []
+for CLAGN_name in CLAGN_names:
+    CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
+    CLAGN_z = CLAGN_data.iloc[0, 2]
+    # Calculates the difference between the every single parent z & this CLAGN's z
+    parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z) #Creates a new 'difference' row in parent_sample df
+    
+    # Get the 5 rows from the parent sample with the smallest differences
+    closest_rows = parent_sample.nsmallest(5, 'difference')
+    # print(closest_rows.index)
+    # print(closest_rows)
+    parent_sample = parent_sample.drop(closest_rows.index) #remove these 5 rows from the parent sample so they can't be selected on the next iteration
+
+    # Append these 5 rows to the output list
+    for _, parent_row in closest_rows.iterrows():
+        AGN_Sample.append(parent_row)
+output_df = pd.DataFrame(AGN_Sample)
+output_df.to_csv('AGN_Sample.csv', index=False)
+
 
 # AGN_Sample = []
 # # Iterate through each row in guo_CLAGN
 # for _, CLAGN_row in guo_CLAGN.iterrows():
-#     CLAGN_z = CLAGN_row.iloc[3]    
+#     CLAGN_z = CLAGN_row.iloc[3]   
 #     # Calculates the difference between the every single parent z & this CLAGN's z
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z) #Creates a new 'difference' row in parent_sample df
     
@@ -277,3 +298,36 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
 # quantifying_change_filtered = quantifying_change[~quantifying_change.iloc[:, 0].isin(Names_to_redo)]
 # quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
+
+
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# quantifying_change = quantifying_change.drop('Redshift', axis=1)
+# quantifying_change.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
+
+
+
+# ## Checking redshift
+# parent_sample = pd.read_csv('guo23_parent_sample.csv')
+# parent_sample = parent_sample.drop(parent_sample.columns[0], axis=1) #get rid of index column
+# print(f'Objects in parent sample: {len(parent_sample)}')
+# same_redshift = parent_sample[np.abs(parent_sample.iloc[:, 2] - parent_sample.iloc[:, 9]) <= 0.01]
+
+# print(f'Objects in parent sample with same redshift for SDSS & DESI = {len(same_redshift)}')
+
+# columns_to_check = parent_sample.columns[[10]] #checking DESI name
+# same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
+# print(f'Objects in cleaned sample after DESI duplicates removed = {len(same_redshift)}')
+
+# columns_to_check = parent_sample.columns[[3]] #checking SDSS name
+# same_redshift = same_redshift.drop_duplicates(subset=columns_to_check)
+# print(f'Objects in cleaned sample after SDSS duplicates removed = {len(same_redshift)}')
+
+# same_redshift.to_csv('guo23_parent_sample_no_duplicates.csv', index=False)
+
+# #Testing that all CLAGN remain in the no_duplicates sample.
+# Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
+# object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
+# for i, object_name in enumerate(object_names):
+#     object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
+#     print(i)
+#     print(object_data.iloc[0, 0]) #SDSS RA

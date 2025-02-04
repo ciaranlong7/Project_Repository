@@ -40,8 +40,10 @@ CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_m
 # # With UV
 # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
 # Just MIR
-CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
-#Criteria that must have more than 12 epochs in W1 and W2
+# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+# #Keeping dim;eliminating bright:
+# CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+# #Criteria that must have more than 12 epochs in W1 and W2
 # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[(CLAGN_quantifying_change_data.iloc[:, 25] >= 13) & (CLAGN_quantifying_change_data.iloc[:, 26] >= 13)]
 print(f'Number of CLAGN Analysed: {len(CLAGN_quantifying_change_data)}')
 CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
@@ -50,11 +52,21 @@ CLAGN_norm_flux_diff = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
 CLAGN_norm_flux_diff_unc = CLAGN_quantifying_change_data.iloc[:, 20].tolist()
 CLAGN_W1_zscore_max = CLAGN_quantifying_change_data.iloc[:, 1].tolist()
 CLAGN_W1_zscore_min = CLAGN_quantifying_change_data.iloc[:, 3].tolist()
-CLAGN_W1_zscore_mean = [np.nanmean([abs(zmax), abs(zmin)]) for zmax, zmin in zip(CLAGN_W1_zscore_max, CLAGN_W1_zscore_min)]
+CLAGN_W1_zscore_mean = [
+    np.nanmean([abs(zmax), abs(zmin)]) 
+    if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+    else np.nan  # Assign NaN if both are NaN
+    for zmax, zmin in zip(CLAGN_W1_zscore_max, CLAGN_W1_zscore_min)
+]
 CLAGN_W1_NFD = CLAGN_quantifying_change_data.iloc[:, 7].tolist()
 CLAGN_W2_zscore_max = CLAGN_quantifying_change_data.iloc[:, 9].tolist()
 CLAGN_W2_zscore_min = CLAGN_quantifying_change_data.iloc[:, 11].tolist()
-CLAGN_W2_zscore_mean = [np.nanmean([abs(zmax), abs(zmin)]) for zmax, zmin in zip(CLAGN_W2_zscore_max, CLAGN_W2_zscore_min)]
+CLAGN_W2_zscore_mean = [
+    np.nanmean([abs(zmax), abs(zmin)]) 
+    if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+    else np.nan  # Assign NaN if both are NaN
+    for zmax, zmin in zip(CLAGN_W2_zscore_max, CLAGN_W2_zscore_min)
+]
 CLAGN_W2_NFD = CLAGN_quantifying_change_data.iloc[:, 15].tolist()
 
 
@@ -90,7 +102,8 @@ AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_
 # #With UV
 # AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
 #Just MIR
-AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+# AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+# AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
 #Criteria that must have more than 12 epochs in W1 and W2
 # AGN_quantifying_change_data = AGN_quantifying_change_data[(AGN_quantifying_change_data.iloc[:, 25] >= 13) & (AGN_quantifying_change_data.iloc[:, 26] >= 13)]
 print(f'Number of AGN Analysed: {len(AGN_quantifying_change_data)}')
@@ -100,11 +113,22 @@ AGN_norm_flux_diff = AGN_quantifying_change_data.iloc[:, 19].tolist()
 AGN_norm_flux_diff_unc = AGN_quantifying_change_data.iloc[:, 20].tolist()
 AGN_W1_zscore_max = AGN_quantifying_change_data.iloc[:, 1].tolist()
 AGN_W1_zscore_min = AGN_quantifying_change_data.iloc[:, 3].tolist()
+AGN_W1_zscore_mean = [
+    np.nanmean([abs(zmax), abs(zmin)]) 
+    if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+    else np.nan  # Assign NaN if both are NaN
+    for zmax, zmin in zip(AGN_W1_zscore_max, AGN_W1_zscore_min)
+]
 AGN_W1_zscore_mean = [np.nanmean([abs(zmax), abs(zmin)]) for zmax, zmin in zip(AGN_W1_zscore_max, AGN_W1_zscore_min)]
 AGN_W1_NFD = AGN_quantifying_change_data.iloc[:, 7].tolist()
 AGN_W2_zscore_max = AGN_quantifying_change_data.iloc[:, 9].tolist()
 AGN_W2_zscore_min = AGN_quantifying_change_data.iloc[:, 11].tolist()
-AGN_W2_zscore_mean = [np.nanmean([abs(zmax), abs(zmin)]) for zmax, zmin in zip(AGN_W2_zscore_max, AGN_W2_zscore_min)]
+AGN_W2_zscore_mean = [
+    np.nanmean([abs(zmax), abs(zmin)]) 
+    if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+    else np.nan  # Assign NaN if both are NaN
+    for zmax, zmin in zip(AGN_W2_zscore_max, AGN_W2_zscore_min)
+]
 AGN_W2_NFD = AGN_quantifying_change_data.iloc[:, 15].tolist()
 
 # # With UV
@@ -206,10 +230,10 @@ for normdiff in AGN_norm_flux_diff:
     if normdiff > three_sigma_norm_flux_diff:
         l += 1
 
-print(f'{i}/{len(CLAGN_zscores)}={i/len(CLAGN_zscores)*100:.3f}% of CLAGN above zscore threshold')
-print(f'{k}/{len(CLAGN_norm_flux_diff)}={k/len(CLAGN_norm_flux_diff)*100:.3f}% of CLAGN above norm_diff threshold')
-print(f'{j}/{len(AGN_zscores)}={j/len(AGN_zscores)*100:.3f}% of AGN above zscore threshold')
-print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.3f}% of AGN above norm_diff threshold')
+print(f'{i}/{len(CLAGN_zscores)}={i/len(CLAGN_zscores)*100:.2f}% of CLAGN above zscore threshold')
+print(f'{k}/{len(CLAGN_norm_flux_diff)}={k/len(CLAGN_norm_flux_diff)*100:.2f}% of CLAGN above NFD threshold')
+print(f'{j}/{len(AGN_zscores)}={j/len(AGN_zscores)*100:.2f}% of AGN above zscore threshold')
+print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.2f}% of AGN above NFD threshold')
 
 
 # ### BELOW INVESTIGATION CHECKS WHETHER ELIMINATING OBJECTS WITH A HIGH UNC RATIO (eg NFD_UNC/NFD) IMPROVES RESULTS.

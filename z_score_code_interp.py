@@ -18,11 +18,11 @@ from requests.exceptions import ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 
 c = 299792458
-client = SparclClient(connect_timeout=10)
 
-my_object = 0 #0 = AGN. 1 = CLAGN
+my_object = 1 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0
+optical_analysis = 0 #set = 1 if you wish to do optical analysis. set = 0 if not
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -152,29 +152,40 @@ def find_closest_indices(x_vals, value):
                 else:
                     t += 1
             return before_index, after_index, t, ninety_first, ninety_last, ninety_before, ninety_after
-        
-#SDSS spectrum retrieval method
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
-def get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd, coord, SDSS_plate, SDSS_fiberid):
-    downloaded_SDSS_spec = SDSS.get_spectra_async(plate=SDSS_plate_number, fiberID=SDSS_fiberid_number, mjd=SDSS_mjd)
-    if downloaded_SDSS_spec == None:
-        downloaded_SDSS_spec = SDSS.get_spectra_async(coordinates=coord, radius=2. * u.arcsec)
-        if downloaded_SDSS_spec == None:
-            print(f'SDSS Spectrum cannot be found for object_name = {object_name}')
-            try:
-                SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
-                SDSS_file_path = f'clagn_spectra/{SDSS_file}'
-                with fits.open(SDSS_file_path) as hdul:
-                    subset = hdul[1]
 
-                    sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
-                    sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-                    print('SDSS file is in downloads - will proceed as normal')
+if optical_analysis == 1:
+    client = SparclClient(connect_timeout=10)
+            
+    #SDSS spectrum retrieval method
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
+    def get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd, coord, SDSS_plate, SDSS_fiberid):
+        downloaded_SDSS_spec = SDSS.get_spectra_async(plate=SDSS_plate_number, fiberID=SDSS_fiberid_number, mjd=SDSS_mjd)
+        if downloaded_SDSS_spec == None:
+            downloaded_SDSS_spec = SDSS.get_spectra_async(coordinates=coord, radius=2. * u.arcsec)
+            if downloaded_SDSS_spec == None:
+                print(f'SDSS Spectrum cannot be found for object_name = {object_name}')
+                try:
+                    SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
+                    SDSS_file_path = f'clagn_spectra/{SDSS_file}'
+                    with fits.open(SDSS_file_path) as hdul:
+                        subset = hdul[1]
+
+                        sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
+                        sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+                        print('SDSS file is in downloads - will proceed as normal')
+                        return sdss_lamb, sdss_flux
+                except FileNotFoundError as e:
+                    print('No SDSS file already downloaded.')
+                    sdss_flux = []
+                    sdss_lamb = []
                     return sdss_lamb, sdss_flux
-            except FileNotFoundError as e:
-                print('No SDSS file already downloaded.')
-                sdss_flux = []
-                sdss_lamb = []
+            else:
+                downloaded_SDSS_spec = downloaded_SDSS_spec[0]
+                hdul = HDUList(downloaded_SDSS_spec.get_fits())
+                subset = hdul[1]
+
+                sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
+                sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
                 return sdss_lamb, sdss_flux
         else:
             downloaded_SDSS_spec = downloaded_SDSS_spec[0]
@@ -184,68 +195,60 @@ def get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd, 
             sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
             sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
             return sdss_lamb, sdss_flux
-    else:
-        downloaded_SDSS_spec = downloaded_SDSS_spec[0]
-        hdul = HDUList(downloaded_SDSS_spec.get_fits())
-        subset = hdul[1]
+                
+    #DESI spectrum retrieval method
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
+    def get_primary_DESI_spectrum(targetid): #some objects have multiple spectra for it in DESI- the best one is the 'primary' spectrum
+        res = client.retrieve_by_specid(specid_list=[targetid], include=['specprimary', 'wavelength', 'flux'], dataset_list=['DESI-EDR'])
 
-        sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
-        sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-        return sdss_lamb, sdss_flux
-            
-#DESI spectrum retrieval method
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
-def get_primary_DESI_spectrum(targetid): #some objects have multiple spectra for it in DESI- the best one is the 'primary' spectrum
-    res = client.retrieve_by_specid(specid_list=[targetid], include=['specprimary', 'wavelength', 'flux'], dataset_list=['DESI-EDR'])
+        records = res.records
 
-    records = res.records
+        if not records: #no spectrum could be found:
+            print(f'DESI Spectrum cannot be found for object_name = {object_name}, DESI target_id = {DESI_name}')
 
-    if not records: #no spectrum could be found:
-        print(f'DESI Spectrum cannot be found for object_name = {object_name}, DESI target_id = {DESI_name}')
+            try:
+                DESI_file = f'spectrum_desi_{object_name}.csv'
+                DESI_file_path = f'clagn_spectra/{DESI_file}'
+                DESI_spec = pd.read_csv(DESI_file_path)
+                desi_lamb = DESI_spec.iloc[:, 0]  # First column
+                desi_flux = DESI_spec.iloc[:, 1]  # Second column
+                print('DESI file is in downloads - will proceed as normal')
+                return desi_lamb, desi_flux
+            except FileNotFoundError as e:
+                print('No DESI file already downloaded.')
+                return [], []
 
-        try:
-            DESI_file = f'spectrum_desi_{object_name}.csv'
-            DESI_file_path = f'clagn_spectra/{DESI_file}'
-            DESI_spec = pd.read_csv(DESI_file_path)
-            desi_lamb = DESI_spec.iloc[:, 0]  # First column
-            desi_flux = DESI_spec.iloc[:, 1]  # Second column
-            print('DESI file is in downloads - will proceed as normal')
-            return desi_lamb, desi_flux
-        except FileNotFoundError as e:
-            print('No DESI file already downloaded.')
-            return [], []
+        # Identify the primary spectrum
+        spec_primary = np.array([records[jj].specprimary for jj in range(len(records))])
 
-    # Identify the primary spectrum
-    spec_primary = np.array([records[jj].specprimary for jj in range(len(records))])
+        if not np.any(spec_primary):
+            print(f'DESI Spectrum cannot be found for object_name = {object_name}, DESI target_id = {DESI_name}')
 
-    if not np.any(spec_primary):
-        print(f'DESI Spectrum cannot be found for object_name = {object_name}, DESI target_id = {DESI_name}')
+            try:
+                DESI_file = f'spectrum_desi_{object_name}.csv'
+                DESI_file_path = f'clagn_spectra/{DESI_file}'
+                DESI_spec = pd.read_csv(DESI_file_path)
+                desi_lamb = DESI_spec.iloc[:, 0]  # First column
+                desi_flux = DESI_spec.iloc[:, 1]  # Second column
+                print('DESI file is in downloads - will proceed as normal')
+                return desi_lamb, desi_flux
+            except FileNotFoundError as e:
+                print('No DESI file already downloaded.')
+                return [], []
 
-        try:
-            DESI_file = f'spectrum_desi_{object_name}.csv'
-            DESI_file_path = f'clagn_spectra/{DESI_file}'
-            DESI_spec = pd.read_csv(DESI_file_path)
-            desi_lamb = DESI_spec.iloc[:, 0]  # First column
-            desi_flux = DESI_spec.iloc[:, 1]  # Second column
-            print('DESI file is in downloads - will proceed as normal')
-            return desi_lamb, desi_flux
-        except FileNotFoundError as e:
-            print('No DESI file already downloaded.')
-            return [], []
+        # Get the index of the primary spectrum
+        primary_ii = np.where(spec_primary == True)[0][0]
 
-    # Get the index of the primary spectrum
-    primary_ii = np.where(spec_primary == True)[0][0]
+        # Extract wavelength and flux for the primary spectrum
+        desi_lamb = records[primary_ii].wavelength
+        desi_flux = records[primary_ii].flux
 
-    # Extract wavelength and flux for the primary spectrum
-    desi_lamb = records[primary_ii].wavelength
-    desi_flux = records[primary_ii].flux
+        return desi_lamb, desi_flux
 
-    return desi_lamb, desi_flux
-
-sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.com/kbarbary/sfdmap/blob/master/README.md
-# It explains how "By default, a scaling of 0.86 is applied to the map values to reflect the recalibration by Schlafly & Finkbeiner (2011)"
-ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
-gaussian_kernel = Gaussian1DKernel(stddev=3)
+    sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.com/kbarbary/sfdmap/blob/master/README.md
+    # It explains how "By default, a scaling of 0.86 is applied to the map values to reflect the recalibration by Schlafly & Finkbeiner (2011)"
+    ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
+    gaussian_kernel = Gaussian1DKernel(stddev=3)
 
 g = 0
 for object_name in object_names:
@@ -257,29 +260,31 @@ for object_name in object_names:
         object_data = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
         SDSS_RA = object_data.iloc[0, 0]
         SDSS_DEC = object_data.iloc[0, 1]
-        SDSS_plate_number = object_data.iloc[0, 4]
-        SDSS_plate = f'{SDSS_plate_number:04}'
-        SDSS_fiberid_number = object_data.iloc[0, 6]
-        SDSS_fiberid = f"{SDSS_fiberid_number:04}"
         SDSS_mjd = object_data.iloc[0, 5]
         DESI_mjd = object_data.iloc[0, 11]
-        SDSS_z = object_data.iloc[0, 2]
-        DESI_z = object_data.iloc[0, 9]
-        DESI_name = object_data.iloc[0, 10]
+        if optical_analysis == 1:
+            SDSS_plate_number = object_data.iloc[0, 4]
+            SDSS_plate = f'{SDSS_plate_number:04}'
+            SDSS_fiberid_number = object_data.iloc[0, 6]
+            SDSS_fiberid = f"{SDSS_fiberid_number:04}"
+            SDSS_z = object_data.iloc[0, 2]
+            DESI_z = object_data.iloc[0, 9]
+            DESI_name = object_data.iloc[0, 10]
     #For CLAGN:
     elif my_object == 1:
         object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
         SDSS_RA = object_data.iloc[0, 0]
         SDSS_DEC = object_data.iloc[0, 1]
-        SDSS_plate_number = object_data.iloc[0, 4]
-        SDSS_plate = f'{SDSS_plate_number:04}'
-        SDSS_fiberid_number = object_data.iloc[0, 6]
-        SDSS_fiberid = f"{SDSS_fiberid_number:04}"
         SDSS_mjd = object_data.iloc[0, 5]
         DESI_mjd = object_data.iloc[0, 11]
-        SDSS_z = object_data.iloc[0, 2]
-        DESI_z = object_data.iloc[0, 9]
-        DESI_name = object_data.iloc[0, 10]
+        if optical_analysis == 1:
+            SDSS_plate_number = object_data.iloc[0, 4]
+            SDSS_plate = f'{SDSS_plate_number:04}'
+            SDSS_fiberid_number = object_data.iloc[0, 6]
+            SDSS_fiberid = f"{SDSS_fiberid_number:04}"
+            SDSS_z = object_data.iloc[0, 2]
+            DESI_z = object_data.iloc[0, 9]
+            DESI_name = object_data.iloc[0, 10]
 
     if SDSS_mjd < 55089: #55179 is 14/12/2009 - the date of the 1st ever WISE observation. Accept data that is within 90 days of this
         print(f'SDSS observation was {55179 - SDSS_mjd} days before 1st ever WISE observation.')
@@ -371,7 +376,7 @@ for object_name in object_names:
                         c+=1
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
 
-                    W1_data.append( ( np.median(W1_all[i][0]), np.median(W1_all[i][1]), W1_all[i][2] ) )
+                    W1_data.append( ( W1_all[i][0], W1_all[i][1], W1_all[i][2] ) )
                     W1_mean_unc_counter.append(c)
                     continue
             elif W1_all[i][1] - W1_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
@@ -431,7 +436,7 @@ for object_name in object_names:
                         c+=1
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
 
-                    W2_data.append( ( np.median(W2_all[i][0]), np.median(W2_all[i][1]), W2_all[i][2] ) )
+                    W2_data.append( ( W2_all[i][0], W2_all[i][1], W2_all[i][2] ) )
                     W2_mean_unc_counter.append(c)
                     continue
             elif W2_all[i][1] - W2_all[i-1][1] < 100: #checking in the same epoch (<100 days between measurements)
@@ -628,8 +633,8 @@ for object_name in object_names:
     if SDSS_mjd + 90 < W1_first and SDSS_mjd + 90 < W2_first:
         print(f'SDSS mjd = {SDSS_mjd};before first MIR observation')
         continue
-    if DESI_mjd -90 > W1_last and DESI_mjd - 90 > W2_last:
-        print(f'DESI mjd = {DESI_mjd};before first MIR observation')
+    if DESI_mjd - 90 > W1_last and DESI_mjd - 90 > W2_last:
+        print(f'DESI mjd = {DESI_mjd};after last MIR observation')
         continue
     SDSS_mjd_for_dnl = SDSS_mjd
     DESI_mjd_for_dnl = DESI_mjd
@@ -638,6 +643,8 @@ for object_name in object_names:
         fig = plt.figure(figsize=(12,7))
     if m == 0 and n == 0:
         min_mjd = min([W1_data[0][1], W2_data[0][1]])
+        SDSS_mjd = SDSS_mjd - min_mjd
+        DESI_mjd = DESI_mjd - min_mjd
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
         W2_av_mjd_date = [tup[1] - min_mjd for tup in W2_data]
         W1_averages_flux = [tup[0] for tup in W1_data]
@@ -654,6 +661,8 @@ for object_name in object_names:
         before_DESI_index_W2, after_DESI_index_W2, r, ninety_first_DESI_W2, ninety_last_DESI_W2, ninety_before_DESI_W2, ninety_after_DESI_W2 = find_closest_indices(W2_av_mjd_date, DESI_mjd)
     elif n == 0:
         min_mjd = W2_data[0][1]
+        SDSS_mjd = SDSS_mjd - min_mjd
+        DESI_mjd = DESI_mjd - min_mjd
         W2_av_mjd_date = [tup[1] - min_mjd for tup in W2_data]
         W2_averages_flux = [tup[0] for tup in W2_data]
         W2_av_uncs_flux = [tup[2] for tup in W2_data]
@@ -666,6 +675,8 @@ for object_name in object_names:
         e = 1
     elif m == 0:
         min_mjd = W1_data[0][1]
+        SDSS_mjd = SDSS_mjd - min_mjd
+        DESI_mjd = DESI_mjd - min_mjd
         W1_av_mjd_date = [tup[1] - min_mjd for tup in W1_data]
         W1_averages_flux = [tup[0] for tup in W1_data]
         W1_av_uncs_flux = [tup[2] for tup in W1_data]
@@ -690,97 +701,101 @@ for object_name in object_names:
         plt.close(fig)
     
     if q != 0 or e != 0:
-        if w != 0 or e != 0:
+        if w != 0 or r != 0:
             print('SDSS or DESI observation not near MIR data')
             continue
-
-    if my_object == 0: #AGN
-        sdss_lamb, sdss_flux = get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd_for_dnl, coord, SDSS_plate, SDSS_fiberid)
-        desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
-    elif my_object == 1:
-        #SDSS
-        try:        
-            SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd_for_dnl:.0f}-{SDSS_fiberid}.fits'
-            SDSS_file_path = f'clagn_spectra/{SDSS_file}'
-            with fits.open(SDSS_file_path) as hdul:
-                subset = hdul[1]
-                sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
-                sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-        except FileNotFoundError as e:
-            print('SDSS File not found - trying download')
+    
+    if optical_analysis == 1:
+        if my_object == 0: #AGN
             sdss_lamb, sdss_flux = get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd_for_dnl, coord, SDSS_plate, SDSS_fiberid)
-        #DESI
-        try:
-            DESI_file = f'spectrum_desi_{object_name}.csv'
-            DESI_file_path = f'clagn_spectra/{DESI_file}'
-            DESI_spec = pd.read_csv(DESI_file_path)
-            desi_lamb = DESI_spec.iloc[:, 0]
-            desi_flux = DESI_spec.iloc[:, 1]
-        except FileNotFoundError as e:
-            print('DESI File not found - trying download')
             desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
+        elif my_object == 1:
+            #SDSS
+            try:        
+                SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd_for_dnl:.0f}-{SDSS_fiberid}.fits'
+                SDSS_file_path = f'clagn_spectra/{SDSS_file}'
+                with fits.open(SDSS_file_path) as hdul:
+                    subset = hdul[1]
+                    sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
+                    sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+            except FileNotFoundError as e:
+                print('SDSS File not found - trying download')
+                sdss_lamb, sdss_flux = get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd_for_dnl, coord, SDSS_plate, SDSS_fiberid)
+            #DESI
+            try:
+                DESI_file = f'spectrum_desi_{object_name}.csv'
+                DESI_file_path = f'clagn_spectra/{DESI_file}'
+                DESI_spec = pd.read_csv(DESI_file_path)
+                desi_lamb = DESI_spec.iloc[:, 0]
+                desi_flux = DESI_spec.iloc[:, 1]
+            except FileNotFoundError as e:
+                print('DESI File not found - trying download')
+                desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
 
-    ebv = sfd.ebv(coord)
-    inverse_SDSS_lamb = [1/(x*10**(-4)) for x in sdss_lamb] #need units of inverse microns for extinguishing
-    inverse_DESI_lamb = [1/(x*10**(-4)) for x in desi_lamb]
-    sdss_flux = sdss_flux/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv) #divide to remove the effect of dust
-    desi_flux = desi_flux/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
+        ebv = sfd.ebv(coord)
+        inverse_SDSS_lamb = [1/(x*10**(-4)) for x in sdss_lamb] #need units of inverse microns for extinguishing
+        inverse_DESI_lamb = [1/(x*10**(-4)) for x in desi_lamb]
+        sdss_flux = sdss_flux/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv) #divide to remove the effect of dust
+        desi_flux = desi_flux/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
 
-    sdss_lamb = (sdss_lamb/(1+SDSS_z))
-    desi_lamb = (desi_lamb/(1+DESI_z))
-    if len(sdss_flux) > 0:
-        Gaus_smoothed_SDSS = convolve(sdss_flux, gaussian_kernel)
-    else:
-        Gaus_smoothed_SDSS = []
-    if len(desi_flux) > 0:
-        Gaus_smoothed_DESI = convolve(desi_flux, gaussian_kernel)
-    else:
-        Gaus_smoothed_DESI = []
-    if len(sdss_lamb) > 0:
-        SDSS_min = min(sdss_lamb)
-        SDSS_max = max(sdss_lamb)
-    else:
-        SDSS_min = 0
-        SDSS_max = 1
-    if len(desi_lamb) > 0:
-        DESI_min = min(desi_lamb)
-        DESI_max = max(desi_lamb)
-    else:
-        DESI_min = 0
-        DESI_max = 1
-
-    #UV analysis
-    if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
-        closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
-        closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
-        sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
-        sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
-        sdss_blue_flux_smooth = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
-
-        desi_lamb = desi_lamb.tolist()
-        closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
-        closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
-        desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
-        desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
-        desi_blue_flux_smooth = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
-
-        #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
-        sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
-        sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
-
-        if np.median(sdss_blue_flux_interp) > np.median(desi_blue_flux_smooth): #want turned-on minus turned-off if a CLAGN
-            flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
-            norm_factor = np.median(flux_for_norm)
-            UV_NFD = [flux/norm_factor for flux in flux_diff]
+        sdss_lamb = (sdss_lamb/(1+SDSS_z))
+        desi_lamb = (desi_lamb/(1+DESI_z))
+        if len(sdss_flux) > 0:
+            Gaus_smoothed_SDSS = convolve(sdss_flux, gaussian_kernel)
         else:
-            flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
-            norm_factor = np.median(flux_for_norm)
-            UV_NFD = [flux/norm_factor for flux in flux_diff]
+            Gaus_smoothed_SDSS = []
+        if len(desi_flux) > 0:
+            Gaus_smoothed_DESI = convolve(desi_flux, gaussian_kernel)
+        else:
+            Gaus_smoothed_DESI = []
+        if len(sdss_lamb) > 0:
+            SDSS_min = min(sdss_lamb)
+            SDSS_max = max(sdss_lamb)
+        else:
+            SDSS_min = 0
+            SDSS_max = 1
+        if len(desi_lamb) > 0:
+            DESI_min = min(desi_lamb)
+            DESI_max = max(desi_lamb)
+        else:
+            DESI_min = 0
+            DESI_max = 1
 
-        median_UV_NFD.append(np.median(UV_NFD))
-        median_UV_NFD_unc.append(median_abs_deviation(UV_NFD))
+        #UV analysis
+        if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
+            closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
+            closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
+            sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
+            sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+            sdss_blue_flux_smooth = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
+
+            desi_lamb = desi_lamb.tolist()
+            closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
+            closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
+            desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
+            desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+            desi_blue_flux_smooth = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
+
+            #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
+            sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
+            sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
+
+            if np.median(sdss_blue_flux_interp) > np.median(desi_blue_flux_smooth): #want turned-on minus turned-off if a CLAGN
+                flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
+                flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+                norm_factor = np.median(flux_for_norm)
+                UV_NFD = [flux/norm_factor for flux in flux_diff]
+            else:
+                flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
+                flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
+                norm_factor = np.median(flux_for_norm)
+                UV_NFD = [flux/norm_factor for flux in flux_diff]
+
+            median_UV_NFD.append(np.median(UV_NFD))
+            median_UV_NFD_unc.append(median_abs_deviation(UV_NFD))
+        else:
+            median_UV_NFD.append(np.nan)
+            median_UV_NFD_unc.append(np.nan)
     else:
         median_UV_NFD.append(np.nan)
         median_UV_NFD_unc.append(np.nan)
@@ -1272,8 +1287,8 @@ for object_name in object_names:
         "W2 Max Flux Unc": W2_high_unc, #36
         "W1 median_abs_dev of Flux": W1_median_dev, #37
         "W2 median_abs_dev of Flux": W2_median_dev, #38
-        "W1 Mean Unc Counter": W1_mean_unc_counter, #39
-        "W2 Mean Unc Counter": W2_mean_unc_counter, #40
+        "W1 Mean Unc Counter": W1_mean_uncs, #39
+        "W2 Mean Unc Counter": W2_mean_uncs, #40
     }
 
     # Convert the data into a DataFrame
