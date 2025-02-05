@@ -6,10 +6,12 @@ Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
 brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 1 #0=UV. 1=MIR only
+MIR_UV = 0 #0=UV. 1=MIR only
 
 #plots:
 main_MIR = 0 #1 if want main zscore and NFD plot.
+UV_MIRZ = 1
+UV_MIR_NFD = 1
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -42,7 +44,9 @@ print(f'Median AGN sample redshift = {median_AGN_redshift:.3f}')
 
 #Quantifying change data - With UV
 if MIR_UV == 0:
-    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change.csv')
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV1.csv')
+    #Drop columns where no UV analysis was performed:
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[21]])
     if brightness == 1:
         # Only objects >= 0.5 min flux in W1 band
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
@@ -135,7 +139,9 @@ CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
 
 #Quantifying change data - With UV
 if MIR_UV == 0:
-    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}_UV1.csv')
+    #Drop columns where no UV analysis was performed:
+    AGN_quantifying_change_data = AGN_quantifying_change_data.dropna(subset=[AGN_quantifying_change_data.columns[21]])
     if brightness == 1:
         AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
@@ -287,6 +293,27 @@ print(f'{k}/{len(CLAGN_norm_flux_diff)}={k/len(CLAGN_norm_flux_diff)*100:.2f}% o
 print(f'{i}/{len(CLAGN_zscores)}={i/len(CLAGN_zscores)*100:.2f}% of CLAGN above zscore threshold')
 print(f'{l}/{len(AGN_norm_flux_diff)}={l/len(AGN_norm_flux_diff)*100:.2f}% of AGN above NFD threshold')
 print(f'{j}/{len(AGN_zscores)}={j/len(AGN_zscores)*100:.2f}% of AGN above zscore threshold')
+
+if MIR_UV == 0:
+    median_UV_NFD = np.nanmedian(AGN_norm_flux_diff_UV)
+    median_UV_NFD_unc = np.nanmedian(AGN_norm_flux_diff_UV_unc)
+    three_sigma_UV_NFD = median_UV_NFD + 3*median_UV_NFD_unc
+    print(f'Median UV NFD = {median_UV_NFD:.4f}')
+    print(f'Median UV NFD unc = {median_UV_NFD_unc:.4f}')
+    print(f'3\u03C3 significance for UV NFD = {three_sigma_UV_NFD:.4f}')
+
+    b = 0
+    for UV_normdiff in CLAGN_norm_flux_diff_UV:
+        if UV_normdiff > three_sigma_UV_NFD:
+            b += 1
+    
+    d = 0
+    for UV_normdiff in AGN_norm_flux_diff_UV:
+        if UV_normdiff > three_sigma_UV_NFD:
+            d += 1
+
+    print(f'{b}/{len(CLAGN_norm_flux_diff_UV)}={b/len(CLAGN_norm_flux_diff_UV)*100:.2f}% of CLAGN above UV NFD threshold')
+    print(f'{d}/{len(AGN_norm_flux_diff_UV)}={d/len(AGN_norm_flux_diff_UV)*100:.2f}% of AGN above UV NFD threshold')
 
 
 # ### BELOW INVESTIGATION CHECKS WHETHER ELIMINATING OBJECTS WITH A HIGH UNC RATIO (eg NFD_UNC/NFD) IMPROVES RESULTS.
@@ -460,30 +487,58 @@ if main_MIR == 1:
     plt.show()
 
 
-# # # #Creating a 2d plot for UV normalised flux difference & z score:
-# plt.figure(figsize=(12, 7))
-# plt.scatter(AGN_zscores, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
-# plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
-# # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
-# # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
-# plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
-# plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
-# plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
-# plt.xticks(fontsize=26)
-# plt.yticks(fontsize=26)
-# plt.xlabel("Z-Score", fontsize = 26)
-# plt.ylabel("UV NFD", fontsize = 26)
-# plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
-# plt.legend(loc = 'best', fontsize=25)
-# plt.grid(True, linestyle='--', alpha=0.5)
-# plt.tight_layout()
-# # ax = plt.gca()
-# # plt.text(0.99, 0.16, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-# # plt.text(0.99, 0.1, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-# # plt.text(0.12, 0.9, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# # plt.text(0.12, 0.84, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-# plt.show()
+# # #Creating a 2d plot for UV normalised flux difference & z score:
+if UV_MIRZ == 1:
+    plt.figure(figsize=(12, 7))
+    plt.scatter(AGN_zscores, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
+    # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
+    # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
+    plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+    plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
+    plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.xlabel("Z-Score", fontsize = 26)
+    plt.ylabel("UV NFD", fontsize = 26)
+    plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    ax = plt.gca()
+    plt.text(0.99, 0.25, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.19, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.37, f'{b/len(CLAGN_norm_flux_diff_UV)*100:.1f}% of CLAGN above UV NFD threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.31, f'{d/len(AGN_norm_flux_diff_UV)*100:.1f}% of AGN above UV NFD threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.show()
+
+
+# # #Creating a 2d plot for UV NFD & MIR NFD:
+if UV_MIR_NFD == 1:
+    plt.figure(figsize=(12, 7))
+    plt.scatter(AGN_norm_flux_diff, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_norm_flux_diff, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
+    # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
+    # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
+    plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
+    plt.xlim(0, 1.05*max(AGN_norm_flux_diff+CLAGN_norm_flux_diff))
+    plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.xlabel("NFD", fontsize = 26)
+    plt.ylabel("UV NFD", fontsize = 26)
+    plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    ax = plt.gca()
+    plt.text(0.99, 0.25, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.19, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.37, f'{b/len(CLAGN_norm_flux_diff_UV)*100:.1f}% of CLAGN above UV NFD threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.31, f'{d/len(AGN_norm_flux_diff_UV)*100:.1f}% of AGN above UV NFD threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.show()
 
 
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:

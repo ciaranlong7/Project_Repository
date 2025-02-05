@@ -1281,8 +1281,8 @@ for object_name in object_names:
         "Mean Z Score Unc": mean_zscore_unc, #18
         "Mean NFD": mean_NFD, #19
         "Mean NFD Unc": mean_NFD_unc, #20
-        "Median UV Flux Diff On-Off": median_UV_NFD, #21
-        "Median UV Flux Diff On-Off Unc": median_UV_NFD_unc, #22
+        "Median UV NFD On-Off": median_UV_NFD, #21
+        "Median UV NFD On-Off Unc": median_UV_NFD_unc, #22
 
         "SDSS mjd": SDSS_mjds, #23
         "DESI mjd": DESI_mjds, #24

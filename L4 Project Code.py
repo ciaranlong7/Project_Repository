@@ -62,7 +62,7 @@ object_name = '140957.72-012850.5' #Object D - chosen because of very high z sco
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
-object_name = '113737.38+511839.9'
+object_name = '160534.46+433654.5'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -72,7 +72,7 @@ object_name = '113737.38+511839.9'
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 2
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below

@@ -321,3 +321,21 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #         object_data.iloc[0, 2] = object_data.iloc[0, 9] #sdss redshift becomes desi redshift.
 #         parent_sample_no_duplicates = pd.concat([parent_sample_no_duplicates, object_data], ignore_index=True)
 #         parent_sample_no_duplicates.to_csv('guo23_parent_sample_no_duplicates.csv', index=False)
+
+
+# # Putting UV analysis from older csv file into new one.
+MIR_interp_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_UV0.csv")
+UV_analysis_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_All_UV1.csv")
+
+#Renaming columns 21 and 22 so the names are the same in each df
+UV_analysis_df.rename(columns={
+    'Mean UV Flux Change DESI - SDSS': 'Median UV Flux Diff On-Off',
+    'Mean UV Flux Change DESI - SDSS Unc': 'Median UV Flux Diff On-Off Unc'
+}, inplace=True)
+
+temp_merged_df = pd.merge(MIR_interp_df, UV_analysis_df, on='Object', suffixes=('_df1', '_df2'), how='left')
+MIR_interp_df.iloc[:, 21] = temp_merged_df['Median UV Flux Diff On-Off_df2'].fillna(MIR_interp_df.iloc[:, 21]) #index 21 = UV NFD
+MIR_interp_df.iloc[:, 22] = temp_merged_df['Median UV Flux Diff On-Off Unc_df2'].fillna(MIR_interp_df.iloc[:, 22]) #index 22 = UV NFD unc
+
+
+MIR_interp_df.to_csv('AGN_Quantifying_Change_Sample_1_UV1.csv', index=False)
