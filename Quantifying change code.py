@@ -223,14 +223,18 @@ AGN_names_analysis = AGN_quantifying_change_data.iloc[:, 0].tolist()
 #     print(AGN_names_analysis[index])
 
 
-print(f'CLAGN W1 median 2nd lowest flux = {np.nanmedian(CLAGN_W1_low_flux):.4f}')
+print(f'CLAGN W1 median lowest flux = {np.nanmedian(CLAGN_W1_low_flux):.4f}')
+print(f'CLAGN W1 median lowest flux Unc = {np.nanmedian(CLAGN_W1_low_flux_unc):.4f}')
 print(f'CLAGN W1 median median_abs_dev flux = {np.nanmedian(CLAGN_W1_median_dev_flux):.5f}')
-print(f'CLAGN W2 median 2nd lowest flux = {np.nanmedian(CLAGN_W2_low_flux):.4f}')
+print(f'CLAGN W2 median lowest flux = {np.nanmedian(CLAGN_W2_low_flux):.4f}')
+print(f'CLAGN W2 median lowest flux Unc = {np.nanmedian(CLAGN_W2_low_flux_unc):.4f}')
 print(f'CLAGN W2 median median_abs_dev flux = {np.nanmedian(CLAGN_W2_median_dev_flux):.5f}')
 
-print(f'AGN W1 median 2nd lowest flux = {np.nanmedian(AGN_W1_low_flux):.4f}')
+print(f'AGN W1 median lowest flux = {np.nanmedian(AGN_W1_low_flux):.4f}')
+print(f'AGN W1 median lowest flux Unc = {np.nanmedian(AGN_W1_low_flux_unc):.4f}')
 print(f'AGN W1 median median_abs_dev flux = {np.nanmedian(AGN_W1_median_dev_flux):.5f}')
-print(f'AGN W2 median 2nd lowest flux = {np.nanmedian(AGN_W2_low_flux):.4f}')
+print(f'AGN W2 median lowest flux = {np.nanmedian(AGN_W2_low_flux):.4f}')
+print(f'AGN W2 median lowest flux Unc = {np.nanmedian(AGN_W2_low_flux_unc):.4f}')
 print(f'AGN W2 median median_abs_dev flux = {np.nanmedian(AGN_W2_median_dev_flux):.5f}')
 
 

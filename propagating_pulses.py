@@ -2,53 +2,117 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider
 from matplotlib.collections import PolyCollection
-from scipy.fft import fft, ifft, fftfreq
+import scipy.fft as fft
 
-#E_z_t0: An array of the input electric field
-#t: The time at which the electric field is calculated
-#dz: Spatial resolution
-def electric_field_tz(E_z_t0, t, dz):
+##Investigation 1 - The relationship between harmonics in freq domain and attosecond pulses in the time domain:
+# Define parameters
+t_min, t_max = -20, 20   # Time range (arbitrary units)
+num_t = 4096             # Number of time points
+t = np.linspace(t_min, t_max, num_t)  # Time array
+dt = t[1] - t[0]         # Time step
 
-    # Compute the Fourier transform of the input electric field
-    E_k = fft(E_z_t0)
+# Define a function to generate a harmonic spectrum (only odd harmonics)
+def harmonic_spectrum(frequencies, base_freq=10, max_order=15):
+    spectrum = np.zeros_like(frequencies, dtype=complex)
+    for n in range(1, max_order + 1, 2):  # Only odd harmonics (1, 3, 5, ...)
+        omega_n = n * base_freq
+        if omega_n > 0:  # Ensure only positive frequencies
+            idx = np.argmin(np.abs(frequencies - omega_n))
+            spectrum[idx] = 1.0  # Set amplitude for each harmonic
+    return spectrum
 
-    # Number of spatial points
-    N = len(E_z_t0)
+# Compute the frequency domain representation (harmonic spectrum)
+frequencies = fft.fftfreq(num_t, d=dt) * 2 * np.pi  # Frequency array (ω)
+harmonic_spectrum_values = harmonic_spectrum(np.abs(frequencies), base_freq=10, max_order=15)
 
-    # Wave numbers corresponding to Fourier transform
-    w_k = fftfreq(N, dz)*2*np.pi
+# Compute the attosecond pulse train by taking the inverse Fourier transform
+E_t_values = np.abs(fft.ifft(fft.ifftshift(harmonic_spectrum_values)))  # Ensure real-valued time-domain signal
 
-    E_k_t = E_k * np.exp(-1j*w_k*t)
+# Convert time array to wave periods (relative to the base frequency)
+wave_periods = (t - t_min) / (2 * np.pi / 10)  # Base frequency period is 2π/10
 
-    # Inverse Fourier transform to get E(z, t) - final step of hedgehog in time equation.
-    E_z_t = ifft(E_k_t)
+# Plot results
+plt.figure(figsize=(12, 5))
 
-    modulus_E_z_t = np.sqrt(np.real(E_z_t)**2+ np.imag(E_z_t)**2)
+# Frequency-domain plot (|E(z,ω)|)
+plt.subplot(1, 2, 1)
+plt.plot(np.abs(frequencies), np.abs(harmonic_spectrum_values))
+plt.xlabel("Frequency ω")
+plt.ylabel("|E(z,ω)|")
+plt.title("Harmonic Spectrum in Frequency Domain (Odd Harmonics)")
+plt.xlim(0, 160)
 
-    return modulus_E_z_t
+# Time-domain plot (attosecond pulse train in wave periods)
+plt.subplot(1, 2, 2)
+plt.plot(wave_periods, E_t_values)
+plt.xlabel("Time (wave periods)")
+plt.ylabel("|E(z,t)|")
+plt.title("Train of Attosecond Pulses in Time Domain")
+plt.xlim(0, 10)  # Restrict to the first 10 wave periods
 
-####Different possible inputs below:
-def gauss(z_points, E_0, b, a):
+plt.tight_layout()
+plt.show()
+
+
+##Investigation 2 - Solving the hedgehog-in-time equation to observe how pulses propagate with time
+#Input pulse options
+def gauss(z_points, E_0, a, b):
     #a cannot equal 0
-    E_z_t0 = np.array([E_0*np.exp(-((z-b)**2)/(a**2))for z in z_points])
+    E_z_t0 = np.array([E_0*np.exp(-((z-b)**2)/(a**2)) for z in z_points])
     return E_z_t0
 
 def rect(z_points, min, max, height):
     E_z_t0 = np.where(np.logical_and(z_points >= min, z_points <= max), height, 0)
     return E_z_t0
 
-dz = 0.1  #Spatial resolution (how far apart points are plotted)
-z_points = np.arange(-3, 20, dz)  # min,max of z-axis for the plot
+#Solving hedgehog-in-time equation:
+#E_z_t0: An array of the input electric field
+#t: The time at which the electric field is calculated
+#dz: Spatial resolution
+def electric_field_zt(E_z_t0, t, dz):
 
-E_z_t0 = gauss(z_points, 0, 1, 1) 
-E_z_t0 = rect(z_points, 0, 1, 5)
+    # Compute the Fourier transform of the input electric field
+    E_k = fft.fft(E_z_t0)
 
-t = 0.1
-E_z_t = electric_field_tz(E_z_t0, t, dz) #Electric field after time t
+    # Number of spatial points
+    N = len(E_z_t0)
+
+    # Wave numbers corresponding to Fourier transform
+    w_k = fft.fftfreq(N, dz)*2*np.pi
+
+    E_k_t = E_k * np.exp(-1j*w_k*t)
+
+    # Inverse Fourier transform to get E(z, t) - final step of hedgehog in time equation.
+    E_z_t = fft.ifft(E_k_t)
+
+    modulus_E_z_t = np.sqrt(np.real(E_z_t)**2+ np.imag(E_z_t)**2)
+
+    return modulus_E_z_t
+
+dz = 0.01  #Spatial resolution (how far apart points are plotted in space)
+z_min = -3
+z_max = 20
+z_points = np.arange(z_min, z_max, dz)  # min,max of z-axis for the plot
+
+#Gauss function
+# E_0 = 1
+# b = 0
+# a = 1
+# E_z_t0 = gauss(z_points, E_0, a, b)
+
+#Rect function
+rect_min = 0
+rect_max = 1
+height = 5
+E_z_t0 = rect(z_points, rect_min, rect_max, height)
+
+#Electric field after time t
+t = 5
+E_z_t = electric_field_zt(E_z_t0, t, dz)
 
 
-#Making a plot:
-plt.figure(figsize=(12, 7))
+#Plot of E field at time t'=0 and t'=t:
+plt.figure(figsize=(12, 5))
 plt.plot(z_points, E_z_t0, label="E(z, t=0)")
 plt.fill(z_points, E_z_t0, color="#1f77b4", alpha=0.3)
 plt.plot(z_points, E_z_t, label=f"E(z, t={t})")
@@ -108,7 +172,7 @@ plt.show()
 
 # def update(val):
 #     t = slider.val
-#     E_z_t = electric_field_tz(E_z_t0, t, dz)
+#     E_z_t = electric_field_zt(E_z_t0, t, dz)
 #     line.set_ydata(E_z_t)
 #     for collection in [c for c in ax.collections if isinstance(c, PolyCollection)]:
 #         collection.remove()
