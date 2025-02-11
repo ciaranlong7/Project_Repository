@@ -173,7 +173,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample.append(parent_row)
 # output_df = pd.DataFrame(AGN_Sample)
-# output_df.to_csv('AGN_Sample.csv', index=False)
+# output_df.to_csv('AGN_Sample_new.csv', index=False)
 
 # AGN_Sample_two = []
 # #The 280 AGN in the first AGN_sample have already been removed
@@ -187,7 +187,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample_two.append(parent_row)
 # output_df_two = pd.DataFrame(AGN_Sample_two)
-# output_df_two.to_csv('AGN_Sample_two.csv', index=False)
+# output_df_two.to_csv('AGN_Sample_two_new.csv', index=False)
 
 # AGN_Sample_three = []
 # #The 560 AGN in the first & second AGN_sample have already been removed
@@ -201,7 +201,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample_three.append(parent_row)
 # output_df_three = pd.DataFrame(AGN_Sample_three)
-# output_df_three.to_csv('AGN_Sample_three.csv', index=False)
+# output_df_three.to_csv('AGN_Sample_three_new.csv', index=False)
 
 
 # #Final clean check
@@ -323,19 +323,19 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #         parent_sample_no_duplicates.to_csv('guo23_parent_sample_no_duplicates.csv', index=False)
 
 
-# # Putting UV analysis from older csv file into new one.
-MIR_interp_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_UV0.csv")
-UV_analysis_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_All_UV1.csv")
+# # # Putting UV analysis from older csv file into new one.
+# MIR_interp_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_UV0.csv")
+# UV_analysis_df = pd.read_csv("AGN_Quantifying_Change_Sample_1_All_UV1.csv")
 
-#Renaming columns 21 and 22 so the names are the same in each df
-UV_analysis_df.rename(columns={
-    'Mean UV Flux Change DESI - SDSS': 'Median UV Flux Diff On-Off',
-    'Mean UV Flux Change DESI - SDSS Unc': 'Median UV Flux Diff On-Off Unc'
-}, inplace=True)
+# #Renaming columns 21 and 22 so the names are the same in each df
+# UV_analysis_df.rename(columns={
+#     'Mean UV Flux Change DESI - SDSS': 'Median UV Flux Diff On-Off',
+#     'Mean UV Flux Change DESI - SDSS Unc': 'Median UV Flux Diff On-Off Unc'
+# }, inplace=True)
 
-temp_merged_df = pd.merge(MIR_interp_df, UV_analysis_df, on='Object', suffixes=('_df1', '_df2'), how='left')
-MIR_interp_df.iloc[:, 21] = temp_merged_df['Median UV Flux Diff On-Off_df2'].fillna(MIR_interp_df.iloc[:, 21]) #index 21 = UV NFD
-MIR_interp_df.iloc[:, 22] = temp_merged_df['Median UV Flux Diff On-Off Unc_df2'].fillna(MIR_interp_df.iloc[:, 22]) #index 22 = UV NFD unc
+# temp_merged_df = pd.merge(MIR_interp_df, UV_analysis_df, on='Object', suffixes=('_df1', '_df2'), how='left')
+# MIR_interp_df.iloc[:, 21] = temp_merged_df['Median UV Flux Diff On-Off_df2'].fillna(MIR_interp_df.iloc[:, 21]) #index 21 = UV NFD
+# MIR_interp_df.iloc[:, 22] = temp_merged_df['Median UV Flux Diff On-Off Unc_df2'].fillna(MIR_interp_df.iloc[:, 22]) #index 22 = UV NFD unc
 
 
-MIR_interp_df.to_csv('AGN_Quantifying_Change_Sample_1_UV1.csv', index=False)
+# MIR_interp_df.to_csv('AGN_Quantifying_Change_Sample_1_UV1.csv', index=False)

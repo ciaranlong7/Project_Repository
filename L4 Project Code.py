@@ -24,10 +24,10 @@ c = 299792458
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-# object_name = '152517.57+401357.6' #Object A - assigned to me
+object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
-object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
+# object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
 # object_name = '162106.25+371950.7' #Object E - chosen because of very low z scores
 # object_name = '135544.25+531805.2' #Object F - chosen because not a CLAGN, but in AGN parent sample & has high z scores
 # object_name = '150210.72+522212.2' #Object G - chosen because not a CLAGN, but in AGN parent sample & has low z scores
@@ -62,7 +62,7 @@ object_name = '140957.72-012850.5' #Object D - chosen because of very high z sco
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
-object_name = '160534.46+433654.5'
+# object_name = '160534.46+433654.5'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -72,16 +72,16 @@ object_name = '160534.46+433654.5'
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 1
+option = 5
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only_mag = 0 #plot with just MIR data on it (mag) 
-MIR_only = 1 #plot with just MIR data on it
+MIR_only = 0 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
-UV_NFD_plot = 0
+SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+main_plot = 0 #main plot, with MIR, SDSS & DESI
+UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
+UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
 
 m = 0 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 0 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -417,7 +417,7 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     desi_blue_flux_smooth = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
-    sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
+    sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
     sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
     if np.median(sdss_blue_flux_smooth) > np.median(desi_blue_flux_smooth): #want high-state minus low-state
@@ -439,10 +439,10 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         common_ymax = 1.05*max(Gaus_smoothed_SDSS.tolist()+Gaus_smoothed_DESI.tolist())
 
         ax1 = fig.add_subplot(gs[0:3, :])
-        ax1.plot(desi_blue_lamb, UV_NFD, color = 'orange', label = f'{round(DESI_mjd -SDSS_mjd)} days between observations')
+        ax1.plot(desi_blue_lamb, UV_NFD, color = 'darkorange', label = f'{round(DESI_mjd -SDSS_mjd)} days between observations')
         ax1.set_xlabel('Wavelength / Å')
         ax1.set_ylabel('Turned On Flux - Turned Off Flux (Normalised)')
-        ax1.set_title(f'Normalised Accretion Disk Flux Contribution ({object_name})')
+        ax1.set_title(f'UV NFD ({object_name})')
 
         ax2 = fig.add_subplot(gs[3:, 0])
         ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
@@ -466,29 +466,29 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         #hspace and wspace adjust the spacing between rows and columns, respectively.
         plt.show()
 
+    if UV_NFD_hist == 1:
+        #Histogram of the distribution of flux change values
+        median_flux_diff = np.median(UV_NFD)
+        MAD_flux_diff = median_abs_deviation(UV_NFD)
+        x_start = median_flux_diff - MAD_flux_diff
+        x_end = median_flux_diff + MAD_flux_diff
+        flux_diff_binsize = (max(UV_NFD)-min(UV_NFD))/50 #50 bins
+        bins_flux_diff = np.arange(min(UV_NFD), max(UV_NFD) + flux_diff_binsize, flux_diff_binsize)
+        counts, bin_edges = np.histogram(UV_NFD, bins=bins_flux_diff)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:])/2
+        bin_index_start = np.argmin(abs(bin_centers - x_start))
+        bin_index_end = np.argmin(abs(bin_centers - x_end))
+        height = 1.1*max([counts[bin_index_start], counts[bin_index_end]])
 
-#     #Histogram of the distribution of flux change values
-#     mean_flux_diff = np.mean(UV_NFD)
-#     std_flux_diff = np.std(UV_NFD)
-#     x_start = mean_flux_diff - std_flux_diff
-#     x_end = mean_flux_diff + std_flux_diff
-#     flux_diff_binsize = (max(UV_NFD)-min(UV_NFD))/50 #50 bins
-#     bins_flux_diff = np.arange(min(UV_NFD), max(UV_NFD) + flux_diff_binsize, flux_diff_binsize)
-#     counts, bin_edges = np.histogram(UV_NFD, bins=bins_flux_diff)
-#     bin_centers = (bin_edges[:-1] + bin_edges[1:])/2
-#     bin_index_start = np.argmin(abs(bin_centers - x_start))
-#     bin_index_end = np.argmin(abs(bin_centers - x_end))
-#     height = 1.1*max([counts[bin_index_start], counts[bin_index_end]])
-
-#     plt.figure(figsize=(12,7))
-#     plt.hist(UV_NFD, bins=bins_flux_diff, color='blue', edgecolor='black', label=f'binsize = {flux_diff_binsize:.2f}')
-#     plt.axvline(mean_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Mean = {mean_flux_diff:.2f}')
-#     plt.plot((x_start, x_end), (height, height), linewidth=2, color='black', label = f'Standard Deviation = {std_flux_diff:.2f}')
-#     plt.xlabel('Turned On Flux - Turned Off Flux (Normalised)')
-#     plt.ylabel('Frequency')
-#     plt.title(f'Normalised Accretion Disk Flux Contribution ({object_name})')
-#     plt.legend(loc='upper right')
-#     plt.show()
+        plt.figure(figsize=(12,7))
+        plt.hist(UV_NFD, bins=bins_flux_diff, color='darkorange', edgecolor='black', label=f'binsize = {flux_diff_binsize:.2f}')
+        plt.axvline(median_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Median = {median_flux_diff:.2f}')
+        plt.plot((x_start, x_end), (height, height), linewidth=2, color='black', label = f'Medain Absolute Deviation = {MAD_flux_diff:.2f}')
+        plt.xlabel('Turned On Flux - Turned Off Flux (Normalised)')
+        plt.ylabel('Frequency')
+        plt.title(f'UV NFD Values Across Wavelength Range ({object_name})')
+        plt.legend(loc='upper right')
+        plt.show()
 
 
 # #Plot of SDSS Spectrum - Extinction Corrected vs Uncorrected
@@ -1177,23 +1177,6 @@ if option >= 1 and option <= 4:
     # plt.show()
 
 
-    # if MIR_only_mag == 1:
-    #     # Plotting average W1 & W2 mags (or flux) vs days since first observation
-    #     plt.figure(figsize=(12,7))
-    #     plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
-    #     plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)') # fmt='o' makes the data points appear as circles.
-    #     # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-    #     # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
-    #     plt.xlabel('Days since first observation', fontsize = 26)
-    #     plt.xticks(fontsize=26)
-    #     plt.yticks(fontsize=26)
-    #     plt.ylabel('Magnitude')
-    #     plt.title(f'Light Curve (WISEA J{object_name})')
-    #     plt.legend(loc = 'best', fontsize = 25)
-    #     plt.tight_layout()
-    #     plt.show()
-
-
     if MIR_only == 1:
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
@@ -1302,9 +1285,9 @@ if SDSS_DESI_comb == 1:
 
     plt.figure(figsize=(12,7))
     plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
-    plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
+    plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen', label = 'SDSS')
     plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
-    plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
+    plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue', label = 'DESI')
     if SDSS_min <= H_alpha <= SDSS_max or DESI_min <= H_alpha <= DESI_max:
         plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
     if SDSS_min <= H_beta <= SDSS_max or DESI_min <= H_beta <= DESI_max:
@@ -1326,8 +1309,8 @@ if SDSS_DESI_comb == 1:
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-    plt.title(f'SDSS & DESI Spectra - {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
-    # plt.title(f'SDSS & DESI Spectra (WISEA J{object_name})', fontsize = 28)
+    plt.title(f'SDSS & DESI Spectra {DESI_mjd-SDSS_mjd:.0f} Days Apart', fontsize = 28)
+    # plt.title(f'SDSS & DESI Spectra ({object_name})', fontsize = 28)
     plt.legend(loc = 'best', fontsize = 25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
