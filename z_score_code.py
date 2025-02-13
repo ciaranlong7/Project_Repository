@@ -26,11 +26,11 @@ save_figures = 0 #set to 1 to save figures
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 if my_sample == 1:
-    AGN_sample = pd.read_csv("AGN_Sample.csv")
+    AGN_sample = pd.read_csv("AGN_Sample_new.csv")
 if my_sample == 2:
-    AGN_sample = pd.read_csv("AGN_Sample_two.csv")
+    AGN_sample = pd.read_csv("AGN_Sample_two_new.csv")
 if my_sample == 3:
-    AGN_sample = pd.read_csv("AGN_Sample_three.csv")
+    AGN_sample = pd.read_csv("AGN_Sample_three_new.csv")
 
 AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
 AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
@@ -698,27 +698,25 @@ for object_name in object_names:
         closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
         sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
         sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
-        sdss_blue_flux_smooth = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
 
         desi_lamb = desi_lamb.tolist()
         closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
         closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
         desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
         desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
-        desi_blue_flux_smooth = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
         #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
-        sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
+        sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
         sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
-        if np.median(sdss_blue_flux_interp) > np.median(desi_blue_flux_smooth): #want turned-on minus turned-off if a CLAGN
-            flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+        if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
+            flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
+            flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
             norm_factor = np.median(flux_for_norm)
             UV_NFD = [flux/norm_factor for flux in flux_diff]
         else:
-            flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-            flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
+            flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
+            flux_for_norm = [sdss_flux[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
             norm_factor = np.median(flux_for_norm)
             UV_NFD = [flux/norm_factor for flux in flux_diff]
 

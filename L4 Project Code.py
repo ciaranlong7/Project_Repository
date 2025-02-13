@@ -40,7 +40,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
-# object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score (120)
+# object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 # object_name = '163826.34+382512.1' #Object O - chosen because not a CLAGN, but has enourmous normalised flux change
 # object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
 # object_name = '121542.99+574702.3' #Object Q - chosen because not a CLAGN, but has a large normalised flux change.
@@ -62,7 +62,28 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
-# object_name = '160534.46+433654.5'
+# object_name = '160344.93+450146.4' #outlier = 12 (W2)
+# object_name = '112934.69+503103.4' #outlier = 116 (W2)
+# object_name = '115634.41+524502.1' #outlier = 240 (W2)
+# object_name = '083901.00+232352.4' #outlier = 131 (W2)
+# object_name = '161339.24+534552.0' #outlier = 29 (W2)
+# object_name = '154713.96+434217.3' #outlier = 35 (W2)
+# object_name = '154755.47+424120.0' #outlier = 9.5 (W2)
+# object_name = '141440.34+532057.1' #outlier = 27 (W2)
+# object_name = '013741.58+205156.6' #outlier = 10.6 (W2)
+# object_name = '154050.21+443310.8' #outlier = 27.7 (W2)
+# object_name = '115302.69+011027.8' #outlier = 213 (W2)
+# object_name = '142334.67+525712.9' #outlier = 4.5 (W2)
+# object_name = '153837.03+435132.3' #outlier = 18.5 (W2)
+# object_name = '161222.79+543154.9' #outlier = 26 (W2)
+# object_name = '142542.91+545710.1' #outlier = 479 (W2)
+
+# object_name = '121449.54+572734.1' #outliers = 163, 140 (W1)
+# object_name = '113115.72+533548.9' #outlier = 12.53 (W1)
+# object_name = '121234.41+573124.8' #outlier = 239 (W1)
+
+# object_name = '111938.02+513315.5'
+# object_name = '122444.60+335739.7'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -72,19 +93,19 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 5
+option = 2
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 0 #plot with just MIR data on it
+MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
-UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
+SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
+main_plot = 1 #main plot, with MIR, SDSS & DESI
+UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
+UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 
-m = 0 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
-n = 0 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
+m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
+n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -94,6 +115,26 @@ W1_k = 309.540 #Janskys. This means that mag 0 = 309.540 Janskys at the W1 wl.
 W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
+
+def remove_outliers(flux, threshold=20):
+    flux = np.array(flux)
+    median = np.median(flux)
+    mad = median_abs_deviation(flux)
+    modified_deviation = (flux-median)/mad
+    #modified deviation is a new array. Each element of the array represents how much the corresponding element
+    #in the flux input list deviates from the median.
+    #a new flux list is returned, only keeping flux values that are within 3.5 median_abs_deviations of the median flux.
+
+    print(modified_deviation)
+
+    mask = np.abs(modified_deviation) > threshold
+    outliers = flux[mask]
+
+    # Print removed outliers
+    for value in outliers:
+        print(f"Removing outlier: {value} (Modified Deviation = {modified_deviation[np.where(flux == value)][0]:.2f})")
+
+    return flux[~mask]  # Remove outliers
 
 Min_SNR = 3 #Options are 10, 3, or 2. #A (SNR>10), B (3<SNR<10) or C (2<SNR<3)
 if Min_SNR == 10: #Select Min_SNR on line above.
@@ -158,14 +199,14 @@ elif my_object == 1:
     CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
     CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
 
-# AGN_outlier_flux_names_W1 = []
-# AGN_outlier_flux_names_W2 = []
-# AGN_outlier_flux_W1_epoch = []
-# AGN_outlier_flux_W2_epoch = []
-# CLAGN_outlier_flux_names_W1 = []
-# CLAGN_outlier_flux_names_W2 = []
-# CLAGN_outlier_flux_W1_epoch = []
-# CLAGN_outlier_flux_W2_epoch = []
+AGN_outlier_flux_names_W1 = []
+AGN_outlier_flux_names_W2 = []
+AGN_outlier_flux_W1_epoch = []
+AGN_outlier_flux_W2_epoch = []
+CLAGN_outlier_flux_names_W1 = []
+CLAGN_outlier_flux_names_W2 = []
+CLAGN_outlier_flux_W1_epoch = []
+CLAGN_outlier_flux_W2_epoch = []
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
 # #Check MJD of a file
@@ -174,7 +215,7 @@ coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 # with fits.open(SDSS_file_path) as hdul:
 #     header = hdul[0].header
 #     print(header)
-#     mjd_value = header.get('MJD', 'Keyword not found')  # Using .get() avoids KeyError if 'MJD' is missing
+#     mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
 #     print(f"MJD: {mjd_value}")
 
 def find_closest_indices(x_vals, value):
@@ -407,27 +448,25 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
     sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
-    sdss_blue_flux_smooth = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
 
     desi_lamb = desi_lamb.tolist()
     closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
     desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
-    desi_blue_flux_smooth = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
-    sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_smooth, kind='linear', fill_value='extrapolate')
+    sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
     sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
-    if np.median(sdss_blue_flux_smooth) > np.median(desi_blue_flux_smooth): #want high-state minus low-state
-        flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-        flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+    if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
+        flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
+        flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
     else:
-        flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux_smooth)]
-        flux_for_norm = [Gaus_smoothed_SDSS[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
+        flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
+        flux_for_norm = [sdss_flux[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
     
@@ -510,10 +549,6 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
 # plt.show()
 
 
-q = 0
-w = 0
-e = 0
-r = 0
 if option >= 1 and option <= 4:
     WISE_query = Irsa.query_region(coordinates=coord, catalog="allwise_p3as_mep", spatial="Cone", radius=2 * u.arcsec)
     NEOWISE_query = Irsa.query_region(coordinates=coord, catalog="neowiser_p1bs_psd", spatial="Cone", radius=2 * u.arcsec)
@@ -972,6 +1007,7 @@ if option >= 1 and option <= 4:
 
     # # Changing mjd date to days since start:
     min_mjd = min([W1_av_mjd_date[0], W2_av_mjd_date[0]])
+    min_mjd = 0
     SDSS_mjd = SDSS_mjd - min_mjd
     DESI_mjd = DESI_mjd - min_mjd
     mjd_value = mjd_value - min_mjd
@@ -985,11 +1021,6 @@ if option >= 1 and option <= 4:
 
     print(f'Number of MIR W1 epochs = {len(W1_averages_flux)}')
     print(f'Number of MIR W2 epochs = {len(W2_averages_flux)}')
-
-    before_SDSS_index_W1, after_SDSS_index_W1, q = find_closest_indices(W1_av_mjd_date, SDSS_mjd)
-    before_SDSS_index_W2, after_SDSS_index_W2, w = find_closest_indices(W2_av_mjd_date, SDSS_mjd)
-    before_DESI_index_W1, after_DESI_index_W1, e = find_closest_indices(W1_av_mjd_date, DESI_mjd)
-    before_DESI_index_W2, after_DESI_index_W2, r = find_closest_indices(W2_av_mjd_date, DESI_mjd)
 
     # # Plotting average raw flux vs mjd since first observation
     # plt.figure(figsize=(12,7))
@@ -1006,73 +1037,6 @@ if option >= 1 and option <= 4:
     # plt.title(f'W1 & W2 Raw Flux vs Time ({object_name})')
     # plt.legend(loc = 'best')
     # plt.show()
-
-    if q == 0 and w == 0 and e == 0 and r == 0 and option >= 1 and option <= 4:
-
-        #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to SDSS & DESI.
-        W1_SDSS_interp = np.interp(SDSS_mjd, W1_av_mjd_date, W1_averages_flux)
-        W2_SDSS_interp = np.interp(SDSS_mjd, W2_av_mjd_date, W1_averages_flux)
-        W1_DESI_interp = np.interp(DESI_mjd, W1_av_mjd_date, W1_averages_flux)
-        W2_DESI_interp = np.interp(DESI_mjd, W2_av_mjd_date, W1_averages_flux)
-
-        #uncertainties in interpolated flux
-        W1_SDSS_unc_interp = np.sqrt((((W1_av_mjd_date[after_SDSS_index_W1] - SDSS_mjd)/(W1_av_mjd_date[after_SDSS_index_W1] - W1_av_mjd_date[before_SDSS_index_W1]))*W1_av_uncs_flux[before_SDSS_index_W1])**2 + (((SDSS_mjd - W1_av_mjd_date[before_SDSS_index_W1])/(W1_av_mjd_date[after_SDSS_index_W1] - W1_av_mjd_date[before_SDSS_index_W1]))*W1_av_uncs_flux[after_SDSS_index_W1])**2)
-        W2_SDSS_unc_interp = np.sqrt((((W2_av_mjd_date[after_SDSS_index_W2] - SDSS_mjd)/(W2_av_mjd_date[after_SDSS_index_W2] - W2_av_mjd_date[before_SDSS_index_W2]))*W2_av_uncs_flux[before_SDSS_index_W2])**2 + (((SDSS_mjd - W2_av_mjd_date[before_SDSS_index_W2])/(W2_av_mjd_date[after_SDSS_index_W2] - W2_av_mjd_date[before_SDSS_index_W2]))*W2_av_uncs_flux[after_SDSS_index_W2])**2)
-        W1_DESI_unc_interp = np.sqrt((((W1_av_mjd_date[after_DESI_index_W1] - DESI_mjd)/(W1_av_mjd_date[after_DESI_index_W1] - W1_av_mjd_date[before_DESI_index_W1]))*W1_av_uncs_flux[before_DESI_index_W1])**2 + (((DESI_mjd - W1_av_mjd_date[before_DESI_index_W1])/(W1_av_mjd_date[after_DESI_index_W1] - W1_av_mjd_date[before_DESI_index_W1]))*W1_av_uncs_flux[after_DESI_index_W1])**2)
-        W2_DESI_unc_interp = np.sqrt((((W2_av_mjd_date[after_DESI_index_W2] - DESI_mjd)/(W2_av_mjd_date[after_DESI_index_W2] - W2_av_mjd_date[before_DESI_index_W2]))*W2_av_uncs_flux[before_DESI_index_W2])**2 + (((DESI_mjd - W2_av_mjd_date[before_DESI_index_W2])/(W2_av_mjd_date[after_DESI_index_W2] - W2_av_mjd_date[before_DESI_index_W2]))*W2_av_uncs_flux[after_DESI_index_W2])**2)
-
-        #uncertainty in absolute flux change
-        W1_abs = abs(W1_SDSS_interp-W1_DESI_interp)
-        W2_abs = abs(W2_SDSS_interp-W2_DESI_interp)
-        W1_abs_unc = np.sqrt(W1_SDSS_unc_interp**2 + W1_DESI_unc_interp**2)
-        W2_abs_unc = np.sqrt(W2_SDSS_unc_interp**2 + W2_DESI_unc_interp**2)
-
-        #uncertainty in normalised flux change
-        W1_second_smallest = sorted(W1_averages_flux)[1]
-        W1_second_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_second_smallest)]
-        W1_abs_norm = ((W1_abs)/(W1_second_smallest)) #normalise by 2nd smallest flux reading (want to normalise by a background value in the off state)
-        W1_abs_norm_unc = W1_abs_norm*np.sqrt(((W1_abs_unc)/(W1_abs))**2 + ((W1_second_smallest_unc)/(W1_second_smallest))**2)
-        W2_second_smallest = sorted(W1_averages_flux)[1]
-        W2_second_smallest_unc = W2_av_uncs_flux[W1_averages_flux.index(W2_second_smallest)]
-        W2_abs_norm = ((W2_abs)/(W2_second_smallest)) #normalise by 2nd smallest flux reading (want to normalise by a background value in the off state)
-        W2_abs_norm_unc = W2_abs_norm*np.sqrt(((W2_abs_unc)/(W2_abs))**2 + ((W2_second_smallest_unc)/(W2_second_smallest))**2)
-
-        #uncertainty in z score
-        W1_z_score_SDSS_DESI = (W1_SDSS_interp-W1_DESI_interp)/(W1_DESI_unc_interp)
-        W1_z_score_SDSS_DESI_unc = W1_z_score_SDSS_DESI*((W1_abs_unc)/(W1_abs))
-        W1_z_score_DESI_SDSS = (W1_DESI_interp-W1_SDSS_interp)/(W1_SDSS_unc_interp)
-        W1_z_score_DESI_SDSS_unc = W1_z_score_DESI_SDSS*((W1_abs_unc)/(W1_abs))
-        W2_z_score_SDSS_DESI = (W2_SDSS_interp-W2_DESI_interp)/(W2_DESI_unc_interp)
-        W2_z_score_SDSS_DESI_unc = W2_z_score_SDSS_DESI*((W2_abs_unc)/(W2_abs))
-        W2_z_score_DESI_SDSS = (W2_DESI_interp-W2_SDSS_interp)/(W2_SDSS_unc_interp)
-        W2_z_score_DESI_SDSS_unc = W2_z_score_DESI_SDSS*((W2_abs_unc)/(W2_abs))
-
-        #If uncertainty = nan; then z score = nan
-        #If uncertainty = 0; then z score = inf
-        print(f'W1 absolute flux change = {W1_abs} ± {W1_abs_unc}')
-        print(f'W1 normalised absolute flux change = {W1_abs_norm} ± {W1_abs_norm_unc}')
-        print(f'W1 z score - SDSS relative to DESI = {W1_z_score_SDSS_DESI} ± {W1_z_score_SDSS_DESI_unc}')
-        print(f'W1 z score - DESI relative to SDSS = {W1_z_score_DESI_SDSS} ± {W1_z_score_DESI_SDSS_unc}')
-        print(f'W2 absolute flux change = {W2_abs} ± {W2_abs_unc}')
-        print(f'W2 normalised absolute flux change = {W2_abs_norm} ± {W2_abs_norm_unc}')
-        print(f'W2 z score - SDSS relative to DESI = {W2_z_score_SDSS_DESI} ± {W2_z_score_SDSS_DESI_unc}')
-        print(f'W2 z score - DESI relative to SDSS = {W2_z_score_DESI_SDSS} ± {W2_z_score_DESI_SDSS_unc}')
-
-        W2_second_largest = sorted(W1_averages_flux, reverse=True)[1] #take second smallest and second largest to avoid sputious measurements. 
-        W2_second_largest_unc = W2_av_uncs_flux[W1_averages_flux.index(W2_second_largest)] #NOT the 2nd largest unc. This is the unc in the second largest flux value
-        W2_second_smallest = sorted(W1_averages_flux)[1]
-        W2_second_smallest_unc = W2_av_uncs_flux[W1_averages_flux.index(W2_second_smallest)]
-
-        W2_abs = abs(W2_second_largest-W2_second_smallest)
-        W2_abs_unc = np.sqrt(W2_second_largest_unc**2 + W2_second_smallest_unc**2)
-
-        W2_abs_norm = ((W2_abs)/(W2_second_smallest))
-        W2_abs_norm_unc = W2_abs_norm*np.sqrt(((W2_abs_unc)/(W2_abs))**2 + ((W2_second_smallest_unc)/(W2_second_smallest))**2)
-
-        W2_z_score_max = (W2_second_largest-W2_second_smallest)/(W2_second_largest_unc)
-        W2_z_score_max_unc = abs(W2_z_score_max*((W2_abs_unc)/(W2_abs)))
-        W2_z_score_min = (W2_second_smallest-W2_second_largest)/(W2_second_smallest_unc)
-        W2_z_score_min_unc = abs(W2_z_score_min*((W2_abs_unc)/(W2_abs)))
 
 
     # # Plotting W1 flux Extinction Corrected Vs Uncorrected
@@ -1132,7 +1096,6 @@ if option >= 1 and option <= 4:
         ax1.legend(loc='upper left')
 
         # Plot in the second subplot (ax2)
-        print(W2_one_epoch_flux)
         ax2.errorbar(data_point_W2, W2_one_epoch_flux, yerr=W2_one_epoch_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
         ax2.set_title('W2')
         ax2.set_xlabel('Data Point')
@@ -1141,6 +1104,15 @@ if option >= 1 and option <= 4:
 
         fig.suptitle(f'W1 & W2 band Measurements at Epoch {m+1} and {n+1} respectively - {W1_av_mjd_date[m]:.0f}, {W1_av_mjd_date[n]:.0f} Days Since First Observation respectively', fontsize=16)
         plt.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust layout to make space for the main title
+        plt.show()
+
+        W2_one_epoch_flux_mjd = [date - min_mjd for date in W2_one_epoch_flux_mjd]
+        plt.figure(figsize=(12,7))
+        plt.errorbar(W2_one_epoch_flux_mjd, W2_one_epoch_flux, yerr=W2_one_epoch_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6\u03bcm)')
+        plt.xlabel('Days Since First Observation', fontsize = 24)
+        plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 24)
+        plt.title(f'W2 Flux Measurements at Epoch {n+1} (WISEA J{object_name})', fontsize = 24)
+        plt.tight_layout()
         plt.show()
 
 
@@ -1178,13 +1150,18 @@ if option >= 1 and option <= 4:
 
 
     if MIR_only == 1:
+        cleaned_W1 = remove_outliers(W1_averages_flux)
+        cleaned_W2 = remove_outliers(W2_averages_flux)
+        print(f'Number of MIR W1 epochs after cleaning = {len(cleaned_W1)}')
+        print(f'Number of MIR W2 epochs after cleaning = {len(cleaned_W2)}')
+
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
-        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.xticks(fontsize=26)
         plt.yticks(fontsize=26)
