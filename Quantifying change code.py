@@ -15,7 +15,7 @@ main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
 UV_MIRZ = 0 #plot
 UV_MIR_NFD = 0
-UVZ_MIRZ = 1 #plot of UV z-score vs MIR z-score
+UVZ_MIRZ = 0 #plot of UV z-score vs MIR z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR NFD
 zs_W1_low = 0 #plot of zscore vs W1 low flux
 zs_W2_low = 0 #plot of zscore vs W2 low flux
@@ -24,6 +24,7 @@ NFD_W2_low = 0 #plot of NFD vs W2 low flux
 W1_vs_W2_NFD = 0 #plot of W1 NFD vs W2 NFD
 W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
+Log_Modified_Dev_plot = 1 #same plot as Modified_Dev_plot but with a log scale
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
@@ -1140,6 +1141,43 @@ if Modified_Dev_plot == 1:
     plt.show()
 
 
+if Log_Modified_Dev_plot == 1:
+    #CLAGN
+    my_var = len(CLAGN_mod_dev_list)
+    print(f'Number of CLAGN Observations = {my_var}')
+    CLAGN_mod_dev_list = [abs(x) for x in CLAGN_mod_dev_list if abs(x) > 0]
+    print(f'Number of CLAGN Observations = 0: {my_var - len(CLAGN_mod_dev_list)}')
+    median_mod_dev = np.median(CLAGN_mod_dev_list)
+    bins_mod_dev_CLAGN = np.logspace(np.log10(min(CLAGN_mod_dev_list)), np.log10(max(CLAGN_mod_dev_list)), 50)
+    plt.figure(figsize=(12,7))
+    plt.hist(CLAGN_mod_dev_list, bins=bins_mod_dev_CLAGN, color='darkorange', edgecolor='black')
+    plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
+    plt.xlabel('Modified Deviation')
+    plt.ylabel('Frequency')
+    plt.xscale('log')  # Set x-axis to log scale
+    plt.title(f'Distribution of CLAGN Modified Deviation Values - {len(CLAGN_mod_dev_list)} Observations')
+    plt.legend(loc='upper right')
+    plt.show()
+
+
+    #Non-CL AGN
+    my_var = len(AGN_mod_dev_list)
+    print(f'Number of AGN Observations = {my_var}')
+    AGN_mod_dev_list = [abs(x) for x in AGN_mod_dev_list if abs(x) > 0]
+    print(f'Number of AGN Observations = 0: {my_var - len(AGN_mod_dev_list)}')
+    median_mod_dev = np.median(AGN_mod_dev_list)
+    bins_mod_dev_AGN = np.logspace(np.log10(min(AGN_mod_dev_list)), np.log10(max(AGN_mod_dev_list)), 50)
+    plt.figure(figsize=(12,7))
+    plt.hist(AGN_mod_dev_list, bins=bins_mod_dev_AGN, color='darkorange', edgecolor='black')
+    plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
+    plt.xlabel('Modified Deviation')
+    plt.ylabel('Frequency')
+    plt.xscale('log')
+    plt.title(f'Distribution of AGN Modified Deviation Values - {len(AGN_mod_dev_list)} Observations')
+    plt.legend(loc='upper right')
+    plt.show()
+
+    
 # creating a 2d plot of W1 NFD vs W1 number of epochs
 if epochs_NFD_W1 == 1:
     plt.figure(figsize=(12, 7))

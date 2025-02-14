@@ -83,7 +83,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
 # object_name = '111938.02+513315.5'
-object_name = '122444.60+335739.7'
+# object_name = '122444.60+335739.7'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR

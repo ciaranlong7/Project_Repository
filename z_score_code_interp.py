@@ -19,10 +19,10 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 c = 299792458
 
-my_object = 0 #0 = AGN. 1 = CLAGN
+my_object = 1 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0
-optical_analysis = 0 #set = 1 if you wish to do optical analysis. set = 0 if not
+optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
