@@ -256,7 +256,6 @@ if optical_analysis == 1:
     gaussian_kernel = Gaussian1DKernel(stddev=3)
 
 g = 0
-object_names = ['122444.60+335739.7']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -834,18 +833,22 @@ for object_name in object_names:
             W1_low.append(W1_smallest)
             W1_low_unc.append(W1_smallest_unc)
 
-            if ninety_first_SDSS_W1 == 1:
+            if ninety_first_SDSS_W1 == 1: #object is < 90 days before 1st obsv. Let's take 1st MIR obsv as our SDSS_interp.
                 W1_SDSS_interp = W1_averages_flux[0]
                 W1_SDSS_unc_interp = W1_av_uncs_flux[0]
-            elif ninety_last_SDSS_W1 == 1:
+            elif ninety_last_SDSS_W1 == 1: #object is < 90 days after 1st obsv. Let's take last MIR obsv as our SDSS_interp.
                 W1_SDSS_interp = W1_averages_flux[-1]
                 W1_SDSS_unc_interp = W1_av_uncs_flux[-1]
-            elif ninety_before_SDSS_W1 == 1:
-                W1_SDSS_interp = W1_averages_flux[before_SDSS_index_W1]
-                W1_SDSS_unc_interp = W1_av_uncs_flux[before_SDSS_index_W1]
-            elif ninety_after_SDSS_W1 == 1:
+            elif ninety_before_SDSS_W1 == 1: #observation is during time of max day gap, but max day gap for interp exceeded.
+                                            # however, the SDSS observation is < 90 days before the next observation -
+                                            # so approximate SDSS_interp to the next observation.
+                                            #For example. MIR epoch 10 MJD = 56000. SDSS MJD = 56500. MIR Epoch 11 MJD = 56501.
+                                            # Hence approximate SDSS_interp to MIR epoch 11 - the 'after' index.
                 W1_SDSS_interp = W1_averages_flux[after_SDSS_index_W1]
                 W1_SDSS_unc_interp = W1_av_uncs_flux[after_SDSS_index_W1]
+            elif ninety_after_SDSS_W1 == 1:
+                W1_SDSS_interp = W1_averages_flux[before_SDSS_index_W1]
+                W1_SDSS_unc_interp = W1_av_uncs_flux[before_SDSS_index_W1]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to SDSS.
                 W1_SDSS_interp = np.interp(SDSS_mjd, W1_av_mjd_date, W1_averages_flux)
@@ -858,11 +861,11 @@ for object_name in object_names:
                 W1_DESI_interp = W1_averages_flux[-1]
                 W1_DESI_unc_interp = W1_av_uncs_flux[-1]
             elif ninety_before_DESI_W1 == 1:
-                W1_DESI_interp = W1_averages_flux[before_DESI_index_W1]
-                W1_DESI_unc_interp = W1_av_uncs_flux[before_DESI_index_W1]
-            elif ninety_after_DESI_W1 == 1:
                 W1_DESI_interp = W1_averages_flux[after_DESI_index_W1]
                 W1_DESI_unc_interp = W1_av_uncs_flux[after_DESI_index_W1]
+            elif ninety_after_DESI_W1 == 1:
+                W1_DESI_interp = W1_averages_flux[before_DESI_index_W1]
+                W1_DESI_unc_interp = W1_av_uncs_flux[before_DESI_index_W1]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to DESI.
                 W1_DESI_interp = np.interp(DESI_mjd, W1_av_mjd_date, W1_averages_flux)
@@ -910,11 +913,11 @@ for object_name in object_names:
                 W2_SDSS_interp = W2_averages_flux[-1]
                 W2_SDSS_unc_interp = W2_av_uncs_flux[-1]
             elif ninety_before_SDSS_W2 == 1:
-                W2_SDSS_interp = W2_averages_flux[before_SDSS_index_W2]
-                W2_SDSS_unc_interp = W2_av_uncs_flux[before_SDSS_index_W2]
-            elif ninety_after_SDSS_W2 == 1:
                 W2_SDSS_interp = W2_averages_flux[after_SDSS_index_W2]
                 W2_SDSS_unc_interp = W2_av_uncs_flux[after_SDSS_index_W2]
+            elif ninety_after_SDSS_W2 == 1:
+                W2_SDSS_interp = W2_averages_flux[before_SDSS_index_W2]
+                W2_SDSS_unc_interp = W2_av_uncs_flux[before_SDSS_index_W2]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to SDSS.
                 W2_SDSS_interp = np.interp(SDSS_mjd, W2_av_mjd_date, W2_averages_flux)
@@ -927,11 +930,11 @@ for object_name in object_names:
                 W2_DESI_interp = W2_averages_flux[-1]
                 W2_DESI_unc_interp = W2_av_uncs_flux[-1]
             elif ninety_before_DESI_W2 == 1:
-                W2_DESI_interp = W2_averages_flux[before_DESI_index_W2]
-                W2_DESI_unc_interp = W2_av_uncs_flux[before_DESI_index_W2]
-            elif ninety_after_DESI_W2 == 1:
                 W2_DESI_interp = W2_averages_flux[after_DESI_index_W2]
                 W2_DESI_unc_interp = W2_av_uncs_flux[after_DESI_index_W2]
+            elif ninety_after_DESI_W2 == 1:
+                W2_DESI_interp = W2_averages_flux[before_DESI_index_W2]
+                W2_DESI_unc_interp = W2_av_uncs_flux[before_DESI_index_W2]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to DESI.
                 W2_DESI_interp = np.interp(DESI_mjd, W2_av_mjd_date, W2_averages_flux)
@@ -1020,11 +1023,11 @@ for object_name in object_names:
                 W1_SDSS_interp = W1_averages_flux[-1]
                 W1_SDSS_unc_interp = W1_av_uncs_flux[-1]
             elif ninety_before_SDSS_W1 == 1:
-                W1_SDSS_interp = W1_averages_flux[before_SDSS_index_W1]
-                W1_SDSS_unc_interp = W1_av_uncs_flux[before_SDSS_index_W1]
-            elif ninety_after_SDSS_W1 == 1:
                 W1_SDSS_interp = W1_averages_flux[after_SDSS_index_W1]
                 W1_SDSS_unc_interp = W1_av_uncs_flux[after_SDSS_index_W1]
+            elif ninety_after_SDSS_W1 == 1:
+                W1_SDSS_interp = W1_averages_flux[before_SDSS_index_W1]
+                W1_SDSS_unc_interp = W1_av_uncs_flux[before_SDSS_index_W1]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to SDSS.
                 W1_SDSS_interp = np.interp(SDSS_mjd, W1_av_mjd_date, W1_averages_flux)
@@ -1037,11 +1040,11 @@ for object_name in object_names:
                 W1_DESI_interp = W1_averages_flux[-1]
                 W1_DESI_unc_interp = W1_av_uncs_flux[-1]
             elif ninety_before_DESI_W1 == 1:
-                W1_DESI_interp = W1_averages_flux[before_DESI_index_W1]
-                W1_DESI_unc_interp = W1_av_uncs_flux[before_DESI_index_W1]
-            elif ninety_after_DESI_W1 == 1:
                 W1_DESI_interp = W1_averages_flux[after_DESI_index_W1]
                 W1_DESI_unc_interp = W1_av_uncs_flux[after_DESI_index_W1]
+            elif ninety_after_DESI_W1 == 1:
+                W1_DESI_interp = W1_averages_flux[before_DESI_index_W1]
+                W1_DESI_unc_interp = W1_av_uncs_flux[before_DESI_index_W1]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to DESI.
                 W1_DESI_interp = np.interp(DESI_mjd, W1_av_mjd_date, W1_averages_flux)
@@ -1176,11 +1179,11 @@ for object_name in object_names:
                 W2_SDSS_interp = W2_averages_flux[-1]
                 W2_SDSS_unc_interp = W2_av_uncs_flux[-1]
             elif ninety_before_SDSS_W2 == 1:
-                W2_SDSS_interp = W2_averages_flux[before_SDSS_index_W2]
-                W2_SDSS_unc_interp = W2_av_uncs_flux[before_SDSS_index_W2]
-            elif ninety_after_SDSS_W2 == 1:
                 W2_SDSS_interp = W2_averages_flux[after_SDSS_index_W2]
                 W2_SDSS_unc_interp = W2_av_uncs_flux[after_SDSS_index_W2]
+            elif ninety_after_SDSS_W2 == 1:
+                W2_SDSS_interp = W2_averages_flux[before_SDSS_index_W2]
+                W2_SDSS_unc_interp = W2_av_uncs_flux[before_SDSS_index_W2]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to SDSS.
                 W2_SDSS_interp = np.interp(SDSS_mjd, W2_av_mjd_date, W2_averages_flux)
@@ -1193,11 +1196,11 @@ for object_name in object_names:
                 W2_DESI_interp = W2_averages_flux[-1]
                 W2_DESI_unc_interp = W2_av_uncs_flux[-1]
             elif ninety_before_DESI_W2 == 1:
-                W2_DESI_interp = W2_averages_flux[before_DESI_index_W2]
-                W2_DESI_unc_interp = W2_av_uncs_flux[before_DESI_index_W2]
-            elif ninety_after_DESI_W2 == 1:
                 W2_DESI_interp = W2_averages_flux[after_DESI_index_W2]
                 W2_DESI_unc_interp = W2_av_uncs_flux[after_DESI_index_W2]
+            elif ninety_after_DESI_W2 == 1:
+                W2_DESI_interp = W2_averages_flux[before_DESI_index_W2]
+                W2_DESI_unc_interp = W2_av_uncs_flux[before_DESI_index_W2]
             else:
                 #Linearly interpolating to get interpolated flux on a value in between the data points adjacent to DESI.
                 W2_DESI_interp = np.interp(DESI_mjd, W2_av_mjd_date, W2_averages_flux)

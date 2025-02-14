@@ -83,7 +83,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
 # object_name = '111938.02+513315.5'
-# object_name = '122444.60+335739.7'
+object_name = '122444.60+335739.7'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -93,14 +93,14 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 2
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 1 #plot with just MIR data on it
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 
