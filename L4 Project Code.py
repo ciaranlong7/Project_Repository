@@ -84,6 +84,8 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '111938.02+513315.5'
 # object_name = '122444.60+335739.7'
+object_name = '122608.23+621222.1'
+# object_name = '154558.57+425858.8'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -97,7 +99,8 @@ option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 1 #plot with just MIR data on it
+MIR_only = 0 #plot with just MIR data on it
+MIR_only_no_epoch = 1 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
@@ -116,25 +119,35 @@ W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
-def remove_outliers(flux, threshold=20):
-    flux = np.array(flux)
-    median = np.median(flux)
-    mad = median_abs_deviation(flux)
-    modified_deviation = (flux-median)/mad
-    #modified deviation is a new array. Each element of the array represents how much the corresponding element
-    #in the flux input list deviates from the median.
-    #a new flux list is returned, only keeping flux values that are within 3.5 median_abs_deviations of the median flux.
+def remove_outliers(data, threshold=15):
+    """
+    Parameters:
+    - data: list of tuples [(flux, mjd, unc), ...]
+    - threshold: Modified deviation threshold for outlier removal (default=15)
 
-    print(modified_deviation)
+    Returns:
+    - list of filtered tuples without outliers
+    """
+    if not data:
+        return data  # Return empty list if input is empty
 
-    mask = np.abs(modified_deviation) > threshold
-    outliers = flux[mask]
+    flux_values = np.array([entry[0] for entry in data])  # Extract flux values
+    median = np.median(flux_values)
+    mad = median_abs_deviation(flux_values)
+
+    if mad == 0:  # Avoid division by zero
+        print("Warning: MAD is zero, no outliers removed.")
+        return data
+
+    modified_deviation = (flux_values - median) / mad
+    mask = np.abs(modified_deviation) > threshold  # Identify outliers
+    outliers = np.array(data)[mask]  # Extract outlier tuples
 
     # Print removed outliers
-    for value in outliers:
-        print(f"Removing outlier: {value} (Modified Deviation = {modified_deviation[np.where(flux == value)][0]:.2f})")
+    for outlier, mod_dev in zip(outliers, modified_deviation[mask]):
+        print(f"Removing outlier: Flux={outlier[0]}, MJD={outlier[1]}, UNC={outlier[2]} (Modified Deviation = {mod_dev:.2f})")
 
-    return flux[~mask]  # Remove outliers
+    return [entry for entry, is_outlier in zip(data, mask) if not is_outlier]
 
 Min_SNR = 3 #Options are 10, 3, or 2. #A (SNR>10), B (3<SNR<10) or C (2<SNR<3)
 if Min_SNR == 10: #Select Min_SNR on line above.
@@ -184,29 +197,6 @@ else:
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
 
-if my_object == 0:
-    AGN_outlier_flux_W1 = pd.read_excel('AGN_outlier_flux_W1.xlsx')
-    AGN_outlier_flux_W2 = pd.read_excel('AGN_outlier_flux_W2.xlsx')
-    AGN_outlier_flux_names_W1 = AGN_outlier_flux_W1.iloc[:, 0].tolist()
-    AGN_outlier_flux_names_W2 = AGN_outlier_flux_W2.iloc[:, 0].tolist()
-    AGN_outlier_flux_W1_epoch = AGN_outlier_flux_W1.iloc[:, 2]
-    AGN_outlier_flux_W2_epoch = AGN_outlier_flux_W2.iloc[:, 2]
-elif my_object == 1:
-    CLAGN_outlier_flux_W1 = pd.read_excel('CLAGN_outlier_flux_W1.xlsx')
-    CLAGN_outlier_flux_W2 = pd.read_excel('CLAGN_outlier_flux_W2.xlsx')
-    CLAGN_outlier_flux_names_W1 = CLAGN_outlier_flux_W1.iloc[:, 0].tolist()
-    CLAGN_outlier_flux_names_W2 = CLAGN_outlier_flux_W2.iloc[:, 0].tolist()
-    CLAGN_outlier_flux_W1_epoch = CLAGN_outlier_flux_W1.iloc[:, 2]
-    CLAGN_outlier_flux_W2_epoch = CLAGN_outlier_flux_W2.iloc[:, 2]
-
-AGN_outlier_flux_names_W1 = []
-AGN_outlier_flux_names_W2 = []
-AGN_outlier_flux_W1_epoch = []
-AGN_outlier_flux_W2_epoch = []
-CLAGN_outlier_flux_names_W1 = []
-CLAGN_outlier_flux_names_W2 = []
-CLAGN_outlier_flux_W1_epoch = []
-CLAGN_outlier_flux_W2_epoch = []
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
 # #Check MJD of a file
@@ -596,6 +586,10 @@ if option >= 1 and option <= 4:
     W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
 
+    #removing some outliers
+    W1_all = remove_outliers(W1_all)
+    W2_all = remove_outliers(W2_all)
+
     print(f'W1 data points = {len(W1_all)}')
     print(f'W2 data points = {len(W2_all)}')
 
@@ -778,233 +772,6 @@ if option >= 1 and option <= 4:
             p += 1
             continue
 
-    #removing some epochs:
-    if my_object == 0:
-        if object_name in AGN_outlier_flux_names_W1:
-            AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names_W1) if name == object_name]
-            if len(AGN_outlier_indices) == 1:
-                #1 bad epoch for this object        
-                index = AGN_outlier_indices[0]
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index]-1)] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index]-1)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index]-1)]
-            elif len(AGN_outlier_indices) == 2:
-                #2 bad epochs for this object. assumes order in excel sheet has lower numbered epoch first        
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-            elif len(AGN_outlier_indices) == 3:
-                #3 bad epochs for this object        
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                index_three = AGN_outlier_indices[2]
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-            elif len(AGN_outlier_indices) == 4: #need to be in order or doesn't work. ie index_one = 5, index_two = 7, index_three = 8 etc.
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                index_three = AGN_outlier_indices[2]
-                index_four = AGN_outlier_indices[3]
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_two]-2)]
-
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_three]-3)]
-
-                del W1_averages_flux[int(AGN_outlier_flux_W1_epoch[index_four]-4)]
-                del W1_av_mjd_date[int(AGN_outlier_flux_W1_epoch[index_four]-4)]
-                del W1_av_uncs_flux[int(AGN_outlier_flux_W1_epoch[index_four]-4)]
-                
-        if object_name in AGN_outlier_flux_names_W2:
-            AGN_outlier_indices = [i for i, name in enumerate(AGN_outlier_flux_names_W2) if name == object_name]
-            if len(AGN_outlier_indices) == 1:
-                #1 bad epoch for this object        
-                index = AGN_outlier_indices[0]
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index]-1)] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index]-1)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index]-1)]
-            elif len(AGN_outlier_indices) == 2:
-                #2 bad epochs for this object. assumes order in excel sheet has lower numbered epoch first        
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-            elif len(AGN_outlier_indices) == 3:
-                #3 bad epochs for this object        
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                index_three = AGN_outlier_indices[2]
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-            elif len(AGN_outlier_indices) == 4: #need to be in order or doesn't work. ie index_one = 5, index_two = 7, index_three = 8 etc.
-                index_one = AGN_outlier_indices[0]
-                index_two = AGN_outlier_indices[1]
-                index_three = AGN_outlier_indices[2]
-                index_four = AGN_outlier_indices[3]
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_two]-2)]
-
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_three]-3)]
-
-                del W2_averages_flux[int(AGN_outlier_flux_W2_epoch[index_four]-4)]
-                del W2_av_mjd_date[int(AGN_outlier_flux_W2_epoch[index_four]-4)]
-                del W2_av_uncs_flux[int(AGN_outlier_flux_W2_epoch[index_four]-4)]
-                    
-    elif my_object == 1:
-        if object_name in CLAGN_outlier_flux_names_W1:
-            CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names_W1) if name == object_name]
-            if len(CLAGN_outlier_indices) == 1:
-                #1 bad epoch for this object        
-                index = CLAGN_outlier_indices[0]
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index]-1)] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index]-1)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index]-1)]
-            elif len(CLAGN_outlier_indices) == 2:
-                #2 bad epochs for this object. assumes order in excel sheet has lower numbered epoch first        
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-            elif len(CLAGN_outlier_indices) == 3:
-                #3 bad epochs for this object        
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                index_three = CLAGN_outlier_indices[2]
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-            elif len(CLAGN_outlier_indices) == 4: #need to be in order or doesn't work. ie index_one = 5, index_two = 7, index_three = 8 etc.
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                index_three = CLAGN_outlier_indices[2]
-                index_four = CLAGN_outlier_indices[3]
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_one]-1)]
-                
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_two]-2)]
-
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_three]-3)]
-
-                del W1_averages_flux[int(CLAGN_outlier_flux_W1_epoch[index_four]-4)]
-                del W1_av_mjd_date[int(CLAGN_outlier_flux_W1_epoch[index_four]-4)]
-                del W1_av_uncs_flux[int(CLAGN_outlier_flux_W1_epoch[index_four]-4)]
-                
-        if object_name in CLAGN_outlier_flux_names_W2:
-            CLAGN_outlier_indices = [i for i, name in enumerate(CLAGN_outlier_flux_names_W2) if name == object_name]
-            if len(CLAGN_outlier_indices) == 1:
-                #1 bad epoch for this object        
-                index = CLAGN_outlier_indices[0]
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index]-1)] #-1 because when I counted epochs I counted the 1st epoch as 1 not 0.
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index]-1)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index]-1)]
-            elif len(CLAGN_outlier_indices) == 2:
-                #2 bad epochs for this object. assumes order in excel sheet has lower numbered epoch first        
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-            elif len(CLAGN_outlier_indices) == 3:
-                #3 bad epochs for this object        
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                index_three = CLAGN_outlier_indices[2]
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-            elif len(CLAGN_outlier_indices) == 4: #need to be in order or doesn't work. ie index_one = 5, index_two = 7, index_three = 8 etc.
-                index_one = CLAGN_outlier_indices[0]
-                index_two = CLAGN_outlier_indices[1]
-                index_three = CLAGN_outlier_indices[2]
-                index_four = CLAGN_outlier_indices[3]
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_one]-1)]
-                
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_two]-2)]
-
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_three]-3)]
-
-                del W2_averages_flux[int(CLAGN_outlier_flux_W2_epoch[index_four]-4)]
-                del W2_av_mjd_date[int(CLAGN_outlier_flux_W2_epoch[index_four]-4)]
-                del W2_av_uncs_flux[int(CLAGN_outlier_flux_W2_epoch[index_four]-4)]
-
     # # Changing mjd date to days since start:
     min_mjd = min([W1_av_mjd_date[0], W2_av_mjd_date[0]])
     min_mjd = 0
@@ -1150,11 +917,6 @@ if option >= 1 and option <= 4:
 
 
     if MIR_only == 1:
-        cleaned_W1 = remove_outliers(W1_averages_flux)
-        cleaned_W2 = remove_outliers(W2_averages_flux)
-        print(f'Number of MIR W1 epochs after cleaning = {len(cleaned_W1)}')
-        print(f'Number of MIR W2 epochs after cleaning = {len(cleaned_W2)}')
-
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
@@ -1169,6 +931,29 @@ if option >= 1 and option <= 4:
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
         # plt.title(f'AGN Mid-IR Light Curve', fontsize = 28)
+        plt.legend(loc = 'best', fontsize = 25)
+        plt.tight_layout()
+        plt.show()
+
+
+    if MIR_only_no_epoch == 1:
+        # Plotting W1 & W2 flux vs days since first observation. Not binned into epochs
+        W2_flux = [tup[0] for tup in W2_all]
+        W2_mjd = [tup[1] for tup in W2_all]
+        W2_unc = [tup[2] for tup in W2_all]
+        W1_flux = [tup[0] for tup in W1_all]
+        W1_mjd = [tup[1] for tup in W1_all]
+        W1_unc = [tup[2] for tup in W1_all]
+        plt.figure(figsize=(12,7))
+        plt.errorbar(W2_mjd, W2_flux, yerr=W2_unc, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        plt.errorbar(W1_mjd, W1_flux, yerr=W1_unc, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.xlabel('Days since first observation', fontsize = 26)
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+        plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+        plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()
