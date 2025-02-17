@@ -27,11 +27,11 @@ optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 if my_sample == 1:
-    AGN_sample = pd.read_csv("AGN_Sample_new.csv")
+    AGN_sample = pd.read_csv("AGN_Sample.csv")
 if my_sample == 2:
-    AGN_sample = pd.read_csv("AGN_Sample_two_new.csv")
+    AGN_sample = pd.read_csv("AGN_Sample_two.csv")
 if my_sample == 3:
-    AGN_sample = pd.read_csv("AGN_Sample_three_new.csv")
+    AGN_sample = pd.read_csv("AGN_Sample_three.csv")
 
 if my_object == 0:
     object_names = AGN_sample.iloc[:, 3]

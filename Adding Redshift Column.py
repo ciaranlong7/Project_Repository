@@ -5,9 +5,9 @@ import pandas as pd
 no_duplicates_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 
 guo_CLAGN = pd.read_csv("Guo23_table4_clagn.csv")
-AGN_sample_one = pd.read_csv("AGN_Sample_new.csv")
-AGN_sample_two = pd.read_csv("AGN_Sample_two_new.csv")
-AGN_sample_three = pd.read_csv("AGN_Sample_three_new.csv")
+AGN_sample_one = pd.read_csv("AGN_Sample.csv")
+AGN_sample_two = pd.read_csv("AGN_Sample_two.csv")
+AGN_sample_three = pd.read_csv("AGN_Sample_three.csv")
 
 CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv")
 AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
