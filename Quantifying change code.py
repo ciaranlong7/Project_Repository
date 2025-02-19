@@ -7,11 +7,17 @@ Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
 brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 0 #0=UV. 1=MIR only
+MIR_UV = 1 #0=UV. 1=MIR only
 turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
+emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
+
+#bright/dim thresholds
+bright_dim_W1 = 0.35
+bright_dim_W2 = 0.40
 
 #plots:
 main_MIR = 0 #1 if want main zscore and NFD plot.
+main_MIR_line_split = 0 # main zscore and NFD plot, for CLAGN only and split by emission line.
 main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
@@ -20,13 +26,13 @@ UV_MIRZ = 0 #plot of UV normalised flux difference vs z score
 UV_MIR_NFD = 0 #plot of UV NFD vs MIR NFD
 UVZ_MIRZ = 0 #plot of UV z-score vs MIR z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR NFD
-zs_W1_low = 0 #plot of zscore vs W1 low flux
-zs_W2_low = 0 #plot of zscore vs W2 low flux
-NFD_W1_low = 0 #plot of NFD vs W1 low flux
-NFD_W2_low = 0 #plot of NFD vs W2 low flux
+zs_W1_low = 1 #plot of zscore vs W1 low flux
+zs_W2_low = 1 #plot of zscore vs W2 low flux
+NFD_W1_low = 1 #plot of NFD vs W1 low flux
+NFD_W2_low = 1 #plot of NFD vs W2 low flux
 W1_vs_W2_NFD = 0 #plot of W1 NFD vs W2 NFD
 W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
-Modified_Dev_plot = 1 #plot of distribution of modified deviations
+Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
@@ -63,22 +69,57 @@ median_AGN_redshift = np.nanmedian(AGN_redshifts)
 print(f'Median CLAGN sample redshift = {median_CLAGN_redshift:.3f}')
 print(f'Median AGN sample redshift = {median_AGN_redshift:.3f}')
 
+# Fill NaN values in the first column with the value from the row above
+Guo_table4_filled = Guo_table4
+Guo_table4_filled.iloc[:, 0] = Guo_table4.iloc[:, 0].ffill()
+
 #Quantifying change data - With UV
 if MIR_UV == 0:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV1.csv')
+
     #filter for only turn-on or turn-off CLAGN:
     if turn_on_off == 0:
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-on'].iloc[:, 0])]
     elif turn_on_off == 1:
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-off'].iloc[:, 0])]
+    
+    #Filter by emission line
+    if emission_line == 0:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Halpha'].iloc[:, 0])]
+    elif emission_line == 1:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Hbeta'].iloc[:, 0])]
+    elif emission_line == 2:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Mg ii'].iloc[:, 0])]
+    elif emission_line == 3:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iii]'].iloc[:, 0])]
+    elif emission_line == 4:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iv'].iloc[:, 0])]
+    elif emission_line == 5:
+        name_counts = Guo_table4_filled.iloc[:, 0].value_counts()
+        # Get the names of objects with 1 CL emission line
+        names_once = name_counts[name_counts == 1].index
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(names_once)]
+    elif emission_line == 6:
+        name_counts = Guo_table4_filled.iloc[:, 0].value_counts()
+        # Get the names of objects with 2 CL emission lines
+        names_twice = name_counts[name_counts == 2].index
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(names_twice)]
+
     #Drop columns where no UV analysis was performed:
     CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[21]])
+
     if brightness == 1:
-        # Only objects >= 0.5 min flux in W1 band
-        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
+        # Only keep bright objects.
+        #First checks W1 min flux. If no W1 data, then checks W2 min flux
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 31].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 31] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 34] >= bright_dim_W2)]
     elif brightness == 0:
-        # Only objects < 0.5 min flux in W1 band
-        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] < 0.5]
+        # Only keep dim objects
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 31].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 31] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 34] < bright_dim_W2)]
+    
     #Redshift splitting:
     if my_redshift == 0:
         # Low redshift:
@@ -106,16 +147,46 @@ if MIR_UV == 0:
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    
     if turn_on_off == 0:
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-on'].iloc[:, 0])]
     elif turn_on_off == 1:
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-off'].iloc[:, 0])]
+    
+    #Filter by emission line
+    if emission_line == 0:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Halpha'].iloc[:, 0])]
+    elif emission_line == 1:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Hbeta'].iloc[:, 0])]
+    elif emission_line == 2:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Mg ii'].iloc[:, 0])]
+    elif emission_line == 3:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iii]'].iloc[:, 0])]
+    elif emission_line == 4:
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iv'].iloc[:, 0])]
+    elif emission_line == 5:
+        name_counts = Guo_table4_filled.iloc[:, 0].value_counts()
+        # Get the names of objects with 1 CL emission line
+        names_once = name_counts[name_counts == 1].index
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(names_once)]
+    elif emission_line == 6:
+        name_counts = Guo_table4_filled.iloc[:, 0].value_counts()
+        # Get the names of objects with 2 CL emission lines
+        names_twice = name_counts[name_counts == 2].index
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(names_twice)]
+
     if brightness == 1:
-        # Only objects >= 0.5 min flux in W1 band
-        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+        # Only keep bright objects.
+        #First checks W1 min flux. If no W1 data, then checks W2 min flux
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     elif brightness == 0:
-        # Only objects < 0.5 min flux in W1 band
-        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+        # Only keep dim objects
+        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    
     #Redshift splitting:
     if my_redshift == 0:
         # Low redshift:
@@ -175,13 +246,22 @@ CLAGN_mod_dev_list = CLAGN_mod_dev.iloc[:, 0].tolist()
 #Quantifying change data - With UV
 if MIR_UV == 0:
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}_UV1.csv')
+
     #Drop columns where no UV analysis was performed:
     AGN_quantifying_change_data = AGN_quantifying_change_data.dropna(subset=[AGN_quantifying_change_data.columns[21]])
+
     if brightness == 1:
-        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] >= 0.5]
-        CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 31] >= 0.5]
+        # Only keep bright objects.
+        #First checks W1 min flux. If no W1 data, then checks W2 min flux
+        AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 31].notna(),  
+        AGN_quantifying_change_data.iloc[:, 31] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 34] >= bright_dim_W2)]
     elif brightness == 0:
-        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 31] < 0.5]
+        # Only keep dim objects
+        AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 31].notna(),  
+        AGN_quantifying_change_data.iloc[:, 31] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 34] < bright_dim_W2)]
+
     #Redshift splitting:
     if my_redshift == 0:
         AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 41] <= 0.9]
@@ -206,10 +286,19 @@ if MIR_UV == 0:
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+
     if brightness == 1:
-        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+        # Only keep bright objects.
+        #First checks W1 min flux. If no W1 data, then checks W2 min flux
+        AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     elif brightness == 0:
-        AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
+        # Only keep dim objects
+        AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+
     if my_redshift == 0:
         AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 37] <= 0.9]
     elif my_redshift == 1:
@@ -494,7 +583,7 @@ if MIR_UV == 0:
 if main_MIR == 1:
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_zscores, AGN_norm_flux_diff, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s= 100, color='red',  label='CLAGN')
+    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff, s=100, color='red',  label='CLAGN')
     # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_unc, fmt='o', color='blue', label='Non-CL AGN')
     # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_unc, fmt='o', color='red',  label='CLAGN')
     plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
@@ -529,6 +618,75 @@ if main_MIR == 1:
     # The default transform specifies that text is in data coords, alternatively, you can specify text in axis coords 
     # (0,0 is lower-left and 1,1 is upper-right).
     plt.show()
+
+
+if main_MIR_line_split == 1:
+    CLAGN_quantifying_change_data_Hbeta = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Hbeta'].iloc[:, 0])]
+    CLAGN_zscores_Hbeta = CLAGN_quantifying_change_data_Hbeta.iloc[:, 17].tolist()
+    CLAGN_NFD_Hbeta = CLAGN_quantifying_change_data_Hbeta.iloc[:, 19].tolist()
+    CLAGN_quantifying_change_data_Mg2 = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Mg ii'].iloc[:, 0])]
+    CLAGN_zscores_Mg2 = CLAGN_quantifying_change_data_Mg2.iloc[:, 17].tolist()
+    CLAGN_NFD_Mg2 = CLAGN_quantifying_change_data_Mg2.iloc[:, 19].tolist()
+    CLAGN_quantifying_change_data_C3_ = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iii]'].iloc[:, 0])]
+    CLAGN_zscores_C3_ = CLAGN_quantifying_change_data_C3_.iloc[:, 17].tolist()
+    CLAGN_NFD_C3_ = CLAGN_quantifying_change_data_C3_.iloc[:, 19].tolist()
+
+    a = 0
+    for zscore in CLAGN_zscores_Hbeta:
+        if zscore > three_sigma_zscore:
+            a += 1
+    
+    b = 0
+    for zscore in CLAGN_zscores_Mg2:
+        if zscore > three_sigma_zscore:
+            b += 1
+
+    c = 0
+    for zscore in CLAGN_zscores_C3_:
+        if zscore > three_sigma_zscore:
+            c += 1
+
+    d = 0
+    for NFD in CLAGN_NFD_Hbeta:
+        if NFD > three_sigma_norm_flux_diff:
+            d += 1
+
+    e = 0
+    for NFD in CLAGN_NFD_Mg2:
+        if NFD > three_sigma_norm_flux_diff:
+            e += 1
+
+    f = 0
+    for NFD in CLAGN_NFD_C3_:
+        if NFD > three_sigma_norm_flux_diff:
+            f += 1
+
+    plt.figure(figsize=(12, 7))
+    plt.scatter(CLAGN_zscores_Hbeta, CLAGN_NFD_Hbeta, s=100, color='brown',  label=u'H\u03B2 CLAGN')
+    plt.scatter(CLAGN_zscores_Mg2, CLAGN_NFD_Mg2, s=100, color='red',  label=u'Mg ii CLAGN')
+    plt.scatter(CLAGN_zscores_C3_, CLAGN_NFD_C3_, s=100, color='salmon',  label=u'C iii] CLAGN')
+    plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
+    plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
+    plt.xlim(0, 1.05*max(CLAGN_zscores_Hbeta+CLAGN_zscores_Mg2+CLAGN_zscores_C3_))
+    plt.ylim(0, 1.05*max(CLAGN_NFD_Hbeta+CLAGN_NFD_Mg2+CLAGN_NFD_C3_))
+    plt.xticks(fontsize=26)
+    plt.yticks(fontsize=26)
+    plt.xlabel("Z-Score", fontsize = 26)
+    plt.ylabel("NFD", fontsize = 26)
+    plt.title("Comparing MIR Variability for different CLAGN BELs", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    ax = plt.gca()
+    plt.text(0.99, 0.51, f'{a/len(CLAGN_zscores_Hbeta)*100:.1f}% Hbeta CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.45, f'{b/len(CLAGN_zscores_Mg2)*100:.1f}% Mg ii CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.39, f'{c/len(CLAGN_zscores_C3_)*100:.1f}% C iii] CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.15, f'{d/len(CLAGN_NFD_Hbeta)*100:.1f}% Hbeta CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.09, f'{e/len(CLAGN_NFD_Mg2)*100:.1f}% Mg ii CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.99, 0.03, f'{f/len(CLAGN_NFD_C3_)*100:.1f}% C iii] CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+    plt.show()
+
+
 
 
 if main_MIR_NFD_hist == 1:
@@ -808,7 +966,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
 if UV_MIRZ == 1:
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_zscores, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
+    plt.scatter(CLAGN_zscores, CLAGN_norm_flux_diff_UV, s=100, color='red',  label='CLAGN')
     # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
     # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
     plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
@@ -835,7 +993,7 @@ if UV_MIRZ == 1:
 if UV_MIR_NFD == 1:
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_norm_flux_diff, AGN_norm_flux_diff_UV, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_norm_flux_diff, CLAGN_norm_flux_diff_UV, s= 100, color='red',  label='CLAGN')
+    plt.scatter(CLAGN_norm_flux_diff, CLAGN_norm_flux_diff_UV, s=100, color='red',  label='CLAGN')
     # plt.errorbar(AGN_zscores, AGN_norm_flux_diff, xerr=AGN_zscore_uncs, yerr=AGN_norm_flux_diff_UV_unc, fmt='o', color='blue', label='Non-CL AGN')
     # plt.errorbar(CLAGN_zscores, CLAGN_norm_flux_diff, xerr=CLAGN_zscore_uncs, yerr=CLAGN_norm_flux_diff_UV_unc, fmt='o', color='red',  label='CLAGN')
     plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
@@ -898,7 +1056,7 @@ if UVZ_MIRZ == 1:
 
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_zscores_MIR, AGN_zscores_UV, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores_MIR, CLAGN_zscores_UV, s= 100, color='red',  label='CLAGN')
+    plt.scatter(CLAGN_zscores_MIR, CLAGN_zscores_UV, s=100, color='red',  label='CLAGN')
     plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
     plt.xlim(0, 1.05*max(CLAGN_zscores_MIR+AGN_zscores_MIR))
     plt.ylim(0, 1.05*max(CLAGN_zscores_UV+AGN_zscores_UV))
@@ -929,7 +1087,7 @@ if UVNFD_MIRNFD == 1:
     
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_zscores_MIR, AGN_zscores_UV, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores_MIR, CLAGN_zscores_UV, s= 100, color='red',  label='CLAGN')
+    plt.scatter(CLAGN_zscores_MIR, CLAGN_zscores_UV, s=100, color='red',  label='CLAGN')
     plt.axhline(y=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label='Threshold')
     plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
     plt.xlim(0, 1.05*max(CLAGN_zscores_MIR+AGN_zscores_MIR))
@@ -967,16 +1125,17 @@ if UVNFD_MIRNFD == 1:
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:
 if zs_W1_low == 1:
     plt.figure(figsize=(12, 7))
-    # plt.scatter(AGN_zscores, AGN_W1_low_flux, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+    plt.scatter(AGN_W1_zscore_mean, AGN_W1_low_flux, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_W1_zscore_mean, CLAGN_W1_low_flux, color='red',  label='CLAGN')
     plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=bright_dim_W1, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W1}')
     plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
     plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
-    plt.xlabel("Z-Score", fontsize = 26)
-    plt.ylabel("W1 Band Second Lowest Flux", fontsize = 26)
-    plt.title("Second Lowest W1 Flux vs Z-Score", fontsize = 28)
+    plt.xlabel("W1 Z-Score", fontsize = 26)
+    plt.ylabel("W1 Min Flux", fontsize = 26)
+    plt.title("W1 Min Flux vs W1 Z-Score", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
@@ -985,16 +1144,17 @@ if zs_W1_low == 1:
 
 if zs_W2_low == 1:
     plt.figure(figsize=(12, 7))
-    # plt.scatter(AGN_zscores, AGN_W2_low_flux, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_zscores, CLAGN_W2_low_flux, color='red',  label='CLAGN')
+    plt.scatter(AGN_W2_zscore_mean, AGN_W2_low_flux, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_W2_zscore_mean, CLAGN_W2_low_flux, color='red',  label='CLAGN')
     plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=bright_dim_W2, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W2}')
     plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
     plt.ylim(0, 1.05*max(CLAGN_W2_low_flux+AGN_W2_low_flux))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
-    plt.xlabel("Z-Score", fontsize = 26)
-    plt.ylabel("W2 Band Second Lowest Flux", fontsize = 26)
-    plt.title("Second Lowest W2 Flux vs Z-Score", fontsize = 28)
+    plt.xlabel("W2 Z-Score", fontsize = 26)
+    plt.ylabel("W2 Min Flux", fontsize = 26)
+    plt.title("W2 Min Flux vs W2 Z-Score", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
@@ -1004,16 +1164,17 @@ if zs_W2_low == 1:
 # # #Creating a 2d plot of norm flux diff vs 2nd lowest flux:
 if NFD_W1_low == 1:
     plt.figure(figsize=(12, 7))
-    # plt.scatter(AGN_norm_flux_diff, AGN_W1_low_flux, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_norm_flux_diff, CLAGN_W1_low_flux, color='red',  label='CLAGN')
+    plt.scatter(AGN_W1_NFD, AGN_W1_low_flux, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_W1_NFD, CLAGN_W1_low_flux, color='red',  label='CLAGN')
     plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=bright_dim_W1, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W1}')
     plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
     plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
-    plt.xlabel("Normalised Flux Difference", fontsize = 26)
-    plt.ylabel("W1 Band Second Lowest Flux", fontsize = 26)
-    plt.title("Second Lowest W1 Flux vs Normalised Flux Difference", fontsize = 28)
+    plt.xlabel("W1 NFD", fontsize = 26)
+    plt.ylabel("W1 Min Flux", fontsize = 26)
+    plt.title("W1 Min Flux vs W1 NFD", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
@@ -1021,16 +1182,17 @@ if NFD_W1_low == 1:
 
 if NFD_W2_low == 1:
     plt.figure(figsize=(12, 7))
-    # plt.scatter(AGN_norm_flux_diff, AGN_W2_low_flux, color='blue', label='Non-CL AGN')
-    plt.scatter(CLAGN_norm_flux_diff, CLAGN_W2_low_flux, color='red',  label='CLAGN')
+    plt.scatter(AGN_W2_NFD, AGN_W2_low_flux, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_W2_NFD, CLAGN_W2_low_flux, color='red',  label='CLAGN')
     plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=bright_dim_W2, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W2}')
     plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
     plt.ylim(0, 1.05*max(CLAGN_W2_low_flux+AGN_W2_low_flux))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
-    plt.xlabel("Normalised Flux Difference", fontsize = 26)
-    plt.ylabel("W2 Band Second Lowest Flux", fontsize = 26)
-    plt.title("Second Lowest W2 Flux vs Normalised Flux Difference", fontsize = 28)
+    plt.xlabel("W2 NFD", fontsize = 26)
+    plt.ylabel("W2 Min Flux", fontsize = 26)
+    plt.title("W2 Min Flux vs W2 NFD", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
@@ -1326,12 +1488,11 @@ if Modified_Dev_plot == 1:
 
 
     #Separating CLAGN mod_dev and non-CL AGN mod_dev:
-    threshold = 15
+    threshold_CLAGN = 9
     #CLAGN
-    CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if x <= threshold]
-    # CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if x > threshold]
+    # CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if abs(x) <= threshold_CLAGN]
+    CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if abs(x) > threshold_CLAGN]
     median_mod_dev = np.median(CLAGN_mod_dev_list)
-    print(max(CLAGN_mod_dev_list))
     mod_dev_binsize = (max(CLAGN_mod_dev_list)-min(CLAGN_mod_dev_list))/250 #250 bins
     bins_mod_dev = np.arange(min(CLAGN_mod_dev_list), max(CLAGN_mod_dev_list) + 5*mod_dev_binsize, mod_dev_binsize)
     plt.figure(figsize=(12,7))
@@ -1339,16 +1500,16 @@ if Modified_Dev_plot == 1:
     plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
     plt.xlabel('Flux - Modified Deviation from rest of observations for object')
     plt.ylabel('Frequency')
-    plt.title(f'Distribution of CLAGN Modified Deviation Values > {threshold} from {len(CLAGN_mod_dev_list)} Observations')
+    plt.title(f'Distribution of CLAGN Modified Deviation Values > {threshold_CLAGN} from {len(CLAGN_mod_dev_list)} Observations')
     plt.legend(loc='upper right')
     plt.show()
 
 
     #Non-CL AGN
-    AGN_mod_dev_list = [x for x in AGN_mod_dev_list if x <= threshold]
-    # AGN_mod_dev_list = [x for x in AGN_mod_dev_list if x > threshold]
+    threshold_AGN = 25
+    # AGN_mod_dev_list = [x for x in AGN_mod_dev_list if abs(x) <= threshold_AGN]
+    AGN_mod_dev_list = [x for x in AGN_mod_dev_list if abs(x) > threshold_AGN]
     median_mod_dev = np.median(AGN_mod_dev_list)
-    print(max(AGN_mod_dev_list))
     mod_dev_binsize = (max(AGN_mod_dev_list)-min(AGN_mod_dev_list))/250 #250 bins
     bins_mod_dev = np.arange(min(AGN_mod_dev_list), max(AGN_mod_dev_list) + 5*mod_dev_binsize, mod_dev_binsize)
     plt.figure(figsize=(12,7))
@@ -1356,7 +1517,7 @@ if Modified_Dev_plot == 1:
     plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
     plt.xlabel('Flux - Modified Deviation from rest of observations for object')
     plt.ylabel('Frequency')
-    plt.title(f'Distribution of AGN Modified Deviation Values > {threshold} from {len(AGN_mod_dev_list)} Observations')
+    plt.title(f'Distribution of AGN Modified Deviation Values > {threshold_AGN} from {len(AGN_mod_dev_list)} Observations')
     plt.legend(loc='upper right')
     plt.show()
 

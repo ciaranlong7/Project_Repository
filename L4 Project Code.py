@@ -82,10 +82,8 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '113115.72+533548.9' #outlier = 12.53 (W1)
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
-# object_name = '111938.02+513315.5'
-# object_name = '122444.60+335739.7'
-object_name = '122608.23+621222.1'
-# object_name = '154558.57+425858.8'
+object_name = '020237.34-051115.2'
+# object_name = '123228.59+570509.2'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -100,12 +98,12 @@ option = 1
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 0 #plot with just MIR data on it
-MIR_only_no_epoch = 1 #plot with just MIR data on it - not in epochs
+MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
+main_plot = 1 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
+UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
