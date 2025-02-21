@@ -1,7 +1,26 @@
 import numpy as np
 from scipy.stats import median_abs_deviation
+from scipy.stats import ks_2samp
+from scipy.stats import anderson_ksamp
+from astropy.cosmology import LambdaCDM
+import astropy.units as u
 import matplotlib.pyplot as plt
 import pandas as pd
+
+#comoving distance is the "proper" distance between two points in the universe if the expansion were frozen in time today.
+#However, the universe is expanding and light spreads over a larger surface area in an expanding universe.
+#so I need luminosity distance
+H0 = 70  # Hubble constant in km/s/Mpc
+Om0 = 0.27  # Matter density
+Ode0 = 0.73  # Dark energy density
+# assume a flat lambda-CDM cosmological model. Values the same as Lyu et al. 2022 (10.3847/1538-4357/ac5256)
+
+cosmo = LambdaCDM(H0=H0, Om0=Om0, Ode0=Ode0)
+
+def luminosity(flux, redshift):
+    flux = flux*1e-17 * u.erg / (u.s * u.cm**2 * u.AA)
+    luminosity_distance = cosmo.luminosity_distance(redshift).to(u.cm)
+    return flux*4*np.pi*luminosity_distance**2
 
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
@@ -12,7 +31,7 @@ turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
 emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
 
 #bright/dim thresholds
-bright_dim_W1 = 0.35
+bright_dim_W1 = 0.40
 bright_dim_W2 = 0.40
 
 #plots:
@@ -26,19 +45,21 @@ UV_MIRZ = 0 #plot of UV normalised flux difference vs z score
 UV_MIR_NFD = 0 #plot of UV NFD vs MIR NFD
 UVZ_MIRZ = 0 #plot of UV z-score vs MIR z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR NFD
-zs_W1_low = 1 #plot of zscore vs W1 low flux
-zs_W2_low = 1 #plot of zscore vs W2 low flux
-NFD_W1_low = 1 #plot of NFD vs W1 low flux
-NFD_W2_low = 1 #plot of NFD vs W2 low flux
+zs_W1_low = 0 #plot of zscore vs W1 low flux
+zs_W2_low = 0 #plot of zscore vs W2 low flux
+NFD_W1_low = 0 #plot of NFD vs W1 low flux
+NFD_W2_low = 0 #plot of NFD vs W2 low flux
 W1_vs_W2_NFD = 0 #plot of W1 NFD vs W2 NFD
 W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
-Modified_Dev_plot = 0 #plot of distribution of modified deviations
+Modified_Dev_plot = 1 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
 epochs_zs_W2 = 0 #W2 Zs vs W2 epochs
 redshift_dist = 0 #hist of redshift distribution for objects analysed
+luminosity_dist_CLAGN = 0 #hist of luminosity distribution for CLAGN analysed
+luminosity_dist_AGN = 0 #hist of luminosity distribution for Non-CL AGN analysed
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -737,11 +758,16 @@ if main_MIR_NFD_hist == 1:
 
 if main_MIR_NFD_hist_bright_dim == 1:
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
-    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     AGN_norm_flux_diff_bright = AGN_quantifying_change_data.iloc[:, 19].tolist()
     AGN_norm_flux_diff_unc_bright = AGN_quantifying_change_data.iloc[:, 20].tolist()
+
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
-    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
     AGN_norm_flux_diff_dim = AGN_quantifying_change_data.iloc[:, 19].tolist()
     AGN_norm_flux_diff_unc_dim = AGN_quantifying_change_data.iloc[:, 20].tolist()
 
@@ -774,31 +800,43 @@ if main_MIR_NFD_hist_bright_dim == 1:
     for NFD in AGN_norm_flux_diff_dim:
         if NFD > three_sigma_norm_flux_diff_dim:
             b += 1
+            
+    ad_result_AGN = anderson_ksamp([AGN_norm_flux_diff_bright, AGN_norm_flux_diff_dim])
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)  
-    ax1.hist(AGN_norm_flux_diff_bright, bins=AGN_bins_flux_diff, color='blue', alpha=0.7, edgecolor='black', label='Bright Non-CL AGN')
-    ax1.hist(AGN_norm_flux_diff_dim, bins=AGN_bins_flux_diff, color='blueviolet', alpha=0.7, edgecolor='black', label='Dim Non-CL AGN')
-    ax1.axvline(median_norm_flux_diff_AGN_bright, linewidth=2, linestyle='--', color='darkblue', label=f'Bright Non-CL AGN Median = {median_norm_flux_diff_AGN_bright:.2f}')
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    ax1.hist(AGN_norm_flux_diff_bright, bins=AGN_bins_flux_diff, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax1.hist(AGN_norm_flux_diff_dim, bins=AGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax1.axvline(median_norm_flux_diff_AGN_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Non-CL AGN Median = {median_norm_flux_diff_AGN_bright:.2f}')
     ax1.axvline(median_norm_flux_diff_AGN_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Non-CL AGN Median = {median_norm_flux_diff_AGN_dim:.2f}')
-    ax1.axvline(three_sigma_norm_flux_diff_bright, linewidth=2, linestyle='--', color='black', label=f'{a/len(AGN_norm_flux_diff_bright)*100:.1f}% Bright Non-CL AGN > Bright Threshold = {three_sigma_norm_flux_diff_bright:.2f}')
-    ax1.axvline(three_sigma_norm_flux_diff_dim, linewidth=2, linestyle='--', color='grey', label=f'{b/len(AGN_norm_flux_diff_dim)*100:.1f}% Dim Non-CL AGN > Dim Threshold = {three_sigma_norm_flux_diff_dim:.2f}')
-    ax1.plot((x_start_threshold_bright, x_end_threshold_bright), (height_bright+0.75, height_bright+0.75), linewidth=2, color='tan', label = f'3X Median Bright Uncertainty = {3*median_norm_flux_diff_AGN_unc_bright:.2f}')
-    ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange', label = f'3X Median Dim Uncertainty = {3*median_norm_flux_diff_AGN_unc_dim:.2f}')
+    ax1.axvline(three_sigma_norm_flux_diff_bright, linewidth=2, linestyle=':', color='black', label=f'{a/len(AGN_norm_flux_diff_bright)*100:.1f}% Bright Non-CL AGN > Bright Threshold = {three_sigma_norm_flux_diff_bright:.2f}')
+    ax1.axvline(three_sigma_norm_flux_diff_dim, linewidth=2, linestyle='-.', color='grey', label=f'{b/len(AGN_norm_flux_diff_dim)*100:.1f}% Dim Non-CL AGN > Dim Threshold = {three_sigma_norm_flux_diff_dim:.2f}')
+    ax1.plot((x_start_threshold_bright, x_end_threshold_bright), (height_bright+0.75, height_bright+0.75), linewidth=2, color='sienna')
+    ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange')
+    ax1.text(x_end_threshold_bright, height_bright + 1.25, f'3X Median Bright Uncertainty = {3*median_norm_flux_diff_AGN_unc_bright:.2f}', 
+            ha='right', va='center', fontsize=10, color='sienna')
+    ax1.text(x_end_threshold_dim, height_dim + 0.75, f'3X Median Dim Uncertainty = {3*median_norm_flux_diff_AGN_unc_dim:.2f}', 
+            ha='right', va='center', fontsize=10, color='darkorange')
+    ax1.text(2, 1, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     ax1.set_ylabel('Non-CL AGN Frequency', color='black')
     ax1.legend(loc='upper right')
 
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     CLAGN_norm_flux_diff_bright = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
+    
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
     CLAGN_norm_flux_diff_dim = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
 
     CLAGN_norm_flux_diff_all = CLAGN_norm_flux_diff_bright+CLAGN_norm_flux_diff_dim
     median_norm_flux_diff_CLAGN_bright = np.nanmedian(CLAGN_norm_flux_diff_bright)
     median_norm_flux_diff_CLAGN_dim = np.nanmedian(CLAGN_norm_flux_diff_dim)
 
-    CLAGN_flux_diff_binsize = (max(CLAGN_norm_flux_diff_all) - min(CLAGN_norm_flux_diff_all))/50  # 50 bins
+    CLAGN_flux_diff_binsize = (max(CLAGN_norm_flux_diff_all) - min(CLAGN_norm_flux_diff_all))/20
     CLAGN_bins_flux_diff = np.arange(min(CLAGN_norm_flux_diff_all), max(CLAGN_norm_flux_diff_all) + CLAGN_flux_diff_binsize, CLAGN_flux_diff_binsize)
     
     c = 0
@@ -811,12 +849,24 @@ if main_MIR_NFD_hist_bright_dim == 1:
         if NFD > three_sigma_norm_flux_diff_dim:
             d += 1
 
-    ax2.hist(CLAGN_norm_flux_diff_bright, bins=CLAGN_bins_flux_diff, color='brown', alpha=0.8, edgecolor='black', label='Bright CLAGN')
-    ax2.hist(CLAGN_norm_flux_diff_dim, bins=CLAGN_bins_flux_diff, color='salmon', alpha=0.4, edgecolor='black', label='Dim CLAGN')
-    ax2.axvline(median_norm_flux_diff_CLAGN_bright, linewidth=2, linestyle='--', color='darkred', label=f'Bright CLAGN Median = {median_norm_flux_diff_CLAGN_bright:.2f}')
+    # ks_statistic_bright, p_value_bright = ks_2samp(AGN_norm_flux_diff_bright, CLAGN_norm_flux_diff_bright)
+    # ks_statistic_dim, p_value_dim = ks_2samp(AGN_norm_flux_diff_dim, CLAGN_norm_flux_diff_dim)
+    # ad_result_bright = anderson_ksamp([AGN_norm_flux_diff_bright, CLAGN_norm_flux_diff_bright])
+    # ad_result_dim = anderson_ksamp([AGN_norm_flux_diff_dim, CLAGN_norm_flux_diff_dim])
+
+    ad_result_CLAGN = anderson_ksamp([CLAGN_norm_flux_diff_bright, CLAGN_norm_flux_diff_dim])
+
+    ax2.hist(CLAGN_norm_flux_diff_bright, bins=CLAGN_bins_flux_diff, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax2.hist(CLAGN_norm_flux_diff_dim, bins=CLAGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax2.axvline(median_norm_flux_diff_CLAGN_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright CLAGN Median = {median_norm_flux_diff_CLAGN_bright:.2f}')
     ax2.axvline(median_norm_flux_diff_CLAGN_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim CLAGN Median = {median_norm_flux_diff_CLAGN_dim:.2f}')
-    ax2.axvline(three_sigma_norm_flux_diff_bright, linewidth=2, linestyle='--', color='black', label=f'{c/len(CLAGN_norm_flux_diff_bright)*100:.1f}% Bright CLAGN > Bright Threshold = {three_sigma_norm_flux_diff_bright:.2f}')
-    ax2.axvline(three_sigma_norm_flux_diff_dim, linewidth=2, linestyle='--', color='grey', label=f'{d/len(CLAGN_norm_flux_diff_dim)*100:.1f}% Dim CLAGN > Dim Threshold = {three_sigma_norm_flux_diff_dim:.2f}')
+    ax2.axvline(three_sigma_norm_flux_diff_bright, linewidth=2, linestyle=':', color='black', label=f'{c/len(CLAGN_norm_flux_diff_bright)*100:.1f}% Bright CLAGN > Bright Threshold = {three_sigma_norm_flux_diff_bright:.2f}')
+    ax2.axvline(three_sigma_norm_flux_diff_dim, linewidth=2, linestyle='-.', color='grey', label=f'{d/len(CLAGN_norm_flux_diff_dim)*100:.1f}% Dim CLAGN > Dim Threshold = {three_sigma_norm_flux_diff_dim:.2f}')
+    # ax2.text(-0.1, 4.75, f'KS test - bright objects. P-value = {p_value_bright:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(-0.1, 4.25, f'KS test - dim objects. P-value = {p_value_dim:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(-0.1, 4.75, f'AD test - bright objects. P-value = {ad_result_bright.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(-0.1, 4.25, f'AD test - dim objects. P-value = {ad_result_dim.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    ax2.text(-0.1, 4.75, f'AD test - CLAGN p-value = {ad_result_CLAGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     ax2.set_xlabel('NFD')
     ax2.set_ylabel('CLAGN Frequency', color='black')
     ax2.legend(loc='upper right')
@@ -873,11 +923,16 @@ if main_MIR_Zs_hist == 1:
 
 if main_MIR_Zs_hist_bright_dim == 1:
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
-    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     AGN_z_score_bright = AGN_quantifying_change_data.iloc[:, 17].tolist()
     AGN_z_score_unc_bright = AGN_quantifying_change_data.iloc[:, 18].tolist()
+
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
-    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
     AGN_z_score_dim = AGN_quantifying_change_data.iloc[:, 17].tolist()
     AGN_z_score_unc_dim = AGN_quantifying_change_data.iloc[:, 18].tolist()
 
@@ -910,31 +965,43 @@ if main_MIR_Zs_hist_bright_dim == 1:
     for zs in AGN_z_score_dim:
         if zs > three_sigma_z_score_dim:
             b += 1
+    
+    ad_result_AGN = anderson_ksamp([AGN_z_score_bright, AGN_norm_flux_diff_dim])
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)  
-    ax1.hist(AGN_z_score_bright, bins=AGN_bins_flux_diff, color='blue', alpha=0.7, edgecolor='black', label='Bright Non-CL AGN')
-    ax1.hist(AGN_z_score_dim, bins=AGN_bins_flux_diff, color='blueviolet', alpha=0.7, edgecolor='black', label='Dim Non-CL AGN')
-    ax1.axvline(median_z_score_AGN_bright, linewidth=2, linestyle='--', color='darkblue', label=f'Bright Non-CL AGN Median = {median_z_score_AGN_bright:.2f}')
+    ax1.hist(AGN_z_score_bright, bins=AGN_bins_flux_diff,  color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax1.hist(AGN_z_score_dim, bins=AGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax1.axvline(median_z_score_AGN_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Non-CL AGN Median = {median_z_score_AGN_bright:.2f}')
     ax1.axvline(median_z_score_AGN_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Non-CL AGN Median = {median_z_score_AGN_dim:.2f}')
-    ax1.axvline(three_sigma_z_score_bright, linewidth=2, linestyle='--', color='black', label=f'{a/len(AGN_z_score_bright)*100:.1f}% Bright Non-CL AGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
-    ax1.axvline(three_sigma_z_score_dim, linewidth=2, linestyle='--', color='grey', label=f'{b/len(AGN_z_score_dim)*100:.1f}% Dim Non-CL AGN > Dim Threshold = {three_sigma_z_score_dim:.2f}')
-    ax1.plot((x_start_threshold_bright, x_end_threshold_bright), (height_bright+0.75, height_bright+0.75), linewidth=2, color='tan', label = f'3X Median Bright Uncertainty = {3*median_z_score_AGN_unc_bright:.2f}')
-    ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange', label = f'3X Median Dim Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}')
+    ax1.axvline(three_sigma_z_score_bright, linewidth=2, linestyle=':', color='black', label=f'{a/len(AGN_z_score_bright)*100:.1f}% Bright Non-CL AGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
+    ax1.axvline(three_sigma_z_score_dim, linewidth=2, linestyle='-.', color='grey', label=f'{b/len(AGN_z_score_dim)*100:.1f}% Dim Non-CL AGN > Dim Threshold = {three_sigma_z_score_dim:.2f}')
+    ax1.plot((x_start_threshold_bright, x_end_threshold_bright), (height_bright+0.75, height_bright+0.75), linewidth=2, color='sienna')
+    ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange')
+    ax1.text(x_end_threshold_bright+1, height_bright + 1.25, f'3X Median Bright Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_bright:.2f}', 
+            ha='left', va='center', fontsize=10, color='sienna')
+    ax1.text(x_end_threshold_dim+1, height_dim + 0.75, f'3X Median Dim Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}', 
+            ha='left', va='center', fontsize=10, color='darkorange')
+    ax1.text(45, 12, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     ax1.set_ylabel('Non-CL AGN Frequency', color='black')
     ax1.legend(loc='upper right')
 
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     CLAGN_z_score_bright = CLAGN_quantifying_change_data.iloc[:, 17].tolist()
+
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
     CLAGN_z_score_dim = CLAGN_quantifying_change_data.iloc[:, 17].tolist()
 
     CLAGN_z_score_all = CLAGN_z_score_bright+CLAGN_z_score_dim
     median_z_score_CLAGN_bright = np.nanmedian(CLAGN_z_score_bright)
     median_z_score_CLAGN_dim = np.nanmedian(CLAGN_z_score_dim)
 
-    CLAGN_flux_diff_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/50  # 50 bins
+    CLAGN_flux_diff_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/20
     CLAGN_bins_flux_diff = np.arange(min(CLAGN_z_score_all), max(CLAGN_z_score_all) + 2*CLAGN_flux_diff_binsize, CLAGN_flux_diff_binsize)
     
     c = 0
@@ -947,12 +1014,27 @@ if main_MIR_Zs_hist_bright_dim == 1:
         if zs > three_sigma_z_score_dim:
             d += 1
 
-    ax2.hist(CLAGN_z_score_bright, bins=CLAGN_bins_flux_diff, color='brown', alpha=0.8, edgecolor='black', label='Bright CLAGN')
-    ax2.hist(CLAGN_z_score_dim, bins=CLAGN_bins_flux_diff, color='salmon', alpha=0.4, edgecolor='black', label='Dim CLAGN')
-    ax2.axvline(median_z_score_CLAGN_bright, linewidth=2, linestyle='--', color='darkred', label=f'Bright CLAGN Median = {median_z_score_CLAGN_bright:.2f}')
+    # ks_statistic_bright, p_value_bright = ks_2samp(AGN_z_score_bright, CLAGN_z_score_bright)
+    # ks_statistic_dim, p_value_dim = ks_2samp(AGN_z_score_dim, CLAGN_z_score_dim)
+    # ad_result_bright = anderson_ksamp([AGN_norm_flux_diff_bright, CLAGN_norm_flux_diff_bright])
+    # ad_result_dim = anderson_ksamp([AGN_norm_flux_diff_dim, CLAGN_norm_flux_diff_dim])
+
+    ad_result_CLAGN = anderson_ksamp([CLAGN_z_score_bright, CLAGN_norm_flux_diff_dim])
+
+    max_line = max([median_z_score_CLAGN_bright, median_z_score_CLAGN_dim,
+                    three_sigma_z_score_bright, three_sigma_z_score_dim])
+
+    ax2.hist(CLAGN_z_score_bright, bins=CLAGN_bins_flux_diff,  color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax2.hist(CLAGN_z_score_dim, bins=CLAGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax2.axvline(median_z_score_CLAGN_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright CLAGN Median = {median_z_score_CLAGN_bright:.2f}')
     ax2.axvline(median_z_score_CLAGN_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim CLAGN Median = {median_z_score_CLAGN_dim:.2f}')
-    ax2.axvline(three_sigma_z_score_bright, linewidth=2, linestyle='--', color='black', label=f'{c/len(CLAGN_z_score_bright)*100:.1f}% Bright CLAGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
-    ax2.axvline(three_sigma_z_score_dim, linewidth=2, linestyle='--', color='grey', label=f'{d/len(CLAGN_z_score_dim)*100:.1f}% Dim CLAGN > Dim Threshold = {three_sigma_z_score_dim:.2f}')
+    ax2.axvline(three_sigma_z_score_bright, linewidth=2, linestyle=':', color='black', label=f'{c/len(CLAGN_z_score_bright)*100:.1f}% Bright CLAGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
+    ax2.axvline(three_sigma_z_score_dim, linewidth=2, linestyle='-.', color='grey', label=f'{d/len(CLAGN_z_score_dim)*100:.1f}% Dim CLAGN > Dim Threshold = {three_sigma_z_score_dim:.2f}')
+    # ax2.text(max_line+1, 10, f'KS test - bright objects. P-value = {p_value_bright:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(max_line+1, 8, f'KS test - dim objects. P-value = {p_value_dim:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(max_line+1, 10, f'AD test - bright objects. P-value = {ad_result_bright.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    # ax2.text(max_line+1, 8, f'AD test - dim objects. P-value = {ad_result_dim.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    ax2.text(45, 5, f'AD test - CLAGN p-value = {ad_result_CLAGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     ax2.set_xlabel('Z-Score')
     ax2.set_ylabel('CLAGN Frequency', color='black')
     ax2.legend(loc='upper right')
@@ -1414,6 +1496,12 @@ if W1_vs_W2_NFD == 1:
         plt.text(0.99, 0.37, f'CLAGN Median W2 NFD = {CLAGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
         plt.text(0.99, 0.25, f'AGN Median W2 NFD = {AGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
         plt.legend(loc = 'upper left', fontsize=22)
+    elif brightness == 2:
+        plt.text(0.99, 0.31, f'CLAGN Median W1 NFD = {CLAGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.19, f'AGN Median W1 NFD = {AGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.37, f'CLAGN Median W2 NFD = {CLAGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.25, f'AGN Median W2 NFD = {AGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'upper left', fontsize=22)
     plt.tight_layout()
     plt.show()
 
@@ -1489,35 +1577,44 @@ if Modified_Dev_plot == 1:
 
     #Separating CLAGN mod_dev and non-CL AGN mod_dev:
     threshold_CLAGN = 9
+    CLAGN_mod_dev_list_elim = [x for x in CLAGN_mod_dev_list if abs(x) > threshold_CLAGN]
+    percentage_elim_CLAGN = len(CLAGN_mod_dev_list_elim)/(len(CLAGN_mod_dev_list_elim)+len(CLAGN_mod_dev_list))*100
+
     #CLAGN
     # CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if abs(x) <= threshold_CLAGN]
-    CLAGN_mod_dev_list = [x for x in CLAGN_mod_dev_list if abs(x) > threshold_CLAGN]
     median_mod_dev = np.median(CLAGN_mod_dev_list)
     mod_dev_binsize = (max(CLAGN_mod_dev_list)-min(CLAGN_mod_dev_list))/250 #250 bins
     bins_mod_dev = np.arange(min(CLAGN_mod_dev_list), max(CLAGN_mod_dev_list) + 5*mod_dev_binsize, mod_dev_binsize)
     plt.figure(figsize=(12,7))
     plt.hist(CLAGN_mod_dev_list, bins=bins_mod_dev, color='darkorange', edgecolor='black', label=f'binsize = {mod_dev_binsize:.2f}')
     plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
-    plt.xlabel('Flux - Modified Deviation from rest of observations for object')
+    plt.axvline(threshold_CLAGN, linewidth=2, linestyle='-', color='black', label = f'Threshold = {threshold_CLAGN} eliminates {percentage_elim_CLAGN:.3f}% of non-CL AGN data')
+    plt.yscale('log')
+    plt.xlabel('Modified Deviation')
     plt.ylabel('Frequency')
-    plt.title(f'Distribution of CLAGN Modified Deviation Values > {threshold_CLAGN} from {len(CLAGN_mod_dev_list)} Observations')
+    plt.title(f'Distribution of CLAGN Modified Deviation Values < 100 from {len(CLAGN_mod_dev_list)} Observations')
     plt.legend(loc='upper right')
     plt.show()
 
 
     #Non-CL AGN
     threshold_AGN = 25
+    AGN_mod_dev_list_elim = [x for x in AGN_mod_dev_list if abs(x) > threshold_AGN]
+    percentage_elim_AGN = len(AGN_mod_dev_list_elim)/(len(AGN_mod_dev_list_elim)+len(AGN_mod_dev_list))*100
+
     # AGN_mod_dev_list = [x for x in AGN_mod_dev_list if abs(x) <= threshold_AGN]
-    AGN_mod_dev_list = [x for x in AGN_mod_dev_list if abs(x) > threshold_AGN]
+    AGN_mod_dev_list = [x for x in AGN_mod_dev_list if abs(x) <= 100]
     median_mod_dev = np.median(AGN_mod_dev_list)
     mod_dev_binsize = (max(AGN_mod_dev_list)-min(AGN_mod_dev_list))/250 #250 bins
     bins_mod_dev = np.arange(min(AGN_mod_dev_list), max(AGN_mod_dev_list) + 5*mod_dev_binsize, mod_dev_binsize)
     plt.figure(figsize=(12,7))
     plt.hist(AGN_mod_dev_list, bins=bins_mod_dev, color='darkorange', edgecolor='black', label=f'binsize = {mod_dev_binsize:.2f}')
     plt.axvline(median_mod_dev, linewidth=2, linestyle='--', color='black', label = f'Median = {median_mod_dev:.2f}')
-    plt.xlabel('Flux - Modified Deviation from rest of observations for object')
+    plt.axvline(threshold_AGN, linewidth=2, linestyle='-', color='black', label = f'Threshold = {threshold_AGN} eliminates {percentage_elim_AGN:.3f}% of non-CL AGN data')
+    plt.yscale('log')
+    plt.xlabel('Modified Deviation')
     plt.ylabel('Frequency')
-    plt.title(f'Distribution of AGN Modified Deviation Values > {threshold_AGN} from {len(AGN_mod_dev_list)} Observations')
+    plt.title(f'Distribution of AGN Modified Deviation Values < 100 from {len(AGN_mod_dev_list)} Observations')
     plt.legend(loc='upper right')
     plt.show()
 
@@ -1634,7 +1731,9 @@ if epochs_zs_W2 == 1:
 
 if redshift_dist == 1:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] >= 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
     CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
     CLAGN_redshifts_bright = []
     for object_name in CLAGN_names_analysis_bright:
@@ -1643,7 +1742,9 @@ if redshift_dist == 1:
         CLAGN_redshifts_bright.append(redshift)
 
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 27] < 0.5]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
     CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
     CLAGN_redshifts_dim = []
     for object_name in CLAGN_names_analysis_dim:
@@ -1660,14 +1761,114 @@ if redshift_dist == 1:
     CLAGN_median_redshift_dim = np.median(CLAGN_redshifts_dim)
     plt.figure(figsize=(12,7))
     # plt.hist(AGN_redshifts, bins=bins_mod_dev, color='blue', edgecolor='black', label='Non-CL AGN')
-    plt.hist(CLAGN_redshifts_bright, bins=bins_mod_dev, color='red', alpha=0.7, edgecolor='black', label='Bright CLAGN')
-    plt.hist(CLAGN_redshifts_dim, bins=bins_mod_dev, color='salmon', alpha=0.7, edgecolor='black', label='Dim CLAGN')
+    plt.hist(CLAGN_redshifts_bright, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    plt.hist(CLAGN_redshifts_dim, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
     # plt.axvline(AGN_median_redshift, linewidth=2, linestyle='--', color='darkblue', label = f'Non-CL AGN Median = {AGN_median_redshift:.2f}')
-    plt.axvline(CLAGN_median_redshift_bright, linewidth=2, linestyle='--', color='darkred', label = f'Bright CLAGN Median = {CLAGN_median_redshift_bright:.2f}')
+    plt.axvline(CLAGN_median_redshift_bright, linewidth=2, linestyle='-', color='darkred', label = f'Bright CLAGN Median = {CLAGN_median_redshift_bright:.2f}')
     plt.axvline(CLAGN_median_redshift_dim, linewidth=2, linestyle='--', color='darkred', label = f'Dim CLAGN Median = {CLAGN_median_redshift_dim:.2f}')
     plt.xlabel('Redshift')
     plt.ylabel('Frequency')
     plt.title(f'Distribution of Redshifts - Dim vs Bright CLAGN')
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.show()
+
+if luminosity_dist_CLAGN == 1:
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    CLAGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_bright, CLAGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    CLAGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_dim, CLAGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    combined_luminosities = [lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_brightflux + CLAGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_luminosities)), np.log10(max(combined_luminosities)), num=20)
+    CLAGN_median_luminosity_bright = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_brightflux])
+    CLAGN_median_luminosity_dim = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_dimflux])
+    plt.figure(figsize=(12,7))
+    plt.hist(CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    plt.hist(CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
+    plt.axvline(CLAGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label = f'Bright Flux CLAGN Median = {CLAGN_median_luminosity_bright:.2e}')
+    plt.axvline(CLAGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label = f'Dim Flux CLAGN Median = {CLAGN_median_luminosity_dim:.2e}')
+    plt.xscale('log')
+    plt.xlabel(r'Luminosity in W1 band / erg s$^{-1}$ Å$^{-1}$')
+    plt.ylabel('Frequency')
+    plt.title(f'Distribution of Luminosities - Dim vs Bright CLAGN')
+    plt.legend(loc='upper right')
+    plt.tight_layout()
+    plt.show()
+
+if luminosity_dist_AGN == 1:
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
+
+    AGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_bright, AGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_names_analysis_dim = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
+
+    AGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_dim, AGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    combined_luminosities = [lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_brightflux + AGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_luminosities)), np.log10(max(combined_luminosities)), num=20)
+    AGN_median_luminosity_bright = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_brightflux])
+    AGN_median_luminosity_dim = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_dimflux])
+    plt.figure(figsize=(12,7))
+    plt.hist(AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    plt.hist(AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    plt.axvline(AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label = f'Bright Flux Non-CL AGN Median = {AGN_median_luminosity_bright:.2e}')
+    plt.axvline(AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label = f'Dim Flux Non-CL AGN Median = {AGN_median_luminosity_dim:.2e}')
+    plt.xscale('log')
+    plt.xlabel(r'Luminosity in W1 band / erg s$^{-1}$ Å$^{-1}$')
+    plt.ylabel('Frequency')
+    plt.title(f'Distribution of Luminosities - Dim vs Bright Non-CL AGN')
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.show()

@@ -58,7 +58,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '160730.20+560305.5' #Object W - chosen because a CLAGN that exhibits no MIR change over SDSS-DESI range, but does exhibit a change after
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
-# object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 ansd W2 NFD
+# object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 and W2 NFD
 
 # object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1
 
@@ -82,8 +82,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '113115.72+533548.9' #outlier = 12.53 (W1)
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
-object_name = '020237.34-051115.2'
-# object_name = '123228.59+570509.2'
+object_name = '162704.10+420500.0'
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -97,13 +96,13 @@ option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 0 #plot with just MIR data on it
+MIR_only = 1 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
+UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -117,7 +116,7 @@ W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
-def remove_outliers(data, threshold=15):
+def remove_outliers(data, threshold=None):
     """
     Parameters:
     - data: list of tuples [(flux, mjd, unc), ...]
@@ -128,6 +127,11 @@ def remove_outliers(data, threshold=15):
     """
     if not data:
         return data  # Return empty list if input is empty
+    
+    if my_object == 0:
+        threshold = 25
+    elif my_object == 1:
+        threshold = 9
 
     flux_values = np.array([entry[0] for entry in data])  # Extract flux values
     median = np.median(flux_values)
@@ -205,22 +209,6 @@ coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 #     print(header)
 #     mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
 #     print(f"MJD: {mjd_value}")
-
-def find_closest_indices(x_vals, value):
-    t = 0
-    if value <= x_vals[0]: #mjd is before first observation
-        t += 1
-        return 0, 0, t
-    elif value >= x_vals[-1]: #mjd is after last observation
-        t += 1
-        return 0, 0, t
-    for i in range(len(x_vals) - 1):
-        if x_vals[i] <= value <= x_vals[i + 1]:
-            before_index = i
-            after_index = i + 1
-            if x_vals[after_index] - x_vals[before_index] > max_day_gap:
-                t += 1
-            return before_index, after_index, t
 
 def get_sdss_spectra():
     #Automatically querying the SDSS database
@@ -351,6 +339,10 @@ sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.
 # It explains how "By default, a scaling of 0.86 is applied to the map values to reflect the recalibration by Schlafly & Finkbeiner (2011)"
 ebv = sfd.ebv(coord)
 print(f"E(B-V): {ebv}")
+if 3.1*ebv > 0.53:
+    print('Obscured')
+else:
+    print('Unobscured')
 
 ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
 # uncorrected_SDSS = sdss_flux
@@ -585,6 +577,8 @@ if option >= 1 and option <= 4:
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
 
     #removing some outliers
+    print(f'W1 data points before filtering = {len(W1_all)}')
+    print(f'W2 data points before filtering = {len(W2_all)}')
     W1_all = remove_outliers(W1_all)
     W2_all = remove_outliers(W2_all)
 

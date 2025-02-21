@@ -46,7 +46,7 @@ W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
-def remove_outliers(data, threshold=15):
+def remove_outliers(data, threshold=None):
     """
     Parameters:
     - data: list of tuples [(flux, mjd, unc), ...]
@@ -57,6 +57,11 @@ def remove_outliers(data, threshold=15):
     """
     if not data:
         return data  # Return empty list if input is empty
+    
+    if my_object == 0:
+        threshold = 25
+    elif my_object == 1:
+        threshold = 9
 
     flux_values = np.array([entry[0] for entry in data])  # Extract flux values
     median = np.median(flux_values)

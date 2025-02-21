@@ -188,12 +188,21 @@ print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
 # plt.show()
 
 
-#Comibing the plots to the same axes
-#Uncomment below if you want only objects analysed distribution.
-CLAGN_redshifts_original = CLAGN_df.iloc[:, 35].tolist()
-AGN_sample_one_redshifts = AGN_sample_one_df.iloc[:, 37].tolist()
-AGN_sample_two_redshifts = AGN_sample_two_df.iloc[:, 37].tolist()
-AGN_sample_three_redshifts = AGN_sample_three_df.iloc[:, 37].tolist()
+#Combining the plots to the same axes
+# #Uncomment below if you want only objects analysed distribution.
+# CLAGN_redshifts_original = CLAGN_df.iloc[:, 35].tolist()
+# AGN_sample_one_redshifts = AGN_sample_one_df.iloc[:, 37].tolist()
+# AGN_sample_two_redshifts = AGN_sample_two_df.iloc[:, 37].tolist()
+# AGN_sample_three_redshifts = AGN_sample_three_df.iloc[:, 37].tolist()
+# CLAGN_redshifts_median = np.median(CLAGN_redshifts_original)
+# AGN_redshifts_one_median = np.median(AGN_sample_one_redshifts)
+# AGN_redshifts_two_median = np.median(AGN_sample_two_redshifts)
+# AGN_redshifts_three_median = np.median(AGN_sample_three_redshifts)
+# print(f'CLAGN median redshift = {CLAGN_redshifts_median}')
+# print(f'Sample 1 median redshift = {AGN_redshifts_one_median}')
+# print(f'Sample 2 median redshift = {AGN_redshifts_two_median}')
+# print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
+
 
 combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts + AGN_sample_two_redshifts + AGN_sample_three_redshifts
 flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts)) / 50  # 50 bins
