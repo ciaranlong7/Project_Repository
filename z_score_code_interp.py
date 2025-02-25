@@ -19,10 +19,10 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 c = 299792458
 
-my_object = 0 #0 = AGN. 1 = CLAGN
-my_sample = 3 #set which AGN sample you want
+my_object = 1 #0 = AGN. 1 = CLAGN
+my_sample = 1 #set which AGN sample you want
 save_figures = 0
-optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
+optical_analysis = 0 #set = 1 if you wish to do optical analysis. set = 0 if not
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -100,6 +100,8 @@ W1_first_mjd = []
 W1_last_mjd = []
 W1_epochs = []
 W1_mean_uncs = []
+W1_min_mjd = []
+W1_max_mjd = []
 
 W2_SDSS_DESI = []
 W2_SDSS_DESI_unc = []
@@ -117,6 +119,8 @@ W2_first_mjd = []
 W2_last_mjd = []
 W2_epochs = []
 W2_mean_uncs = []
+W2_min_mjd = []
+W2_max_mjd = []
 
 mean_zscore = []
 mean_zscore_unc = []
@@ -775,6 +779,12 @@ for object_name in object_names:
 
             W1_first_mjd.append(W1_first)
             W1_last_mjd.append(W1_last)
+            if W1_DESI_interp >= W1_SDSS_interp:
+                W1_min_mjd.append(SDSS_mjd)
+                W1_max_mjd.append(DESI_mjd)
+            else:
+                W1_min_mjd.append(DESI_mjd)
+                W1_max_mjd.append(SDSS_mjd)
 
             W2_largest = sorted(W2_averages_flux, reverse=True)[0]
             W2_largest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_largest)]
@@ -841,6 +851,12 @@ for object_name in object_names:
 
             W2_first_mjd.append(W2_first)
             W2_last_mjd.append(W2_last)
+            if W2_DESI_interp >= W2_SDSS_interp:
+                W2_min_mjd.append(SDSS_mjd)
+                W2_max_mjd.append(DESI_mjd)
+            else:
+                W2_min_mjd.append(DESI_mjd)
+                W2_max_mjd.append(SDSS_mjd)
 
             zscores = np.sort([abs(W1_z_score_SDSS_DESI), abs(W1_z_score_DESI_SDSS), abs(W2_z_score_SDSS_DESI), abs(W2_z_score_DESI_SDSS)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_SDSS_DESI_unc, W1_z_score_DESI_SDSS_unc, W2_z_score_SDSS_DESI_unc, W2_z_score_DESI_SDSS_unc])
@@ -930,9 +946,6 @@ for object_name in object_names:
                 W1_DESI_unc_interp = np.sqrt((((W1_av_mjd_date[after_DESI_index_W1] - DESI_mjd)/(W1_av_mjd_date[after_DESI_index_W1] - W1_av_mjd_date[before_DESI_index_W1]))*W1_av_uncs_flux[before_DESI_index_W1])**2 + (((DESI_mjd - W1_av_mjd_date[before_DESI_index_W1])/(W1_av_mjd_date[after_DESI_index_W1] - W1_av_mjd_date[before_DESI_index_W1]))*W1_av_uncs_flux[after_DESI_index_W1])**2)
 
             W1_abs = abs(W1_SDSS_interp-W1_DESI_interp)
-            print(W1_abs)
-            print(W1_SDSS_interp)
-            print(W1_DESI_interp)
             W1_abs_unc = np.sqrt(W1_SDSS_unc_interp**2 + W1_DESI_unc_interp**2)
 
             W1_abs_norm = ((W1_abs)/(W1_smallest))
@@ -954,6 +967,12 @@ for object_name in object_names:
 
             W1_first_mjd.append(W1_first)
             W1_last_mjd.append(W1_last)
+            if W1_DESI_interp >= W1_SDSS_interp:
+                W1_min_mjd.append(SDSS_mjd)
+                W1_max_mjd.append(DESI_mjd)
+            else:
+                W1_min_mjd.append(DESI_mjd)
+                W1_max_mjd.append(SDSS_mjd)
 
             W2_abs_norm = np.nan
             W2_abs_norm_unc = np.nan
@@ -974,6 +993,8 @@ for object_name in object_names:
 
             W2_first_mjd.append(np.nan)
             W2_last_mjd.append(np.nan)
+            W2_min_mjd.append(np.nan)
+            W2_max_mjd.append(np.nan)
 
             zscores = np.sort([abs(W1_z_score_SDSS_DESI), abs(W1_z_score_DESI_SDSS), abs(W2_z_score_SDSS_DESI), abs(W2_z_score_DESI_SDSS)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_SDSS_DESI_unc, W1_z_score_DESI_SDSS_unc, W2_z_score_SDSS_DESI_unc, W2_z_score_DESI_SDSS_unc])
@@ -1041,6 +1062,8 @@ for object_name in object_names:
 
             W1_first_mjd.append(np.nan)
             W1_last_mjd.append(np.nan)
+            W1_min_mjd(np.nan)
+            W1_max_mjd(np.nan)
 
             W2_largest = sorted(W2_averages_flux, reverse=True)[0]
             W2_largest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_largest)]
@@ -1107,6 +1130,12 @@ for object_name in object_names:
 
             W2_first_mjd.append(W2_first)
             W2_last_mjd.append(W2_last)
+            if W2_DESI_interp >= W2_SDSS_interp: #assume that DESI always taken after sdss
+                W2_min_mjd(SDSS_mjd)
+                W2_max_mjd(DESI_mjd)
+            else:
+                W2_min_mjd(DESI_mjd)
+                W2_max_mjd(SDSS_mjd)
 
             zscores = np.sort([abs(W2_z_score_SDSS_DESI), abs(W1_z_score_DESI_SDSS), abs(W2_z_score_SDSS_DESI), abs(W2_z_score_DESI_SDSS)]) #sorts in ascending order, nans at end
             zscore_uncs = np.sort([W1_z_score_SDSS_DESI_unc, W1_z_score_DESI_SDSS_unc, W2_z_score_SDSS_DESI_unc, W2_z_score_DESI_SDSS_unc])
@@ -1138,58 +1167,62 @@ for object_name in object_names:
                 mean_NFD.append(np.nanmean(norm_f_ch))
                 mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
 
-    quantifying_change_data = {
-        "Object": object_names_list, #0
+quantifying_change_data = {
+    "Object": object_names_list, #0
 
-        "W1 Z Score SDSS vs DESI": W1_SDSS_DESI, #1
-        "W1 Z Score SDSS vs DESI Unc": W1_SDSS_DESI_unc, #2
-        "W1 Z Score DESI vs SDSS": W1_DESI_SDSS, #3
-        "W1 Z Score DESI vs SDSS Unc": W1_DESI_SDSS_unc, #4
-        "W1 Flux Change": W1_abs_change, #5
-        "W1 Flux Change Unc": W1_abs_change_unc, #6
-        "W1 NFD": W1_abs_change_norm, #7
-        "W1 NFD Unc": W1_abs_change_norm_unc, #8
+    "W1 Z Score SDSS vs DESI": W1_SDSS_DESI, #1
+    "W1 Z Score SDSS vs DESI Unc": W1_SDSS_DESI_unc, #2
+    "W1 Z Score DESI vs SDSS": W1_DESI_SDSS, #3
+    "W1 Z Score DESI vs SDSS Unc": W1_DESI_SDSS_unc, #4
+    "W1 Flux Change": W1_abs_change, #5
+    "W1 Flux Change Unc": W1_abs_change_unc, #6
+    "W1 NFD": W1_abs_change_norm, #7
+    "W1 NFD Unc": W1_abs_change_norm_unc, #8
 
-        "W2 Z Score SDSS vs DESI": W2_SDSS_DESI, #9
-        "W2 Z Score SDSS vs DESI Unc": W2_SDSS_DESI_unc, #10
-        "W2 Z Score DESI vs SDSS": W2_DESI_SDSS, #11
-        "W2 Z Score DESI vs SDSS Unc": W2_DESI_SDSS_unc, #12
-        "W2 Flux Change": W2_abs_change, #13
-        "W2 Flux Change Unc": W2_abs_change_unc, #14
-        "W2 NFD": W2_abs_change_norm, #15
-        "W2 NFD Unc": W2_abs_change_norm_unc, #16
+    "W2 Z Score SDSS vs DESI": W2_SDSS_DESI, #9
+    "W2 Z Score SDSS vs DESI Unc": W2_SDSS_DESI_unc, #10
+    "W2 Z Score DESI vs SDSS": W2_DESI_SDSS, #11
+    "W2 Z Score DESI vs SDSS Unc": W2_DESI_SDSS_unc, #12
+    "W2 Flux Change": W2_abs_change, #13
+    "W2 Flux Change Unc": W2_abs_change_unc, #14
+    "W2 NFD": W2_abs_change_norm, #15
+    "W2 NFD Unc": W2_abs_change_norm_unc, #16
 
-        "Mean Z Score": mean_zscore, #17
-        "Mean Z Score Unc": mean_zscore_unc, #18
-        "Mean NFD": mean_NFD, #19
-        "Mean NFD Unc": mean_NFD_unc, #20
-        "Median UV NFD On-Off": median_UV_NFD, #21
-        "Median UV NFD On-Off Unc": median_UV_NFD_unc, #22
+    "Mean Z Score": mean_zscore, #17
+    "Mean Z Score Unc": mean_zscore_unc, #18
+    "Mean NFD": mean_NFD, #19
+    "Mean NFD Unc": mean_NFD_unc, #20
+    "Median UV NFD On-Off": median_UV_NFD, #21
+    "Median UV NFD On-Off Unc": median_UV_NFD_unc, #22
 
-        "SDSS mjd": SDSS_mjds, #23
-        "DESI mjd": DESI_mjds, #24
-        "W1 First mjd": W1_first_mjd, #25
-        "W1 Last mjd": W1_last_mjd, #26
-        "W2 First mjd": W2_first_mjd, #27
-        "W2 Last mjd": W2_last_mjd, #28
-        "W1 Epochs": W1_epochs, #29
-        "W2 Epochs": W2_epochs, #30
-        "W1 Min Flux": W1_low, #31
-        "W1 Min Flux Unc": W1_low_unc, #32
-        "W1 Max Flux Unc": W1_high_unc, #33
-        "W2 Min Flux": W2_low, #34
-        "W2 Min Flux Unc": W2_low_unc, #35
-        "W2 Max Flux Unc": W2_high_unc, #36
-        "W1 median_abs_dev of Flux": W1_median_dev, #37
-        "W2 median_abs_dev of Flux": W2_median_dev, #38
-        "W1 Mean Unc Counter": W1_mean_uncs, #39
-        "W2 Mean Unc Counter": W2_mean_uncs, #40
-    }
+    "SDSS mjd": SDSS_mjds, #23
+    "DESI mjd": DESI_mjds, #24
+    "W1 First mjd": W1_first_mjd, #25
+    "W1 Last mjd": W1_last_mjd, #26
+    "W2 First mjd": W2_first_mjd, #27
+    "W2 Last mjd": W2_last_mjd, #28
+    "W1 Epochs": W1_epochs, #29
+    "W2 Epochs": W2_epochs, #30
+    "W1 Min Flux": W1_low, #31
+    "W1 Min Flux Unc": W1_low_unc, #32
+    "W1 Max Flux Unc": W1_high_unc, #33
+    "W2 Min Flux": W2_low, #34
+    "W2 Min Flux Unc": W2_low_unc, #35
+    "W2 Max Flux Unc": W2_high_unc, #36
+    "W1 median_abs_dev of Flux": W1_median_dev, #37
+    "W2 median_abs_dev of Flux": W2_median_dev, #38
+    "W1 Mean Unc Counter": W1_mean_uncs, #39
+    "W2 Mean Unc Counter": W2_mean_uncs, #40
+    "W1 min mjd": W1_min_mjd, #41
+    "W1 max mjd": W1_max_mjd, #42
+    "W2 min mjd": W2_min_mjd, #43
+    "W2 max mjd": W2_max_mjd, #44
+}
 
-    # Convert the data into a DataFrame
-    df = pd.DataFrame(quantifying_change_data)
+# Convert the data into a DataFrame
+df = pd.DataFrame(quantifying_change_data)
 
-    if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV{optical_analysis}.csv", index=False)
-    elif my_object == 1:
-        df.to_csv(f"CLAGN_Quantifying_Change_UV{optical_analysis}.csv", index=False)
+if my_object == 0:
+    df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV{optical_analysis}.csv", index=False)
+elif my_object == 1:
+    df.to_csv(f"CLAGN_Quantifying_Change_UV{optical_analysis}.csv", index=False)

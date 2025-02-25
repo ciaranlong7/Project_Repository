@@ -26,8 +26,8 @@ Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
 brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 1 #0=UV. 1=MIR only
-turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
+MIR_UV = 0 #0=UV. 1=MIR only
+turn_on_off = 0 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
 emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
 
 #bright/dim thresholds
@@ -50,9 +50,13 @@ zs_W2_low = 0 #plot of zscore vs W2 low flux
 NFD_W1_low = 0 #plot of NFD vs W1 low flux
 NFD_W2_low = 0 #plot of NFD vs W2 low flux
 W1_vs_W2_NFD = 0 #plot of W1 NFD vs W2 NFD
+W1_vs_W2_NFD_direction = 1 #plot of W1 NFD vs W2 NFD with direction
 W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
-Modified_Dev_plot = 1 #plot of distribution of modified deviations
+W1_vs_W2_Zs_direction = 1 #plot of W1 Zs vs W2 Zs with direction
+Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
+Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
+Modified_Dev_vs_epoch_measurements_plot = 0 #plot of modified deviations for epochs vs epoch measurements
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
@@ -96,7 +100,7 @@ Guo_table4_filled.iloc[:, 0] = Guo_table4.iloc[:, 0].ffill()
 
 #Quantifying change data - With UV
 if MIR_UV == 0:
-    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV1.csv')
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV0.csv')
 
     #filter for only turn-on or turn-off CLAGN:
     if turn_on_off == 0:
@@ -126,8 +130,8 @@ if MIR_UV == 0:
         names_twice = name_counts[name_counts == 2].index
         CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(names_twice)]
 
-    #Drop columns where no UV analysis was performed:
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[21]])
+    # #Drop columns where no UV analysis was performed:
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[21]])
 
     if brightness == 1:
         # Only keep bright objects.
@@ -164,6 +168,10 @@ if MIR_UV == 0:
     CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
     CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
     CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+    CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
+    CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -232,12 +240,17 @@ elif MIR_UV == 1:
     CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
     CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 25].tolist()
     CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 26].tolist()
+    CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
+    CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+    CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
+    CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
 
 #Quantifying change data - Both With UV and Just MIR
 print(f'Number of CLAGN Analysed: {len(CLAGN_quantifying_change_data)}')
 CLAGN_zscores = CLAGN_quantifying_change_data.iloc[:, 17].tolist()  # 18th column
 CLAGN_zscore_uncs = CLAGN_quantifying_change_data.iloc[:, 18].tolist()
 CLAGN_norm_flux_diff = CLAGN_quantifying_change_data.iloc[:, 19].tolist()
+print(CLAGN_quantifying_change_data.iloc[:, 19])
 CLAGN_norm_flux_diff_unc = CLAGN_quantifying_change_data.iloc[:, 20].tolist()
 CLAGN_W1_zscore_max = CLAGN_quantifying_change_data.iloc[:, 1].tolist()
 CLAGN_W1_zscore_min = CLAGN_quantifying_change_data.iloc[:, 3].tolist()
@@ -303,6 +316,10 @@ if MIR_UV == 0:
     AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 38].tolist()
     AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 29].tolist()
     AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 30].tolist()
+    AGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    AGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    AGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
+    AGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -337,6 +354,10 @@ elif MIR_UV == 1:
     AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 34].tolist()
     AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 25].tolist()
     AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 26].tolist()
+    AGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
+    AGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+    AGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
+    AGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
 
 #Quantifying change data - Both With UV and Just MIR
 print(f'Number of AGN Analysed: {len(AGN_quantifying_change_data)}')
@@ -1506,6 +1527,95 @@ if W1_vs_W2_NFD == 1:
     plt.show()
 
 
+if W1_vs_W2_NFD_direction == 1:
+    CLAGN_W1_min_mjd = np.array(CLAGN_W1_min_mjd)
+    CLAGN_W1_max_mjd = np.array(CLAGN_W1_max_mjd)
+    print(CLAGN_W1_min_mjd)
+    print(CLAGN_W1_max_mjd)
+    CLAGN_W1_NFD = np.array(CLAGN_W1_NFD)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W1 = CLAGN_W1_min_mjd > CLAGN_W1_max_mjd
+    # Make corresponding W1_NFD values negative
+    CLAGN_W1_NFD[invert_indices_W1] *= -1
+    print(CLAGN_W1_NFD)
+    CLAGN_W1_NFD = CLAGN_W1_NFD.tolist()
+
+    CLAGN_W2_min_mjd = np.array(CLAGN_W2_min_mjd)
+    CLAGN_W2_max_mjd = np.array(CLAGN_W2_max_mjd)
+    CLAGN_W2_NFD = np.array(CLAGN_W2_NFD)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W2 = CLAGN_W2_min_mjd > CLAGN_W2_max_mjd
+    # Make corresponding W2_NFD values negative
+    CLAGN_W2_NFD[invert_indices_W2] *= -1
+    CLAGN_W2_NFD = CLAGN_W2_NFD.tolist()
+
+    # AGN_W1_min_mjd = np.array(AGN_W1_min_mjd)
+    # AGN_W1_max_mjd = np.array(AGN_W1_max_mjd)
+    # AGN_W1_NFD = np.array(AGN_W1_NFD)
+    # # Find indices where min_mjd > max_mjd
+    # invert_indices_W1 = AGN_W1_min_mjd > AGN_W1_max_mjd
+    # # Make corresponding W1_NFD values negative
+    # AGN_W1_NFD[invert_indices_W1] *= -1
+    # AGN_W1_NFD = AGN_W1_NFD.tolist()
+
+    # AGN_W2_min_mjd = np.array(AGN_W2_min_mjd)
+    # AGN_W2_max_mjd = np.array(AGN_W2_max_mjd)
+    # AGN_W2_NFD = np.array(AGN_W2_NFD)
+    # # Find indices where min_mjd > max_mjd
+    # invert_indices_W2 = AGN_W2_min_mjd > AGN_W2_max_mjd
+    # # Make corresponding W2_NFD values negative
+    # AGN_W2_NFD[invert_indices_W2] *= -1
+    # AGN_W2_NFD = AGN_W2_NFD.tolist()
+
+    max_W1 = np.nanmax(CLAGN_W1_NFD+AGN_W1_NFD)
+    min_W1 = np.nanmin(CLAGN_W1_NFD+AGN_W1_NFD)
+    max_W2 = np.nanmax(CLAGN_W2_NFD+AGN_W2_NFD)
+    min_W2 = np.nanmin(CLAGN_W2_NFD+AGN_W2_NFD)
+    CLAGN_median_W1_NFD = np.nanmedian(CLAGN_W1_NFD)
+    AGN_median_W1_NFD = np.nanmedian(AGN_W1_NFD)
+    CLAGN_median_W2_NFD = np.nanmedian(CLAGN_W2_NFD)
+    AGN_median_W2_NFD = np.nanmedian(AGN_W2_NFD)
+    x = np.linspace(0, min([max_W1, max_W2]), 100)
+    plt.figure(figsize=(12, 7))
+    # plt.scatter(AGN_W1_NFD, AGN_W2_NFD, color='blue',  label='Non-CL AGN')
+    plt.scatter(CLAGN_W1_NFD, CLAGN_W2_NFD, s=100, color='red',  label='CLAGN')
+    plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
+    plt.xlim(1.05*min_W1, 1.05*max_W1)
+    plt.ylim(1.05*min_W2, 1.05*max_W2)
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    plt.xlabel("W1 NFD", fontsize = 24)
+    plt.ylabel("W2 NFD", fontsize = 24)
+    if turn_on_off == 0:
+        plt.title("W1 NFD vs W2 NFD (turn-off CLAGN)", fontsize = 24)
+    elif turn_on_off == 1:
+        plt.title("W1 NFD vs W2 NFD (turn-on CLAGN)", fontsize = 24)
+    elif turn_on_off == 2:
+        plt.title("W1 NFD vs W2 NFD", fontsize = 24)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    ax = plt.gca()
+    if brightness == 0:
+        plt.text(0.99, 0.85, f'CLAGN Median W1 NFD = {CLAGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.73, f'AGN Median W1 NFD = {AGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.91, f'CLAGN Median W2 NFD = {CLAGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.79, f'AGN Median W2 NFD = {AGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'lower right', fontsize=22)
+    elif brightness == 1:
+        plt.text(0.99, 0.31, f'CLAGN Median W1 NFD = {CLAGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.19, f'AGN Median W1 NFD = {AGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.37, f'CLAGN Median W2 NFD = {CLAGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.25, f'AGN Median W2 NFD = {AGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'upper left', fontsize=22)
+    elif brightness == 2:
+        plt.text(0.99, 0.31, f'CLAGN Median W1 NFD = {CLAGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.19, f'AGN Median W1 NFD = {AGN_median_W1_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.37, f'CLAGN Median W2 NFD = {CLAGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.25, f'AGN Median W2 NFD = {AGN_median_W2_NFD:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'upper left', fontsize=22)
+    plt.tight_layout()
+    plt.show()
+
+
 # ## Creating a plot of W1 Zscore vs W2 Zscore
 if W1_vs_W2_Zs == 1:
     max_W1 = np.nanmax(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean)
@@ -1555,6 +1665,88 @@ if W1_vs_W2_Zs == 1:
     plt.tight_layout()
     plt.show()
 
+
+if W1_vs_W2_Zs_direction == 1:
+    CLAGN_W1_min_mjd = np.array(CLAGN_W1_min_mjd)
+    CLAGN_W1_max_mjd = np.array(CLAGN_W1_max_mjd)
+    CLAGN_W1_zscore_mean = np.array(CLAGN_W1_zscore_mean)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W1 = CLAGN_W1_min_mjd > CLAGN_W1_max_mjd
+    CLAGN_W1_zscore_mean[invert_indices_W1] *= -1
+    CLAGN_W1_zscore_mean = CLAGN_W1_zscore_mean.tolist()
+
+    CLAGN_W2_min_mjd = np.array(CLAGN_W2_min_mjd)
+    CLAGN_W2_max_mjd = np.array(CLAGN_W2_max_mjd)
+    CLAGN_W2_zscore_mean = np.array(CLAGN_W2_zscore_mean)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W2 = CLAGN_W2_min_mjd > CLAGN_W2_max_mjd
+    CLAGN_W2_zscore_mean[invert_indices_W2] *= -1
+    CLAGN_W2_zscore_mean = CLAGN_W2_zscore_mean.tolist()
+
+    # AGN_W1_min_mjd = np.array(AGN_W1_min_mjd)
+    # AGN_W1_max_mjd = np.array(AGN_W1_max_mjd)
+    # AGN_W1_zscore_mean = np.array(AGN_W1_zscore_mean)
+    # # Find indices where min_mjd > max_mjd
+    # invert_indices_W1 = AGN_W1_min_mjd > AGN_W1_max_mjd
+    # AGN_W1_zscore_mean[invert_indices_W1] *= -1
+    # AGN_W1_zscore_mean = AGN_W1_zscore_mean.tolist()
+
+    # AGN_W2_min_mjd = np.array(AGN_W2_min_mjd)
+    # AGN_W2_max_mjd = np.array(AGN_W2_max_mjd)
+    # AGN_W2_zscore_mean = np.array(AGN_W2_zscore_mean)
+    # # Find indices where min_mjd > max_mjd
+    # invert_indices_W2 = AGN_W2_min_mjd > AGN_W2_max_mjd
+    # AGN_W2_zscore_mean[invert_indices_W2] *= -1
+    # AGN_W2_zscore_mean = AGN_W2_zscore_mean.tolist()
+    
+    max_W1 = np.nanmax(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean)
+    min_W1 = np.nanmin(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean)
+    max_W2 = np.nanmax(CLAGN_W2_zscore_mean+AGN_W2_zscore_mean)
+    min_W2 = np.nanmin(CLAGN_W2_zscore_mean+AGN_W2_zscore_mean)
+    CLAGN_median_W1_zs = np.nanmedian(CLAGN_W1_zscore_mean)
+    AGN_median_W1_zs = np.nanmedian(AGN_W1_zscore_mean)
+    CLAGN_median_W2_zs = np.nanmedian(CLAGN_W2_zscore_mean)
+    AGN_median_W2_zs = np.nanmedian(AGN_W2_zscore_mean)
+    x = np.linspace(0, min([max_W1, max_W2]), 100)
+    plt.figure(figsize=(12, 7))
+    # plt.scatter(AGN_W1_zscore_mean, AGN_W2_zscore_mean, color='blue',  label='Non-CL AGN')
+    plt.scatter(CLAGN_W1_zscore_mean, CLAGN_W2_zscore_mean, s=100, color='red',  label='CLAGN')
+    plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
+    plt.xlim(1.05*min_W1, 1.05*max_W1)
+    plt.ylim(1.05*min_W2, 1.05*max_W2)
+    plt.xticks(fontsize=24)
+    plt.yticks(fontsize=24)
+    plt.xlabel("W1 Z-score", fontsize = 24)
+    plt.ylabel("W2 Z-score", fontsize = 24)
+    if turn_on_off == 0:
+        plt.title("W1 Z-score vs W2 Z-score (turn-off CLAGN)", fontsize = 24)
+    elif turn_on_off == 1:
+        plt.title("W1 Z-score vs W2 Z-score (turn-on CLAGN)", fontsize = 24)
+    elif turn_on_off == 2:
+        plt.title("W1 Z-score vs W2 Z-score", fontsize = 24)
+    plt.legend(loc = 'best', fontsize=22)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    ax = plt.gca()
+    if brightness == 0:
+        plt.text(0.99, 0.67, f'CLAGN Median W1 Z-score = {CLAGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.55, f'AGN Median W1 Z-score = {AGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.73, f'CLAGN Median W2 Z-score = {CLAGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.61, f'AGN Median W2 Z-score = {AGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'lower right', fontsize=22)
+    elif brightness == 1:
+        plt.text(0.01, 0.85, f'CLAGN Median W1 Z-score = {CLAGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.01, 0.73, f'AGN Median W1 Z-score = {AGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.01, 0.91, f'CLAGN Median W2 Z-score = {CLAGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.01, 0.79, f'AGN Median W2 Z-score = {AGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'lower right', fontsize=22)
+    elif brightness == 2:
+        plt.text(0.99, 0.67, f'CLAGN Median W1 Z-score = {CLAGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.55, f'AGN Median W1 Z-score = {AGN_median_W1_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.73, f'CLAGN Median W2 Z-score = {CLAGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.61, f'AGN Median W2 Z-score = {AGN_median_W2_zs:.1f}', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.legend(loc = 'lower right', fontsize=22)
+    plt.tight_layout()
+    plt.show()
 
 
 if Modified_Dev_plot == 1:
@@ -1653,6 +1845,161 @@ if Log_Modified_Dev_plot == 1:
     plt.xscale('log')
     plt.title(f'Distribution of AGN Modified Deviation Values - {len(AGN_mod_dev_list)} Observations')
     plt.legend(loc='upper right')
+    plt.show()
+
+
+if Modified_Dev_epochs_plot == 1:
+    CLAGN_mod_dev_W1 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W1.csv')
+    CLAGN_mod_dev_list_W1 = CLAGN_mod_dev_W1.iloc[:, 0].tolist()
+    CLAGN_mod_dev_W2 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W2.csv')
+    CLAGN_mod_dev_list_W2 = CLAGN_mod_dev_W2.iloc[:, 0].tolist()
+    threshold_CLAGN = 11
+    CLAGN_mod_dev_list_elim_W1 = [x for x in CLAGN_mod_dev_list_W1 if abs(x) > threshold_CLAGN]
+    CLAGN_mod_dev_list_elim_W2 = [x for x in CLAGN_mod_dev_list_W2 if abs(x) > threshold_CLAGN]
+    percentage_elim_CLAGN_W1 = len(CLAGN_mod_dev_list_elim_W1)/(len(CLAGN_mod_dev_list_elim_W1)+len(CLAGN_mod_dev_list_W1))*100
+    percentage_elim_CLAGN_W2 = len(CLAGN_mod_dev_list_elim_W2)/(len(CLAGN_mod_dev_list_elim_W2)+len(CLAGN_mod_dev_list_W2))*100
+
+    fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    # First Histogram (W1)
+    median_mod_dev_W1 = np.median(CLAGN_mod_dev_list_W1)
+    mod_dev_binsize_W1 = (max(CLAGN_mod_dev_list_W1) - min(CLAGN_mod_dev_list_W1)) / 250
+    bins_mod_dev_W1 = np.arange(min(CLAGN_mod_dev_list_W1), max(CLAGN_mod_dev_list_W1) + 5 * mod_dev_binsize_W1, mod_dev_binsize_W1)
+
+    axes[0].hist(CLAGN_mod_dev_list_W1, bins=bins_mod_dev_W1, color='blue', edgecolor='black', label=f'Binsize = {mod_dev_binsize_W1:.2f}')
+    axes[0].axvline(median_mod_dev_W1, linewidth=2, linestyle='--', color='black', label=f'Median = {median_mod_dev_W1:.2f}')
+    axes[0].axvline(threshold_CLAGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_CLAGN} eliminates {percentage_elim_CLAGN_W1:.3f}% of CLAGN W1 epochs')
+    axes[0].set_yscale('log')
+    axes[0].set_xlabel('Modified Deviation (W1)')
+    axes[0].set_ylabel('Frequency')
+    axes[0].set_title(f'Distribution of CLAGN Modified Deviation Values (W1) from {len(CLAGN_mod_dev_list_W1)} Epochs')
+    axes[0].legend(loc='upper right')
+
+    # Second Histogram (W2)
+    median_mod_dev_W2 = np.median(CLAGN_mod_dev_list_W2)
+    mod_dev_binsize_W2 = (max(CLAGN_mod_dev_list_W2) - min(CLAGN_mod_dev_list_W2)) / 250
+    bins_mod_dev_W2 = np.arange(min(CLAGN_mod_dev_list_W2), max(CLAGN_mod_dev_list_W2) + 5 * mod_dev_binsize_W2, mod_dev_binsize_W2)
+
+    axes[1].hist(CLAGN_mod_dev_list_W2, bins=bins_mod_dev_W2, color='orange', edgecolor='black', label=f'Binsize = {mod_dev_binsize_W2:.2f}')
+    axes[1].axvline(median_mod_dev_W2, linewidth=2, linestyle='--', color='black', label=f'Median = {median_mod_dev_W2:.2f}')
+    axes[1].axvline(threshold_CLAGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_CLAGN} eliminates {percentage_elim_CLAGN_W2:.3f}% of CLAGN W2 epochs')
+    axes[1].set_yscale('log')
+    axes[1].set_xlabel('Modified Deviation (W2)')
+    axes[1].set_ylabel('Frequency')
+    axes[1].set_title(f'Distribution of CLAGN Modified Deviation Values (W2) from {len(CLAGN_mod_dev_list_W2)} Epochs')
+    axes[1].legend(loc='upper right')
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+
+    # #Non-CL AGN
+    AGN_mod_dev_W1 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W1.csv')
+    AGN_mod_dev_list_W1 = AGN_mod_dev_W1.iloc[:, 0].tolist()
+    AGN_mod_dev_W2 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W2.csv')
+    AGN_mod_dev_list_W2 = AGN_mod_dev_W2.iloc[:, 0].tolist()
+    threshold_AGN = 11
+    AGN_mod_dev_list_elim_W1 = [x for x in AGN_mod_dev_list_W1 if abs(x) > threshold_AGN]
+    AGN_mod_dev_list_elim_W2 = [x for x in AGN_mod_dev_list_W2 if abs(x) > threshold_AGN]
+    percentage_elim_AGN_W1 = len(AGN_mod_dev_list_elim_W1)/(len(AGN_mod_dev_list_elim_W1)+len(AGN_mod_dev_list_W1))*100
+    percentage_elim_AGN_W2 = len(AGN_mod_dev_list_elim_W2)/(len(AGN_mod_dev_list_elim_W2)+len(AGN_mod_dev_list_W2))*100
+
+    fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    # First Histogram (W1)
+    median_mod_dev_W1 = np.median(AGN_mod_dev_list_W1)
+    mod_dev_binsize_W1 = (max(AGN_mod_dev_list_W1) - min(AGN_mod_dev_list_W1)) / 250
+    bins_mod_dev_W1 = np.arange(min(AGN_mod_dev_list_W1), max(AGN_mod_dev_list_W1) + 5 * mod_dev_binsize_W1, mod_dev_binsize_W1)
+
+    axes[0].hist(AGN_mod_dev_list_W1, bins=bins_mod_dev_W1, color='blue', edgecolor='black', label=f'Binsize = {mod_dev_binsize_W1:.2f}')
+    axes[0].axvline(median_mod_dev_W1, linewidth=2, linestyle='--', color='black', label=f'Median = {median_mod_dev_W1:.2f}')
+    axes[0].axvline(threshold_AGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_AGN} eliminates {percentage_elim_AGN_W1:.3f}% of non-CL AGN W1 epochs')
+    axes[0].set_yscale('log')
+    axes[0].set_xlabel('Modified Deviation (W1)')
+    axes[0].set_ylabel('Frequency')
+    axes[0].set_title(f'Distribution of AGN Modified Deviation Values (W1) from {len(AGN_mod_dev_list_W1)} Epochs')
+    axes[0].legend(loc='upper right')
+
+    # Second Histogram (W2)
+    median_mod_dev_W2 = np.median(AGN_mod_dev_list_W2)
+    mod_dev_binsize_W2 = (max(AGN_mod_dev_list_W2) - min(AGN_mod_dev_list_W2)) / 250
+    bins_mod_dev_W2 = np.arange(min(AGN_mod_dev_list_W2), max(AGN_mod_dev_list_W2) + 5 * mod_dev_binsize_W2, mod_dev_binsize_W2)
+
+    axes[1].hist(AGN_mod_dev_list_W2, bins=bins_mod_dev_W2, color='orange', edgecolor='black', label=f'Binsize = {mod_dev_binsize_W2:.2f}')
+    axes[1].axvline(median_mod_dev_W2, linewidth=2, linestyle='--', color='black', label=f'Median = {median_mod_dev_W2:.2f}')
+    axes[1].axvline(threshold_AGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_AGN} eliminates {percentage_elim_AGN_W2:.3f}% of non-CL AGN W2 epochs')
+    axes[1].set_yscale('log')
+    axes[1].set_xlabel('Modified Deviation (W2)')
+    axes[1].set_ylabel('Frequency')
+    axes[1].set_title(f'Distribution of AGN Modified Deviation Values (W2) from {len(AGN_mod_dev_list_W2)} Epochs')
+    axes[1].legend(loc='upper right')
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+
+
+if Modified_Dev_vs_epoch_measurements_plot == 1:
+    CLAGN_mod_dev_W1 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W1.csv')
+    CLAGN_mod_dev_list_W1 = CLAGN_mod_dev_W1.iloc[:, 0].tolist()
+    CLAGN_epoch_measurements_list_W1 = CLAGN_mod_dev_W1.iloc[:, 1].tolist()
+    CLAGN_mod_dev_W2 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W2.csv')
+    CLAGN_mod_dev_list_W2 = CLAGN_mod_dev_W2.iloc[:, 0].tolist()
+    CLAGN_epoch_measurements_list_W2 = CLAGN_mod_dev_W2.iloc[:, 1].tolist()
+    threshold_CLAGN = 11
+    CLAGN_mod_dev_list_elim_W1 = [x for x in CLAGN_mod_dev_list_W1 if abs(x) > threshold_CLAGN]
+    CLAGN_mod_dev_list_elim_W2 = [x for x in CLAGN_mod_dev_list_W2 if abs(x) > threshold_CLAGN]
+    percentage_elim_CLAGN_W1 = len(CLAGN_mod_dev_list_elim_W1)/(len(CLAGN_mod_dev_list_elim_W1)+len(CLAGN_mod_dev_list_W1))*100
+    percentage_elim_CLAGN_W2 = len(CLAGN_mod_dev_list_elim_W2)/(len(CLAGN_mod_dev_list_elim_W2)+len(CLAGN_mod_dev_list_W2))*100
+
+    fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    # First Histogram (W1)
+    axes[0].scatter(CLAGN_mod_dev_list_W1, CLAGN_epoch_measurements_list_W1, color='blue',  label='CLAGN W1')
+    axes[0].axvline(threshold_CLAGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_CLAGN} eliminates {percentage_elim_CLAGN_W1:.3f}% of CLAGN W1 epochs')
+    axes[0].set_xlabel('Modified Deviation (W1)')
+    axes[0].set_ylabel('Frequency')
+    axes[0].set_title(f'Epoch Measurements vs Modified Deviation - {len(CLAGN_mod_dev_list_W1)} Epochs')
+    axes[0].legend(loc='upper right')
+
+    # Second Histogram (W2)
+    axes[1].scatter(CLAGN_mod_dev_list_W2, CLAGN_epoch_measurements_list_W2, color='orange',  label='CLAGN W2')
+    axes[1].axvline(threshold_CLAGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_CLAGN} eliminates {percentage_elim_CLAGN_W2:.3f}% of CLAGN W2 epochs')
+    axes[1].set_xlabel('Modified Deviation (W2)')
+    axes[1].set_ylabel('Epoch Measurements')
+    axes[1].set_title(f'Epoch Measurements vs Modified Deviation - {len(CLAGN_mod_dev_list_W2)} Epochs')
+    axes[1].legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+
+    # #Non-CL AGN
+    AGN_mod_dev_W1 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W1.csv')
+    AGN_mod_dev_list_W1 = AGN_mod_dev_W1.iloc[:, 0].tolist()
+    AGN_epoch_measurements_list_W1 = AGN_mod_dev_W1.iloc[:, 1].tolist()
+    AGN_mod_dev_W2 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W2.csv')
+    AGN_mod_dev_list_W2 = AGN_mod_dev_W2.iloc[:, 0].tolist()
+    AGN_epoch_measurements_list_W2 = AGN_mod_dev_W2.iloc[:, 1].tolist()
+    threshold_AGN = 11
+    AGN_mod_dev_list_elim_W1 = [x for x in AGN_mod_dev_list_W1 if abs(x) > threshold_AGN]
+    AGN_mod_dev_list_elim_W2 = [x for x in AGN_mod_dev_list_W2 if abs(x) > threshold_AGN]
+    percentage_elim_AGN_W1 = len(AGN_mod_dev_list_elim_W1)/(len(AGN_mod_dev_list_elim_W1)+len(AGN_mod_dev_list_W1))*100
+    percentage_elim_AGN_W2 = len(AGN_mod_dev_list_elim_W2)/(len(AGN_mod_dev_list_elim_W2)+len(AGN_mod_dev_list_W2))*100
+
+    fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+    # First Histogram (W1)
+    axes[0].scatter(AGN_mod_dev_list_W1, AGN_epoch_measurements_list_W1, color='blue',  label='AGN')
+    axes[0].axvline(threshold_AGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_AGN} eliminates {percentage_elim_AGN_W1:.3f}% of non-CL AGN W1 epochs')
+    axes[0].set_xlabel('Modified Deviation (W1)')
+    axes[0].set_ylabel('Epoch Measurements')
+    axes[0].set_title(f'Epoch Measurements vs Modified Deviation - {len(AGN_mod_dev_list_W1)} Epochs')
+    axes[0].legend(loc='upper right')
+
+    # Second Histogram (W2)
+    axes[1].scatter(AGN_mod_dev_list_W2, AGN_epoch_measurements_list_W2, color='orange',  label='AGN')
+    axes[1].axvline(threshold_AGN, linewidth=2, linestyle='-', color='black', label=f'Threshold = {threshold_AGN} eliminates {percentage_elim_AGN_W2:.3f}% of non-CL AGN W2 epochs')
+    axes[1].set_xlabel('Modified Deviation (W2)')
+    axes[1].set_ylabel('Epoch Measurments')
+    axes[1].set_title(f'Epoch Measurements vs Modified Deviation - {len(AGN_mod_dev_list_W2)} Epochs')
+    axes[1].legend(loc='upper right')
+
+    plt.tight_layout()
     plt.show()
 
 
