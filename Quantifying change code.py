@@ -26,8 +26,8 @@ Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
 brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 0 #0=UV. 1=MIR only
-turn_on_off = 0 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
+MIR_UV = 1 #0=UV. 1=MIR only
+turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
 emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
 
 #bright/dim thresholds
@@ -35,7 +35,7 @@ bright_dim_W1 = 0.40
 bright_dim_W2 = 0.40
 
 #plots:
-main_MIR = 0 #1 if want main zscore and NFD plot.
+main_MIR = 1 #1 if want main zscore and NFD plot.
 main_MIR_line_split = 0 # main zscore and NFD plot, for CLAGN only and split by emission line.
 main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
@@ -45,14 +45,15 @@ UV_MIRZ = 0 #plot of UV normalised flux difference vs z score
 UV_MIR_NFD = 0 #plot of UV NFD vs MIR NFD
 UVZ_MIRZ = 0 #plot of UV z-score vs MIR z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR NFD
+UV_NFD_dist = 0 #plot of the UV NFD distribution for CLAGN vs non-CL AGN
 zs_W1_low = 0 #plot of zscore vs W1 low flux
 zs_W2_low = 0 #plot of zscore vs W2 low flux
 NFD_W1_low = 0 #plot of NFD vs W1 low flux
 NFD_W2_low = 0 #plot of NFD vs W2 low flux
 W1_vs_W2_NFD = 0 #plot of W1 NFD vs W2 NFD
-W1_vs_W2_NFD_direction = 1 #plot of W1 NFD vs W2 NFD with direction
+W1_vs_W2_NFD_direction = 0 #plot of W1 NFD vs W2 NFD with direction
 W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
-W1_vs_W2_Zs_direction = 1 #plot of W1 Zs vs W2 Zs with direction
+W1_vs_W2_Zs_direction = 0 #plot of W1 Zs vs W2 Zs with direction
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
 Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
@@ -61,7 +62,8 @@ epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
 epochs_zs_W2 = 0 #W2 Zs vs W2 epochs
-redshift_dist = 0 #hist of redshift distribution for objects analysed
+redshift_dist_bright_dim = 0 #hist of redshift distribution for objects analysed
+redshift_dist_CLAGN_vs_non_CLAGN = 0 #hist of redshift distribution for objects analysed
 luminosity_dist_CLAGN = 0 #hist of luminosity distribution for CLAGN analysed
 luminosity_dist_AGN = 0 #hist of luminosity distribution for Non-CL AGN analysed
 
@@ -100,7 +102,8 @@ Guo_table4_filled.iloc[:, 0] = Guo_table4.iloc[:, 0].ffill()
 
 #Quantifying change data - With UV
 if MIR_UV == 0:
-    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV0.csv')
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_UV1.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[21]])
 
     #filter for only turn-on or turn-off CLAGN:
     if turn_on_off == 0:
@@ -168,10 +171,10 @@ if MIR_UV == 0:
     CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
     CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
     CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-    CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
-    CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
-    CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
+    # CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    # CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    # CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
+    # CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -280,6 +283,7 @@ CLAGN_mod_dev_list = CLAGN_mod_dev.iloc[:, 0].tolist()
 #Quantifying change data - With UV
 if MIR_UV == 0:
     AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}_UV1.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data.dropna(subset=[AGN_quantifying_change_data.columns[21]])
 
     #Drop columns where no UV analysis was performed:
     AGN_quantifying_change_data = AGN_quantifying_change_data.dropna(subset=[AGN_quantifying_change_data.columns[21]])
@@ -316,10 +320,10 @@ if MIR_UV == 0:
     AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 38].tolist()
     AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 29].tolist()
     AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 30].tolist()
-    AGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    AGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
-    AGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
-    AGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
+    # AGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    # AGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    # AGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
+    # AGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -409,23 +413,23 @@ print(f'AGN W2 median lowest flux Unc = {np.nanmedian(AGN_W2_low_flux_unc):.4f}'
 print(f'AGN W2 median median_abs_dev flux = {np.nanmedian(AGN_W2_median_dev_flux):.5f}')
 
 
-CLAGN_redshifts = []
+CLAGN_redshifts_analysis = []
 for object_name in CLAGN_names_analysis:
     object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
     redshift = object_row.iloc[0, 3]
-    CLAGN_redshifts.append(redshift)
+    CLAGN_redshifts_analysis.append(redshift)
 
 clean_parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
-AGN_redshifts = []
+AGN_redshifts_analysis = []
 for object_name in AGN_names_analysis:
     object_data = clean_parent_sample[clean_parent_sample.iloc[:, 3] == object_name]
     redshift = object_data.iloc[0, 2]
-    AGN_redshifts.append(redshift)
+    AGN_redshifts_analysis.append(redshift)
 
-median_CLAGN_redshift = np.nanmedian(CLAGN_redshifts)
-median_AGN_redshift = np.nanmedian(AGN_redshifts)
-print(f'Median CLAGN analysed redshift = {median_CLAGN_redshift:.3f}')
-print(f'Median AGN analysed redshift = {median_AGN_redshift:.3f}')
+median_CLAGN_redshift_analysis = np.nanmedian(CLAGN_redshifts_analysis)
+median_AGN_redshift_analysis = np.nanmedian(AGN_redshifts_analysis)
+print(f'Median CLAGN analysed redshift = {median_CLAGN_redshift_analysis:.3f}')
+print(f'Median AGN analysed redshift = {median_AGN_redshift_analysis:.3f}')
 
 #want the median value of the random sample of AGN
 median_norm_flux_diff = np.nanmedian(AGN_norm_flux_diff)
@@ -965,16 +969,16 @@ if main_MIR_Zs_hist_bright_dim == 1:
     median_z_score_AGN_unc_dim = np.nanmedian(AGN_z_score_unc_dim)
     three_sigma_z_score_dim = median_z_score_AGN_dim + 3*median_z_score_AGN_unc_dim
 
-    AGN_flux_diff_binsize = (max(AGN_z_score_all) - min(AGN_z_score_all))/50  # 50 bins
-    AGN_bins_flux_diff = np.arange(min(AGN_z_score_all), max(AGN_z_score_all) + AGN_flux_diff_binsize, AGN_flux_diff_binsize)
+    AGN_z_score_binsize = (max(AGN_z_score_all) - min(AGN_z_score_all))/50
+    AGN_bins_z_score = np.arange(min(AGN_z_score_all), max(AGN_z_score_all) + AGN_z_score_binsize, AGN_z_score_binsize)
     x_start_threshold_bright = median_z_score_AGN_bright - 3*median_z_score_AGN_unc_bright
     x_end_threshold_bright = median_z_score_AGN_bright + 3*median_z_score_AGN_unc_bright
-    counts_bright, bin_edges = np.histogram(AGN_z_score_bright, bins=AGN_bins_flux_diff)
+    counts_bright, bin_edges = np.histogram(AGN_z_score_bright, bins=AGN_bins_z_score)
     height_bright = max(counts_bright)/2
 
     x_start_threshold_dim = median_z_score_AGN_dim - 3*median_z_score_AGN_unc_dim
     x_end_threshold_dim = median_z_score_AGN_dim + 3*median_z_score_AGN_unc_dim
-    counts_dim, bin_edges = np.histogram(AGN_z_score_dim, bins=AGN_bins_flux_diff)
+    counts_dim, bin_edges = np.histogram(AGN_z_score_dim, bins=AGN_bins_z_score)
     height_dim = max(counts_dim)/2
 
     a = 0
@@ -987,11 +991,11 @@ if main_MIR_Zs_hist_bright_dim == 1:
         if zs > three_sigma_z_score_dim:
             b += 1
     
-    ad_result_AGN = anderson_ksamp([AGN_z_score_bright, AGN_norm_flux_diff_dim])
+    ad_result_AGN = anderson_ksamp([AGN_z_score_bright, AGN_z_score_dim])
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)  
-    ax1.hist(AGN_z_score_bright, bins=AGN_bins_flux_diff,  color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
-    ax1.hist(AGN_z_score_dim, bins=AGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax1.hist(AGN_z_score_bright, bins=AGN_bins_z_score,  color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax1.hist(AGN_z_score_dim, bins=AGN_bins_z_score, color='gray', alpha=0.7, label='Dim Non-CL AGN')
     ax1.axvline(median_z_score_AGN_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Non-CL AGN Median = {median_z_score_AGN_bright:.2f}')
     ax1.axvline(median_z_score_AGN_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Non-CL AGN Median = {median_z_score_AGN_dim:.2f}')
     ax1.axvline(three_sigma_z_score_bright, linewidth=2, linestyle=':', color='black', label=f'{a/len(AGN_z_score_bright)*100:.1f}% Bright Non-CL AGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
@@ -1022,8 +1026,8 @@ if main_MIR_Zs_hist_bright_dim == 1:
     median_z_score_CLAGN_bright = np.nanmedian(CLAGN_z_score_bright)
     median_z_score_CLAGN_dim = np.nanmedian(CLAGN_z_score_dim)
 
-    CLAGN_flux_diff_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/20
-    CLAGN_bins_flux_diff = np.arange(min(CLAGN_z_score_all), max(CLAGN_z_score_all) + 2*CLAGN_flux_diff_binsize, CLAGN_flux_diff_binsize)
+    CLAGN_z_score_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/20
+    CLAGN_bins_z_score = np.arange(min(CLAGN_z_score_all), max(CLAGN_z_score_all) + 2*CLAGN_z_score_binsize, CLAGN_z_score_binsize)
     
     c = 0
     for zs in CLAGN_z_score_bright:
@@ -1037,16 +1041,16 @@ if main_MIR_Zs_hist_bright_dim == 1:
 
     # ks_statistic_bright, p_value_bright = ks_2samp(AGN_z_score_bright, CLAGN_z_score_bright)
     # ks_statistic_dim, p_value_dim = ks_2samp(AGN_z_score_dim, CLAGN_z_score_dim)
-    # ad_result_bright = anderson_ksamp([AGN_norm_flux_diff_bright, CLAGN_norm_flux_diff_bright])
-    # ad_result_dim = anderson_ksamp([AGN_norm_flux_diff_dim, CLAGN_norm_flux_diff_dim])
+    # ad_result_bright = anderson_ksamp([AGN_z_score_bright, CLAGN_z_score_bright])
+    # ad_result_dim = anderson_ksamp([AGN_z_score_dim, CLAGN_z_score_dim])
 
-    ad_result_CLAGN = anderson_ksamp([CLAGN_z_score_bright, CLAGN_norm_flux_diff_dim])
+    ad_result_CLAGN = anderson_ksamp([CLAGN_z_score_bright, CLAGN_z_score_dim])
 
     max_line = max([median_z_score_CLAGN_bright, median_z_score_CLAGN_dim,
                     three_sigma_z_score_bright, three_sigma_z_score_dim])
 
-    ax2.hist(CLAGN_z_score_bright, bins=CLAGN_bins_flux_diff,  color='black', histtype='step', linewidth=2, label='Bright CLAGN')
-    ax2.hist(CLAGN_z_score_dim, bins=CLAGN_bins_flux_diff, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax2.hist(CLAGN_z_score_bright, bins=CLAGN_bins_z_score,  color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax2.hist(CLAGN_z_score_dim, bins=CLAGN_bins_z_score, color='gray', alpha=0.7, label='Dim CLAGN')
     ax2.axvline(median_z_score_CLAGN_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright CLAGN Median = {median_z_score_CLAGN_bright:.2f}')
     ax2.axvline(median_z_score_CLAGN_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim CLAGN Median = {median_z_score_CLAGN_dim:.2f}')
     ax2.axvline(three_sigma_z_score_bright, linewidth=2, linestyle=':', color='black', label=f'{c/len(CLAGN_z_score_bright)*100:.1f}% Bright CLAGN > Bright Threshold = {three_sigma_z_score_bright:.2f}')
@@ -1225,6 +1229,73 @@ if UVNFD_MIRNFD == 1:
     plt.show()
 
 
+if UV_NFD_dist == 1:
+    AGN_UV_NFD_all = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv')
+    AGN_UV_NFD_all = AGN_UV_NFD_all.dropna(subset=[AGN_UV_NFD_all.columns[1]])
+    AGN_UV_NFD = AGN_UV_NFD_all.iloc[:, 1].tolist()
+    AGN_UV_NFD_unc = AGN_UV_NFD_all.iloc[:, 2].tolist()
+
+    median_AGN_UV_NFD = np.nanmedian(AGN_UV_NFD)
+    median_AGN_UV_NFD_unc = np.nanmedian(AGN_UV_NFD_unc)
+    three_sigma_UV_NFD = median_AGN_UV_NFD + 3*median_AGN_UV_NFD_unc
+
+    AGN_UV_NFD_binsize = (np.nanmax(AGN_UV_NFD) - np.nanmin(AGN_UV_NFD))/20
+    AGN_bins_UV_NFD = np.arange(np.nanmin(AGN_UV_NFD), np.nanmax(AGN_UV_NFD) + AGN_UV_NFD_binsize, AGN_UV_NFD_binsize)
+    x_start = median_AGN_UV_NFD - 3*median_AGN_UV_NFD_unc
+    x_end = median_AGN_UV_NFD + 3*median_AGN_UV_NFD_unc
+    counts, bin_edges = np.histogram(AGN_UV_NFD, bins=AGN_bins_UV_NFD)
+    height = max(counts)/2
+    # print(sum(counts))
+
+
+    CLAGN_UV_NFD_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
+    CLAGN_UV_NFD_all = CLAGN_UV_NFD_all.dropna(subset=[CLAGN_UV_NFD_all.columns[1]])
+    CLAGN_UV_NFD = CLAGN_UV_NFD_all.iloc[:, 1].tolist()
+    CLAGN_UV_NFD_unc = CLAGN_UV_NFD_all.iloc[:, 2].tolist()
+
+    median_CLAGN_UV_NFD = np.nanmedian(CLAGN_UV_NFD)
+    median_CLAGN_UV_NFD_unc = np.nanmedian(CLAGN_UV_NFD_unc)
+
+    CLAGN_UV_NFD_binsize = (np.nanmax(CLAGN_UV_NFD) - np.nanmin(CLAGN_UV_NFD))/20
+    CLAGN_bins_UV_NFD = np.arange(np.nanmin(CLAGN_UV_NFD), np.nanmax(CLAGN_UV_NFD) + CLAGN_UV_NFD_binsize, CLAGN_UV_NFD_binsize)
+    # counts, bin_edges = np.histogram(CLAGN_UV_NFD, bins=CLAGN_bins_UV_NFD)
+    # print(sum(counts))
+
+    a = 0
+    for my_NFD in AGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            a += 1
+    
+    b = 0
+    for my_NFD in CLAGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            b += 1
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 7), sharex=True)  
+    ax1.hist(AGN_UV_NFD, bins=AGN_bins_UV_NFD, color='blue', edgecolor='black', label='Non-CL AGN Control Sample')
+    ax1.axvline(median_AGN_UV_NFD, linewidth=2, linestyle='-', color='black', label=f'Non-CL AGN Median UV NFD = {median_AGN_UV_NFD:.2f}')
+    ax1.axvline(three_sigma_UV_NFD, linewidth=2, linestyle='--', color='black', label=f'{a/len(AGN_UV_NFD)*100:.1f}% > Threshold = {three_sigma_UV_NFD:.2f}')
+    ax1.plot((x_start, x_end), (height-2, height-2), linewidth=2, color='peru')
+    ax1.text(x_end+0.1, height-2, f'3X Median UV NFD Uncertainty = {3*median_AGN_UV_NFD_unc:.2f}', 
+            ha='left', va='center', fontsize=16, color='peru')
+    ax1.set_ylabel('Non-CL AGN Frequency', color='black', fontsize=18)
+    ax1.tick_params(axis='y', labelsize=18)  # Change font size for y-axis ticks
+    ax1.legend(loc='upper right', fontsize=16)
+
+    ax2.hist(CLAGN_UV_NFD, bins=CLAGN_bins_UV_NFD, color='red', edgecolor='black', label='Guo CLAGN Sample')
+    ax2.axvline(median_CLAGN_UV_NFD, linewidth=2, linestyle='-', color='black', label=f'CLAGN Median UV NFD = {median_CLAGN_UV_NFD:.2f}')
+    ax2.axvline(three_sigma_UV_NFD, linewidth=2, linestyle='--', color='black', label=f'{b/len(CLAGN_UV_NFD)*100:.1f}% > Threshold = {three_sigma_UV_NFD:.2f}')
+    ax2.set_xlabel('UV NFD', fontsize=18)
+    ax2.set_ylabel('CLAGN Frequency', color='black', fontsize=18)
+    ax2.tick_params(axis='x', labelsize=18)
+    ax2.tick_params(axis='y', labelsize=18)
+    ax2.legend(loc='upper right', fontsize=16)
+
+    plt.suptitle('UV NFD Distribution - Non-CL AGN Control Sample vs Guo CLAGN', fontsize=22)
+    plt.tight_layout()
+    plt.show()
+
+
 # # # #Creating a 2d plot of z score vs 2nd lowest flux:
 if zs_W1_low == 1:
     plt.figure(figsize=(12, 7))
@@ -1304,11 +1375,11 @@ if NFD_W2_low == 1:
 
 # # # #Creating a 2d plot of redshift vs z score:
 # plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
-# plt.scatter(AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+# plt.scatter(CLAGN_zscores, CLAGN_redshifts_analysis, color='red', s=100, label='CLAGN')
+# plt.scatter(AGN_zscores, AGN_redshifts_analysis, color='blue', label='Non-CL AGN')
 # plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
 # plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts_analysis+AGN_redshifts_analysis))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel("Z-Score", fontsize = 24)
@@ -1325,26 +1396,26 @@ if NFD_W2_low == 1:
 # inverse_AGN_zscores = [1/z for z in AGN_zscores]
 
 # #line of best fit:
-# fit_params_CLAGN = np.polyfit(inverse_CLAGN_zscores, CLAGN_redshifts, 1)  # Degree 1 for a linear fit
+# fit_params_CLAGN = np.polyfit(inverse_CLAGN_zscores, CLAGN_redshifts_analysis, 1)  # Degree 1 for a linear fit
 # slope_CLAGN, intercept_CLAGN = fit_params_CLAGN
 # y_fit_CLAGN = slope_CLAGN*np.array(inverse_CLAGN_zscores)+intercept_CLAGN
-# fit_params_AGN = np.polyfit(inverse_AGN_zscores, AGN_redshifts, 1)  # Degree 1 for a linear fit
+# fit_params_AGN = np.polyfit(inverse_AGN_zscores, AGN_redshifts_analysis, 1)  # Degree 1 for a linear fit
 # slope_AGN, intercept_AGN = fit_params_AGN
 # y_fit_AGN = slope_AGN*np.array(inverse_AGN_zscores)+intercept_AGN
 # combined_zscores = inverse_CLAGN_zscores+inverse_AGN_zscores
-# combined_redshifts = CLAGN_redshifts+AGN_redshifts
+# combined_redshifts = CLAGN_redshifts_analysis+AGN_redshifts_analysis
 # fit_params_both = np.polyfit(combined_zscores, combined_redshifts, 1)  # Degree 1 for a linear fit
 # slope_both, intercept_both = fit_params_both
 # y_fit_both = slope_both*np.array(combined_zscores)+intercept_both
 
 # plt.figure(figsize=(12, 7))
-# plt.scatter(inverse_CLAGN_zscores, CLAGN_redshifts, color='red', s=100, label='CLAGN')
-# plt.scatter(inverse_AGN_zscores, AGN_redshifts, color='blue', label='Non-CL AGN')
+# plt.scatter(inverse_CLAGN_zscores, CLAGN_redshifts_analysis, color='red', s=100, label='CLAGN')
+# plt.scatter(inverse_AGN_zscores, AGN_redshifts_analysis, color='blue', label='Non-CL AGN')
 # plt.plot(inverse_CLAGN_zscores, y_fit_CLAGN, color="red", label=f"CLAGN: y={slope_CLAGN:.2f}x+{intercept_CLAGN:.2f}")
 # plt.plot(inverse_AGN_zscores, y_fit_AGN, color="blue", label=f"AGN: y={slope_AGN:.2f}x+{intercept_AGN:.2f}")
 # plt.plot(combined_zscores, y_fit_both, color="black", label=f"Comb: y={slope_both:.2f}x+{intercept_both:.2f}")
 # plt.xlim(0, 1.05*max(inverse_CLAGN_zscores+inverse_AGN_zscores))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts_analysis+AGN_redshifts_analysis))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel(r"$\frac{1}{Z-Score}$", fontsize = 24)
@@ -1358,11 +1429,11 @@ if NFD_W2_low == 1:
 
 # # # #Creating a 2d plot of NFD vs redshift:
 # plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_redshifts, CLAGN_norm_flux_diff, color='red',  label='CLAGN')
-# plt.scatter(AGN_redshifts, AGN_norm_flux_diff, color='blue',  label='Non-CL AGN')
+# plt.scatter(CLAGN_redshifts_analysis, CLAGN_norm_flux_diff, color='red',  label='CLAGN')
+# plt.scatter(AGN_redshifts_analysis, AGN_norm_flux_diff, color='blue',  label='Non-CL AGN')
 # plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
 # plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts_analysis+AGN_redshifts_analysis))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel("Redshift", fontsize = 24)
@@ -1410,9 +1481,9 @@ if NFD_W2_low == 1:
 
 # # # #Creating a 2d plot of W1 low flux vs Redshift:
 # plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_redshifts, CLAGN_W1_low_flux, s=100, color='red',  label='CLAGN')
-# plt.scatter(AGN_redshifts, AGN_W1_low_flux, color='blue',  label='Non-CL AGN')
-# plt.xlim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.scatter(CLAGN_redshifts_analysis, CLAGN_W1_low_flux, s=100, color='red',  label='CLAGN')
+# plt.scatter(AGN_redshifts_analysis, AGN_W1_low_flux, color='blue',  label='Non-CL AGN')
+# plt.xlim(0, 1.05*max(CLAGN_redshifts_analysis+AGN_redshifts_analysis))
 # plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
@@ -1427,10 +1498,10 @@ if NFD_W2_low == 1:
 
 # # # # #Creating a 2d plot of redshift vs unc:
 # plt.figure(figsize=(12, 7))
-# plt.scatter(CLAGN_W1_median_flux_unc, CLAGN_redshifts, color='red',  label='CLAGN')
-# plt.scatter(AGN_W1_median_flux_unc, AGN_redshifts, color='blue',  label='Non-CL AGN')
+# plt.scatter(CLAGN_W1_median_flux_unc, CLAGN_redshifts_analysis, color='red',  label='CLAGN')
+# plt.scatter(AGN_W1_median_flux_unc, AGN_redshifts_analysis, color='blue',  label='Non-CL AGN')
 # plt.xlim(0, 1.05*max(CLAGN_W1_median_flux_unc+AGN_W1_median_flux_unc))
-# plt.ylim(0, 1.05*max(CLAGN_redshifts+AGN_redshifts))
+# plt.ylim(0, 1.05*max(CLAGN_redshifts_analysis+AGN_redshifts_analysis))
 # plt.xticks(fontsize=24)
 # plt.yticks(fontsize=24)
 # plt.xlabel("Median Flux Uncertainty", fontsize = 24)
@@ -2076,7 +2147,38 @@ if epochs_zs_W2 == 1:
     plt.tight_layout()
     plt.show()
 
-if redshift_dist == 1:
+
+if redshift_dist_CLAGN_vs_non_CLAGN == 1:
+    combined_redshifts = AGN_redshifts_analysis+CLAGN_redshifts_analysis
+    redshift_binsize = (max(combined_redshifts)-min(combined_redshifts))/20 #20 bins
+    bins_redshift = np.arange(min(combined_redshifts), max(combined_redshifts) + redshift_binsize, redshift_binsize)
+
+    fig, ax1 = plt.subplots(figsize=(12,7))
+    ax2 = ax1.twinx()
+    hist1 = ax1.hist(AGN_redshifts_analysis, bins=bins_redshift, color='blue', edgecolor='black', alpha=0.6)
+    hist2 = ax2.hist(CLAGN_redshifts_analysis, bins=bins_redshift, color='red', edgecolor='black', alpha=0.6)
+    line1 = ax1.axvline(median_AGN_redshift_analysis, linewidth=2, linestyle='-', color='black')
+    line2 = ax2.axvline(median_CLAGN_redshift_analysis, linewidth=2, linestyle=':', color='black')
+    ax1.tick_params(axis='x', labelsize=22)
+    ax1.tick_params(axis='y', labelsize=22)
+    ax2.tick_params(axis='y', labelsize=22)
+    ax1.set_xlabel('Redshift', fontsize = 22)
+    ax1.set_ylabel('Non-CL AGN Frequency', color='blue', fontsize = 22)
+    ax2.set_ylabel('CLAGN Frequency', color='red', fontsize = 22)
+    handles = [hist1[2][0], hist2[2][0], line1, line2]
+    labels = ['Non-CL AGN Control', 'Guo CLAGN', f'Non-CL AGN Median = {median_AGN_redshift_analysis:.2f}', f'CLAGN Median = {median_CLAGN_redshift_analysis:.2f}']
+    ax1.legend(handles, labels, loc='upper right', fontsize = 21)
+    if brightness == 0:
+        plt.title('Redshift Distribution - Dim CLAGN & Non-CL AGN Analysed', fontsize=24)
+    elif brightness == 1:
+        plt.title('Redshift Distribution - Bright CLAGN & Non-CL AGN Analysed', fontsize=24)
+    elif brightness == 2:
+        plt.title('Redshift Distribution - CLAGN & Non-CL AGN Analysed', fontsize=24)    
+    plt.tight_layout()
+    plt.show()
+
+
+if redshift_dist_bright_dim == 1:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
     CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
         CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
@@ -2099,18 +2201,15 @@ if redshift_dist == 1:
         redshift = object_row.iloc[0, 3]
         CLAGN_redshifts_dim.append(redshift)
 
-    # combined_redshifts = AGN_redshifts+CLAGN_redshifts
     combined_redshifts = CLAGN_redshifts_bright+CLAGN_redshifts_dim
     redshift_binsize = (max(combined_redshifts)-min(combined_redshifts))/20 #20 bins
-    bins_mod_dev = np.arange(min(combined_redshifts), max(combined_redshifts) + redshift_binsize, redshift_binsize)
+    bins_redshift = np.arange(min(combined_redshifts), max(combined_redshifts) + redshift_binsize, redshift_binsize)
     AGN_median_redshift = np.median(AGN_redshifts)
     CLAGN_median_redshift_bright = np.median(CLAGN_redshifts_bright)
     CLAGN_median_redshift_dim = np.median(CLAGN_redshifts_dim)
     plt.figure(figsize=(12,7))
-    # plt.hist(AGN_redshifts, bins=bins_mod_dev, color='blue', edgecolor='black', label='Non-CL AGN')
-    plt.hist(CLAGN_redshifts_bright, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
-    plt.hist(CLAGN_redshifts_dim, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
-    # plt.axvline(AGN_median_redshift, linewidth=2, linestyle='--', color='darkblue', label = f'Non-CL AGN Median = {AGN_median_redshift:.2f}')
+    plt.hist(CLAGN_redshifts_bright, bins=bins_redshift, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    plt.hist(CLAGN_redshifts_dim, bins=bins_redshift, color='gray', alpha=0.7, label='Dim CLAGN')
     plt.axvline(CLAGN_median_redshift_bright, linewidth=2, linestyle='-', color='darkred', label = f'Bright CLAGN Median = {CLAGN_median_redshift_bright:.2f}')
     plt.axvline(CLAGN_median_redshift_dim, linewidth=2, linestyle='--', color='darkred', label = f'Dim CLAGN Median = {CLAGN_median_redshift_dim:.2f}')
     plt.xlabel('Redshift')
@@ -2119,6 +2218,7 @@ if redshift_dist == 1:
     plt.legend(loc='upper right')
     plt.tight_layout()
     plt.show()
+
 
 if luminosity_dist_CLAGN == 1:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')

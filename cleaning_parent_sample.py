@@ -258,29 +258,29 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 ##Run quantifying change code - then I will have all up to date versions of my plots
 
 # # # ## Combining the three data frames created
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
 # print(len(quantifying_change))
-# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1_Extra.csv')
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all_extra.csv')
 # print(len(quantifying_change_extra))
-# # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
-# # print(len(quantifying_change_extra_v2))
-# # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
-# # print(len(quantifying_change_extra_v3))
-# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
-# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2], ignore_index=True)
+# # # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
+# # # print(len(quantifying_change_extra_v2))
+# # # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
+# # # print(len(quantifying_change_extra_v3))
+# # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
+# # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2], ignore_index=True)
 # combined_df = pd.concat([quantifying_change, quantifying_change_extra], ignore_index=True)
-# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
+# combined_df.to_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv', index=False)
 
 ## Don't uncomment below this
 
-# # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
-# # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
-# Names_to_redo = ['162003.10+552822.4']
-# # # # # for name in Names_to_redo:
-# # # # #     print(name)
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv')
+# # # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
+# # # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
+# Names_to_redo = ['122133.20+330701.3', '162935.00+315820.2', '170956.01+573225.5']
+# # # # # # for name in Names_to_redo:
+# # # # # #     print(name)
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
 # quantifying_change_filtered = quantifying_change[~quantifying_change.iloc[:, 0].isin(Names_to_redo)]
-# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv', index=False)
+# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv', index=False)
 
 
 # quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')

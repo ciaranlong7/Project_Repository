@@ -82,7 +82,9 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '113115.72+533548.9' #outlier = 12.53 (W1)
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
-# object_name = '162704.10+420500.0'
+# object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
+object_name = '122133.20+330701.3'
+
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -92,17 +94,17 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 5
+option = 6
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 0 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 1 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
-UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
+UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
+UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -427,13 +429,15 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
-    sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+    # sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+    sdss_blue_flux = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
 
     desi_lamb = desi_lamb.tolist()
     closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
-    desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+    # desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+    desi_blue_flux = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
     sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
@@ -441,7 +445,8 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
 
     if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
         flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
-        flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+        # flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+        flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
     else:
@@ -460,7 +465,7 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         ax1 = fig.add_subplot(gs[0:3, :])
         ax1.plot(desi_blue_lamb, UV_NFD, color = 'darkorange', label = f'{round(DESI_mjd -SDSS_mjd)} days between observations')
         ax1.set_xlabel('Wavelength / Å')
-        ax1.set_ylabel('Turned On Flux - Turned Off Flux (Normalised)')
+        ax1.set_ylabel('Normalised Flux Difference')
         ax1.set_title(f'UV NFD ({object_name})')
 
         ax2 = fig.add_subplot(gs[3:, 0])
@@ -483,6 +488,20 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         #top and bottom adjust the vertical space on the top and bottom of the figure.
         #left and right adjust the horizontal space on the left and right sides.
         #hspace and wspace adjust the spacing between rows and columns, respectively.
+        plt.show()
+
+
+        median_flux_diff = np.median(UV_NFD)
+        plt.figure(figsize=(12,7))
+        plt.plot(desi_blue_lamb, UV_NFD, color = 'darkorange')
+        plt.axhline(median_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Median UV NFD = {median_flux_diff:.2f}')
+        plt.xlabel('Wavelength / Å', fontsize=26)
+        plt.ylabel('Normalised Flux Difference', fontsize=26)
+        plt.xticks(fontsize=26)
+        plt.yticks(fontsize=26)
+        plt.title(f'UV NFD', fontsize=28)
+        plt.legend(loc='upper right', fontsize=25)
+        plt.tight_layout()
         plt.show()
 
     if UV_NFD_hist == 1:
@@ -766,7 +785,7 @@ if option >= 1 and option <= 4:
 
     # # Changing mjd date to days since start:
     min_mjd = min([W1_av_mjd_date[0], W2_av_mjd_date[0]])
-    min_mjd = 0
+    # min_mjd = 0
     SDSS_mjd = SDSS_mjd - min_mjd
     DESI_mjd = DESI_mjd - min_mjd
     mjd_value = mjd_value - min_mjd
@@ -912,17 +931,17 @@ if option >= 1 and option <= 4:
         # Plotting average W1 & W2 mags (or flux) vs days since first observation
         plt.figure(figsize=(12,7))
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
-        plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
-        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.xticks(fontsize=26)
         plt.yticks(fontsize=26)
         # plt.ylim(0, 1)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-        plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
-        # plt.title(f'AGN Mid-IR Light Curve', fontsize = 28)
+        # plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
+        plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()
@@ -988,7 +1007,7 @@ if SDSS_DESI == 1:
     plt.yticks(fontsize=26)
     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
     # plt.title(f'SDSS Spectrum (WISEA J{object_name})', fontsize = 28)
-    plt.title(f'AGN Emission Spectrum (SDSS)', fontsize = 28)
+    plt.title(f'AGN UV/Optical Spectrum (SDSS)', fontsize = 28)
     plt.legend(loc = 'best', fontsize = 25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
