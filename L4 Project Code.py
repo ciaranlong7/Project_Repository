@@ -6,6 +6,7 @@ import pandas as pd
 import math
 from scipy.interpolate import interp1d
 from scipy.stats import median_abs_deviation
+import scipy.optimize
 from astropy.io import fits
 from astropy import units as u #In Astropy, a Quantity object combines a numerical value (like a 1D array of flux) with a physical unit (like W/m^2, erg/s, etc.)
 from astropy.convolution import convolve, Gaussian1DKernel
@@ -83,7 +84,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
-object_name = '122133.20+330701.3'
+# object_name = '122133.20+330701.3'
 
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
@@ -94,17 +95,17 @@ object_name = '122133.20+330701.3'
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 6
+option = 5
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 0 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
-SDSS_DESI = 1 #2 plots, each one with just a SDSS or DESI spectrum
+SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
+UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -227,14 +228,15 @@ def get_sdss_spectra():
 
                     sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
                     sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-                    # sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+                    sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
                     print('SDSS file is in downloads - will proceed as normal')
-                    return sdss_lamb, sdss_flux
+                    return sdss_lamb, sdss_flux, sdss_flux_unc
             except FileNotFoundError as e:
                 print('No SDSS file already downloaded.')
                 sdss_flux = []
                 sdss_lamb = []
-                return sdss_lamb, sdss_flux
+                sdss_flux_unc = []
+                return sdss_lamb, sdss_flux, sdss_flux_unc
         else:
             downloaded_SDSS_spec = downloaded_SDSS_spec[0]
             hdul = HDUList(downloaded_SDSS_spec.get_fits())
@@ -242,8 +244,8 @@ def get_sdss_spectra():
 
             sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
             sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-            # sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
-            return sdss_lamb, sdss_flux
+            sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+            return sdss_lamb, sdss_flux, sdss_flux_unc
     else:
         downloaded_SDSS_spec = downloaded_SDSS_spec[0]
         hdul = HDUList(downloaded_SDSS_spec.get_fits())
@@ -251,13 +253,13 @@ def get_sdss_spectra():
 
         sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
         sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-        # sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
-        return sdss_lamb, sdss_flux
+        sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+        return sdss_lamb, sdss_flux, sdss_flux_unc
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
 def get_primary_spectrum(specid): #some objects have multiple spectra for it in DESI- the best one is the 'primary' spectrum
     
-    res = client.retrieve_by_specid(specid_list=[specid], include=['specprimary', 'wavelength', 'flux'], dataset_list=['DESI-EDR'])
+    res = client.retrieve_by_specid(specid_list=[specid], include=['specprimary', 'wavelength', 'flux', 'ivar'], dataset_list=['DESI-EDR'])
 
     records = res.records
 
@@ -270,11 +272,13 @@ def get_primary_spectrum(specid): #some objects have multiple spectra for it in 
             DESI_spec = pd.read_csv(DESI_file_path)
             desi_lamb = DESI_spec.iloc[:, 0]  # First column, skipping the first row (header)
             desi_flux = DESI_spec.iloc[:, 1]  # Second column, skipping the first row (header)
+            desi_flux_ivar = DESI_spec.iloc[:, 2]
+            desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
             print('DESI file is in downloads - will proceed as normal')
-            return desi_lamb, desi_flux
+            return desi_lamb, desi_flux, desi_flux_unc
         except FileNotFoundError as e:
             print('No DESI file already downloaded.')
-            return [], []
+            return [], [], []
 
     # Identify the primary spectrum
     spec_primary = np.array([records[jj].specprimary for jj in range(len(records))])
@@ -288,11 +292,13 @@ def get_primary_spectrum(specid): #some objects have multiple spectra for it in 
             DESI_spec = pd.read_csv(DESI_file_path)
             desi_lamb = DESI_spec.iloc[:, 0]  # First column
             desi_flux = DESI_spec.iloc[:, 1]  # Second column
+            desi_flux_ivar = DESI_spec.iloc[:, 2]
+            desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
             print('DESI file is in downloads - will proceed as normal')
-            return desi_lamb, desi_flux
+            return desi_lamb, desi_flux, desi_flux_unc
         except FileNotFoundError as e:
             print('No DESI file already downloaded.')
-            return [], []
+            return [], [], []
 
     # Get the index of the primary spectrum
     primary_idx = np.where(spec_primary == True)[0][0]
@@ -300,14 +306,17 @@ def get_primary_spectrum(specid): #some objects have multiple spectra for it in 
     # Extract wavelength and flux for the primary spectrum
     desi_lamb = records[primary_idx].wavelength
     desi_flux = records[primary_idx].flux
-
-    return desi_lamb, desi_flux
+    desi_flux_ivar = records[primary_idx].ivar
+    desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
+    return desi_lamb, desi_flux, desi_flux_unc
 
 if option == 1:
     sdss_flux = []
     sdss_lamb = []
+    sdss_flux_unc = []
     desi_flux = []
     desi_lamb = []
+    desi_flux_unc = []
 elif option == 2 or option == 5:
     SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
     SDSS_file_path = f'clagn_spectra/{SDSS_file}'
@@ -315,26 +324,32 @@ elif option == 2 or option == 5:
         subset = hdul[1]
         sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
         sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+        sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
 
     DESI_file = f'spectrum_desi_{object_name}.csv'
     DESI_file_path = f'clagn_spectra/{DESI_file}'
     DESI_spec = pd.read_csv(DESI_file_path)
     desi_lamb = DESI_spec.iloc[:, 0]  # First column
     desi_flux = DESI_spec.iloc[:, 1]  # Second column
+    desi_flux_ivar = DESI_spec.iloc[:, 2]
+    desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
 elif option == 3 or option == 6:
     desi_flux = []
     desi_lamb = []
-    sdss_lamb, sdss_flux = get_sdss_spectra()
+    desi_flux_unc = []
+    sdss_lamb, sdss_flux, sdss_flux_unc = get_sdss_spectra()
 elif option == 4 or option == 7:
     client = SparclClient(connect_timeout=10)
 
-    sdss_lamb, sdss_flux = get_sdss_spectra()
-    desi_lamb, desi_flux = get_primary_spectrum(int(DESI_name))
+    sdss_lamb, sdss_flux, sdss_flux_unc = get_sdss_spectra()
+    desi_lamb, desi_flux, desi_flux_unc = get_primary_spectrum(int(DESI_name))
 else:
     sdss_flux = []
     sdss_lamb = []
+    sdss_flux_unc = []
     desi_flux = []
     desi_lamb = []
+    desi_flux_unc = []
     print('No SDSS or DESI spectrum will be used - select a valid option (1 - 7)')
 
 sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.com/kbarbary/sfdmap/blob/master/README.md
@@ -430,6 +445,7 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
     # sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+    sdss_blue_flux_unc = sdss_flux_unc[closest_index_lower_sdss:closest_index_upper_sdss]
     sdss_blue_flux = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
 
     desi_lamb = desi_lamb.tolist()
@@ -437,24 +453,73 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
     # desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+    desi_blue_flux_unc = desi_flux_unc[closest_index_lower_desi:closest_index_upper_desi]
     desi_blue_flux = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
     sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
     sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
+    # Interpolation function for SDSS uncertainties
+    sdss_unc_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_unc, kind='linear', fill_value='extrapolate')
+    SDSS_unc_interp = sdss_unc_interp_fn(desi_blue_lamb) # Interpolated SDSS flux uncertainties at DESI wavelengths
+
+    flux_difference_unc = np.sqrt(SDSS_unc_interp**2 + np.array(desi_blue_flux_unc)**2)
+
     if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
         flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
         # flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
+        norm_factor_unc = median_abs_deviation(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
+        UV_NFD_unc_list = [UV_NFD_value*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+                      for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
     else:
         flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
         flux_for_norm = [sdss_flux[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
+        norm_factor_unc = median_abs_deviation(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
+        UV_NFD_unc_list = [UV_NFD_value*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+                      for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
+        
+    #Now calculating unc in UV_NFD. Chi-squared fitting y = mx+c to the UV_NFD plot. uncertainty in m is the uncertainty in UV_NFD
+    #xval is desi_blue_lamb. y_val is UV_NFD.
+    desi_blue_lamb = np.array(desi_blue_lamb)
     
+    print("NaN values in desi_blue_lamb:", np.isnan(desi_blue_lamb).any())
+    print("Zero values in desi_blue_lamb:", np.any(desi_blue_lamb == 0))
+
+
+    def model_funct(x, vals):
+        return vals[0] + vals[1]*x
+    
+    initial = np.array([0.0, -0.001]) # Initial guess for fit parameters
+    deg_freedom = desi_blue_lamb.size - initial.size
+
+    def chisq(modelparams, x_data, y_data, y_err):
+        chisqval=0
+        for i in range(len(desi_blue_lamb)):
+            chisqval += ((y_data[i] - model_funct(x_data[i], modelparams))/y_err[i])**2
+        return chisqval
+    
+    print(chisq(initial, desi_blue_lamb, UV_NFD, UV_NFD_unc_list))
+    
+    fit = scipy.optimize.minimize(chisq, initial, args=(desi_blue_lamb, UV_NFD, UV_NFD_unc_list))
+    print(fit)
+    a_soln = fit.x[0]
+    b_soln = fit.x[1]
+
+    print([a_soln, b_soln])
+
+    chisq_min = chisq([a_soln, b_soln], desi_blue_lamb, UV_NFD, UV_NFD_unc_list)
+    chisq_reduced = chisq_min/deg_freedom
+
+    hess_inv = fit.hess_inv  # Approximation of covariance matrix
+    UV_NFD_unc = np.sqrt(hess_inv[0, 0])  # Uncertainty in gradient = uncertainty in UV_NFD
+    print(UV_NFD_unc)
+
     if UV_NFD_plot == 1:
         fig = plt.figure(figsize=(12, 7))
         gs = GridSpec(5, 2, figure=fig)  # 5 rows, 2 columns
@@ -491,15 +556,18 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         plt.show()
 
 
+        fit_line = model_funct(desi_blue_lamb, [a_soln, b_soln])
+
         median_flux_diff = np.median(UV_NFD)
         plt.figure(figsize=(12,7))
         plt.plot(desi_blue_lamb, UV_NFD, color = 'darkorange')
         plt.axhline(median_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Median UV NFD = {median_flux_diff:.2f}')
+        plt.plot(desi_blue_lamb, fit_line, 'r', linestyle='-', label = f'Median UV NFD Unc = {UV_NFD_unc:.2f}')
         plt.xlabel('Wavelength / Å', fontsize=26)
-        plt.ylabel('Normalised Flux Difference', fontsize=26)
+        plt.ylabel('UV NFD', fontsize=26)
         plt.xticks(fontsize=26)
         plt.yticks(fontsize=26)
-        plt.title(f'UV NFD', fontsize=28)
+        plt.title(f'UV Normalised Flux Difference', fontsize=28)
         plt.legend(loc='upper right', fontsize=25)
         plt.tight_layout()
         plt.show()

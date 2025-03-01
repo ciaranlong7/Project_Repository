@@ -46,29 +46,13 @@ W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
-def remove_outliers(data, threshold=None):
-    """
-    Parameters:
-    - data: list of tuples [(flux, mjd, unc), ...]
-    - threshold: Modified deviation threshold for outlier removal (default=15)
-
-    Returns:
-    - list of filtered tuples without outliers
-    """
-    if not data:
-        return data  # Return empty list if input is empty
-    
-    if my_object == 0:
-        threshold = 25
-    elif my_object == 1:
-        threshold = 9
-
+def remove_outliers_epochs(data, threshold=10):
     flux_values = np.array([entry[0] for entry in data])  # Extract flux values
     median = np.median(flux_values)
     mad = median_abs_deviation(flux_values)
 
-    if mad == 0:  # Avoid division by zero
-        print("Warning: MAD is zero, no outliers removed.")
+    if mad == 0:
+        print("MAD is zero, no outliers can be detected.")
         return data
 
     modified_deviation = (flux_values - median) / mad
@@ -315,10 +299,6 @@ for object_name in object_names:
     W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
 
-    #removing some outliers
-    W1_all = remove_outliers(W1_all)
-    W2_all = remove_outliers(W2_all)
-
     if len(W1_all) < 2 and len(W2_all) < 2: #checking if there is enough data
         print('No W1 & W2 data')
         continue
@@ -449,17 +429,29 @@ for object_name in object_names:
 
     #want a minimum of 9 (out of ~24 possible) epochs to conduct analysis on.
     if len(W1_data) > 8:
-        m = 0
-        W1_first = W1_data[0][1]
-        W1_last = W1_data[-1][1]
+        W1_data = remove_outliers_epochs(W1_data)
+        if len(W1_data) > 8:
+            m = 0
+            W1_first = W1_data[0][1]
+            W1_last = W1_data[-1][1]
+        else:
+            m = 1
+            W1_first = np.nan
+            W1_last = np.nan
     else:
         m = 1
         W1_first = np.nan
         W1_last = np.nan
     if len(W2_data) > 8:
-        n = 0
-        W2_first = W2_data[0][1]
-        W2_last = W2_data[-1][1]
+        W2_data = remove_outliers_epochs(W2_data)
+        if len(W2_data) > 8:
+            n = 0
+            W2_first = W2_data[0][1]
+            W2_last = W2_data[-1][1]
+        else:
+            n = 1
+            W2_first = np.nan
+            W2_last = np.nan
     else:
         n = 1
         W2_first = np.nan

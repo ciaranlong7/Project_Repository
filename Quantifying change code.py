@@ -24,7 +24,7 @@ def luminosity(flux, redshift):
 
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
-brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
+brightness = 0 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
 MIR_UV = 1 #0=UV. 1=MIR only
 turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
@@ -35,7 +35,7 @@ bright_dim_W1 = 0.40
 bright_dim_W2 = 0.40
 
 #plots:
-main_MIR = 1 #1 if want main zscore and NFD plot.
+main_MIR = 0 #1 if want main zscore and NFD plot.
 main_MIR_line_split = 0 # main zscore and NFD plot, for CLAGN only and split by emission line.
 main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
@@ -56,7 +56,7 @@ W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
 W1_vs_W2_Zs_direction = 0 #plot of W1 Zs vs W2 Zs with direction
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
-Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
+Modified_Dev_epochs_plot = 1 #plot of distribution of modified deviations for epochs
 Modified_Dev_vs_epoch_measurements_plot = 0 #plot of modified deviations for epochs vs epoch measurements
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
@@ -640,16 +640,16 @@ if main_MIR == 1:
     plt.yticks(fontsize=26)
     plt.xlabel("Z-Score", fontsize = 26)
     plt.ylabel("NFD", fontsize = 26)
-    plt.title(f"Characterising MIR Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.title("Characterising MIR Variability - Bright Objects", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     ax = plt.gca()
     if my_sample == 1:
-        plt.text(0.99, 0.46, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-        plt.text(0.99, 0.4, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
-        plt.text(0.16, 0.95, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
-        plt.text(0.16, 0.89, f'{l/len(AGN_norm_flux_diff)*100:.1f}% AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.58, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.99, 0.52, f'{j/len(AGN_zscores)*100:.1f}% Non-CL AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.14, 0.83, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+        plt.text(0.14, 0.77, f'{l/len(AGN_norm_flux_diff)*100:.1f}% Non-CL AGN > NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
     elif my_sample == 2:
         plt.text(0.99, 0.52, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
         plt.text(0.99, 0.46, f'{j/len(AGN_zscores)*100:.1f}% AGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
@@ -1924,7 +1924,7 @@ if Modified_Dev_epochs_plot == 1:
     CLAGN_mod_dev_list_W1 = CLAGN_mod_dev_W1.iloc[:, 0].tolist()
     CLAGN_mod_dev_W2 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W2.csv')
     CLAGN_mod_dev_list_W2 = CLAGN_mod_dev_W2.iloc[:, 0].tolist()
-    threshold_CLAGN = 11
+    threshold_CLAGN = 10
     CLAGN_mod_dev_list_elim_W1 = [x for x in CLAGN_mod_dev_list_W1 if abs(x) > threshold_CLAGN]
     CLAGN_mod_dev_list_elim_W2 = [x for x in CLAGN_mod_dev_list_W2 if abs(x) > threshold_CLAGN]
     percentage_elim_CLAGN_W1 = len(CLAGN_mod_dev_list_elim_W1)/(len(CLAGN_mod_dev_list_elim_W1)+len(CLAGN_mod_dev_list_W1))*100
@@ -1967,7 +1967,7 @@ if Modified_Dev_epochs_plot == 1:
     AGN_mod_dev_list_W1 = AGN_mod_dev_W1.iloc[:, 0].tolist()
     AGN_mod_dev_W2 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W2.csv')
     AGN_mod_dev_list_W2 = AGN_mod_dev_W2.iloc[:, 0].tolist()
-    threshold_AGN = 11
+    threshold_AGN = 10
     AGN_mod_dev_list_elim_W1 = [x for x in AGN_mod_dev_list_W1 if abs(x) > threshold_AGN]
     AGN_mod_dev_list_elim_W2 = [x for x in AGN_mod_dev_list_W2 if abs(x) > threshold_AGN]
     percentage_elim_AGN_W1 = len(AGN_mod_dev_list_elim_W1)/(len(AGN_mod_dev_list_elim_W1)+len(AGN_mod_dev_list_W1))*100

@@ -38,43 +38,7 @@ W2_k = 171.787
 W1_wl = 3.4e4 #Angstroms
 W2_wl = 4.6e4
 
-def remove_outliers(data, threshold=None):
-    """
-    Parameters:
-    - data: list of tuples [(flux, mjd, unc), ...]
-    - threshold: Modified deviation threshold for outlier removal (default=15)
-
-    Returns:
-    - list of filtered tuples without outliers
-    """
-    if not data:
-        return data  # Return empty list if input is empty
-    
-    if my_object == 0:
-        threshold = 25
-    elif my_object == 1:
-        threshold = 9
-
-    flux_values = np.array([entry[0] for entry in data])  # Extract flux values
-    median = np.median(flux_values)
-    mad = median_abs_deviation(flux_values)
-
-    if mad == 0:  # Avoid division by zero
-        print("Warning: MAD is zero, no outliers removed.")
-        return data
-
-    modified_deviation = (flux_values - median) / mad
-    mask = np.abs(modified_deviation) > threshold  # Identify outliers
-    outliers = np.array(data)[mask]  # Extract outlier tuples
-
-    # Print removed outliers
-    for outlier, mod_dev in zip(outliers, modified_deviation[mask]):
-        print(f"Removing outlier: Flux={outlier[0]}, MJD={outlier[1]}, UNC={outlier[2]} (Modified Deviation = {mod_dev:.2f})")
-
-    return [entry for entry, is_outlier in zip(data, mask) if not is_outlier]
-
-
-def remove_outliers_epochs(data, threshold=None):
+def remove_outliers_epochs(data, threshold=10):
     flux_values = np.array([entry[0] for entry in data])  # Extract flux values
     median = np.median(flux_values)
     mad = median_abs_deviation(flux_values)
@@ -82,11 +46,6 @@ def remove_outliers_epochs(data, threshold=None):
     if mad == 0:
         print("MAD is zero, no outliers can be detected.")
         return data
-    
-    if my_object == 0:
-        threshold = 11
-    elif my_object == 1:
-        threshold = 11
 
     modified_deviation = (flux_values - median) / mad
     mask = np.abs(modified_deviation) > threshold  # Identify outliers
