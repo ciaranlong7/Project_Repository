@@ -8,9 +8,9 @@ from astroquery.ipac.irsa import Irsa
 
 c = 299792458
 
-my_object = 1 #0 = AGN. 1 = CLAGN
+my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
-save_figures = 1 #set to 1 to save figures
+save_figures = 0 #set to 1 to save figures
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -25,8 +25,8 @@ if my_object == 0:
     object_names = AGN_sample.iloc[:, 3]
 elif my_object == 1:
     object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
-    object_names = pd.Series(object_names)  # Convert list to Series
-    object_names = object_names[object_names.isin(Guo_table4[Guo_table4['transition'] == 'turn-off'].iloc[:, 0])]
+    # object_names = pd.Series(object_names)  # Convert list to Series
+    # object_names = object_names[object_names.isin(Guo_table4[Guo_table4['transition'] == 'turn-off'].iloc[:, 0])]
     # object_names = object_names[41:]
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
@@ -180,10 +180,6 @@ for object_name in object_names:
     W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
 
-    # #removing some outliers
-    # W1_all = remove_outliers(W1_all)
-    # W2_all = remove_outliers(W2_all)
-    
     if len(W1_all) < 2 and len(W2_all) < 2: #checking if there is enough data
         print('No W1 & W2 data')
         continue
@@ -414,12 +410,11 @@ for object_name in object_names:
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Flux vs Time (WISEA J{object_name})', fontsize = 28)
         plt.tight_layout()
-        plt.show()
-        # if my_object == 0:
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        #     # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
-        # elif my_object == 1:
-        #     fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        if my_object == 0:
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Sample {my_sample}/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+            # fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/AGN Figures - Extra/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
+        elif my_object == 1:
+            fig.savefig(f'C:/Users/ciara/Dropbox/University/University Work/Fourth Year/Project/CLAGN Figures/{object_name} - Flux vs Time.png', dpi=300, bbox_inches='tight')
         plt.close(fig)
 
     if m == 0: #Good W1 if true
@@ -748,60 +743,60 @@ for object_name in object_names:
                 mean_NFD.append(np.nanmean(norm_f_ch))
                 mean_NFD_unc.append((1/2)*np.sqrt(sum(unc**2 for unc in norm_f_ch_unc)))
     
-# quantifying_change_data = {
-#     "Object": object_names_list, #0
+quantifying_change_data = {
+    "Object": object_names_list, #0
 
-#     "W1 Z Score using Max Unc": W1_max, #1
-#     "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
-#     "W1 Z Score using Min Unc": W1_min, #3
-#     "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
-#     "W1 Flux Change": W1_abs_change, #5
-#     "W1 Flux Change Unc": W1_abs_change_unc, #6
-#     "W1 NFD": W1_abs_change_norm, #7
-#     "W1 NFD Unc": W1_abs_change_norm_unc, #8
+    "W1 Z Score using Max Unc": W1_max, #1
+    "Uncertainty in W1 Z Score using Max Unc": W1_max_unc, #2
+    "W1 Z Score using Min Unc": W1_min, #3
+    "Uncertainty in W1 Z Score using Min Unc": W1_min_unc, #4
+    "W1 Flux Change": W1_abs_change, #5
+    "W1 Flux Change Unc": W1_abs_change_unc, #6
+    "W1 NFD": W1_abs_change_norm, #7
+    "W1 NFD Unc": W1_abs_change_norm_unc, #8
 
-#     "W2 Z Score using Max Unc": W2_max, #9
-#     "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
-#     "W2 Z Score using Min Unc": W2_min, #11
-#     "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
-#     "W2 Flux Change": W2_abs_change, #13
-#     "W2 Flux Change Unc": W2_abs_change_unc, #14
-#     "W2 NFD": W2_abs_change_norm, #15
-#     "W2 NFD Unc": W2_abs_change_norm_unc, #16
+    "W2 Z Score using Max Unc": W2_max, #9
+    "Uncertainty in W2 Z Score using Max Unc": W2_max_unc, #10
+    "W2 Z Score using Min Unc": W2_min, #11
+    "Uncertainty in W2 Z Score using Min Unc": W2_min_unc, #12
+    "W2 Flux Change": W2_abs_change, #13
+    "W2 Flux Change Unc": W2_abs_change_unc, #14
+    "W2 NFD": W2_abs_change_norm, #15
+    "W2 NFD Unc": W2_abs_change_norm_unc, #16
 
-#     "Mean Z Score": mean_zscore, #17
-#     "Mean Z Score Unc": mean_zscore_unc, #18
-#     "Mean NFD": mean_NFD, #19
-#     "Mean NFD Unc": mean_NFD_unc, #20
+    "Mean Z Score": mean_zscore, #17
+    "Mean Z Score Unc": mean_zscore_unc, #18
+    "Mean NFD": mean_NFD, #19
+    "Mean NFD Unc": mean_NFD_unc, #20
 
-#     #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
-#     "W1 First mjd": W1_first_mjd, #21 (#25)
-#     "W1 Last mjd": W1_last_mjd, #22 (#26)
-#     "W2 First mjd": W2_first_mjd, #23 (#27)
-#     "W2 Last mjd": W2_last_mjd, #24 (#28)
-#     "W1 Epochs": W1_epochs, #25 (#29)
-#     "W2 Epochs": W2_epochs, #26 (#30)
-#     "W1 Min Flux": W1_low, #27 (#31)
-#     "W1 Min Flux Unc": W1_low_unc, #28 (#32)
-#     "W1 Max Flux Unc": W1_high_unc, #29 (#33)
-#     "W2 Min Flux": W2_low, #30 (#34)
-#     "W2 Min Flux Unc": W2_low_unc, #31 (#35)
-#     "W2 Max Flux Unc": W2_high_unc, #32 (#36)
-#     "W1 median_abs_dev of Flux": W1_median_dev, #33 (#37)
-#     "W2 median_abs_dev of Flux": W2_median_dev, #34 (#38)
-#     "W1 Mean Unc Counter": W1_mean_uncs, #35 (#39)
-#     "W2 Mean Unc Counter": W2_mean_uncs, #36 (#40)
-#     "W1 min mjd": W1_min_mjd, #37 (#41)
-#     "W1 max mjd": W1_max_mjd, #38 (#42)
-#     "W2 min mjd": W2_min_mjd, #39 (#43)
-#     "W2 max mjd": W2_max_mjd, #40 (#44)
-# }
+    #Brackets () indicate the index of the same column in the csv file created with SDSS/DESI UV analysis
+    "W1 First mjd": W1_first_mjd, #21 (#25)
+    "W1 Last mjd": W1_last_mjd, #22 (#26)
+    "W2 First mjd": W2_first_mjd, #23 (#27)
+    "W2 Last mjd": W2_last_mjd, #24 (#28)
+    "W1 Epochs": W1_epochs, #25 (#29)
+    "W2 Epochs": W2_epochs, #26 (#30)
+    "W1 Min Flux": W1_low, #27 (#31)
+    "W1 Min Flux Unc": W1_low_unc, #28 (#32)
+    "W1 Max Flux Unc": W1_high_unc, #29 (#33)
+    "W2 Min Flux": W2_low, #30 (#34)
+    "W2 Min Flux Unc": W2_low_unc, #31 (#35)
+    "W2 Max Flux Unc": W2_high_unc, #32 (#36)
+    "W1 median_abs_dev of Flux": W1_median_dev, #33 (#37)
+    "W2 median_abs_dev of Flux": W2_median_dev, #34 (#38)
+    "W1 Mean Unc Counter": W1_mean_uncs, #35 (#39)
+    "W2 Mean Unc Counter": W2_mean_uncs, #36 (#40)
+    "W1 min mjd": W1_min_mjd, #37 (#41)
+    "W1 max mjd": W1_max_mjd, #38 (#42)
+    "W2 min mjd": W2_min_mjd, #39 (#43)
+    "W2 max mjd": W2_max_mjd, #40 (#44)
+}
 
-# # Convert the data into a DataFrame
-# df = pd.DataFrame(quantifying_change_data)
+# Convert the data into a DataFrame
+df = pd.DataFrame(quantifying_change_data)
 
-# #max unc:
-# if my_object == 0:
-#     df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv", index=False)
-# elif my_object == 1:
-#     df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv", index=False)
+#max unc:
+if my_object == 0:
+    df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv", index=False)
+elif my_object == 1:
+    df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv", index=False)

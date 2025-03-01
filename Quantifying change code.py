@@ -56,7 +56,7 @@ W1_vs_W2_Zs = 0 #plot of W1 Zs vs W2 Zs
 W1_vs_W2_Zs_direction = 0 #plot of W1 Zs vs W2 Zs with direction
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
-Modified_Dev_epochs_plot = 1 #plot of distribution of modified deviations for epochs
+Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
 Modified_Dev_vs_epoch_measurements_plot = 0 #plot of modified deviations for epochs vs epoch measurements
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
@@ -837,11 +837,11 @@ if main_MIR_NFD_hist_bright_dim == 1:
     ax1.axvline(three_sigma_norm_flux_diff_dim, linewidth=2, linestyle='-.', color='grey', label=f'{b/len(AGN_norm_flux_diff_dim)*100:.1f}% Dim Non-CL AGN > Dim Threshold = {three_sigma_norm_flux_diff_dim:.2f}')
     ax1.plot((x_start_threshold_bright, x_end_threshold_bright), (height_bright+0.75, height_bright+0.75), linewidth=2, color='sienna')
     ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange')
-    ax1.text(x_end_threshold_bright, height_bright + 1.25, f'3X Median Bright Uncertainty = {3*median_norm_flux_diff_AGN_unc_bright:.2f}', 
+    ax1.text(x_end_threshold_bright+0.05, height_bright + 1.25, f'3X Median Bright Uncertainty = {3*median_norm_flux_diff_AGN_unc_bright:.2f}', 
             ha='right', va='center', fontsize=10, color='sienna')
     ax1.text(x_end_threshold_dim, height_dim + 0.75, f'3X Median Dim Uncertainty = {3*median_norm_flux_diff_AGN_unc_dim:.2f}', 
             ha='right', va='center', fontsize=10, color='darkorange')
-    ax1.text(2, 1, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    ax1.text(1.9, 1, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2e}', fontsize = 10, ha='left', va='center')
     ax1.set_ylabel('Non-CL AGN Frequency', color='black')
     ax1.legend(loc='upper right')
 
@@ -1004,9 +1004,9 @@ if main_MIR_Zs_hist_bright_dim == 1:
     ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange')
     ax1.text(x_end_threshold_bright+1, height_bright + 1.25, f'3X Median Bright Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_bright:.2f}', 
             ha='left', va='center', fontsize=10, color='sienna')
-    ax1.text(x_end_threshold_dim+1, height_dim + 0.75, f'3X Median Dim Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}', 
+    ax1.text(x_end_threshold_bright+1, height_dim + 0.75, f'3X Median Dim Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}', 
             ha='left', va='center', fontsize=10, color='darkorange')
-    ax1.text(45, 12, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    ax1.text(43, 12, f'AD test - non-CL AGN p-value = {ad_result_AGN.pvalue:.2e}', fontsize = 10, ha='left', va='center')
     ax1.set_ylabel('Non-CL AGN Frequency', color='black')
     ax1.legend(loc='upper right')
 
@@ -1059,7 +1059,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
     # ax2.text(max_line+1, 8, f'KS test - dim objects. P-value = {p_value_dim:.2f}', fontsize = 10, ha='left', va='center')
     # ax2.text(max_line+1, 10, f'AD test - bright objects. P-value = {ad_result_bright.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     # ax2.text(max_line+1, 8, f'AD test - dim objects. P-value = {ad_result_dim.pvalue:.2f}', fontsize = 10, ha='left', va='center')
-    ax2.text(45, 5, f'AD test - CLAGN p-value = {ad_result_CLAGN.pvalue:.2f}', fontsize = 10, ha='left', va='center')
+    ax2.text(45, 5, f'AD test - CLAGN p-value = {ad_result_CLAGN.pvalue:.2e}', fontsize = 10, ha='left', va='center')
     ax2.set_xlabel('Z-Score')
     ax2.set_ylabel('CLAGN Frequency', color='black')
     ax2.legend(loc='upper right')

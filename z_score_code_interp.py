@@ -310,9 +310,6 @@ for object_name in object_names:
             DESI_z = object_data.iloc[0, 9]
             DESI_name = object_data.iloc[0, 10]
     
-    print(f'SDSS Plate = {SDSS_plate}, SDSS MJD = {SDSS_mjd}, SDSS fiberid = {SDSS_fiberid}')
-    print(f'DESI targetid = {DESI_name}')
-
     SDSS_mjd_for_dnl = SDSS_mjd
     DESI_mjd_for_dnl = DESI_mjd
     coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs')
@@ -609,7 +606,7 @@ for object_name in object_names:
     if optical_analysis == 1:
         if my_object == 0: #AGN
             sdss_lamb, sdss_flux, sdss_flux_unc = get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd_for_dnl, coord, SDSS_plate, SDSS_fiberid)
-            desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
+            desi_lamb, desi_flux, desi_flux_unc = get_primary_DESI_spectrum(int(DESI_name))
         elif my_object == 1:
             #SDSS
             try:
@@ -630,33 +627,35 @@ for object_name in object_names:
                 DESI_spec = pd.read_csv(DESI_file_path)
                 desi_lamb = DESI_spec.iloc[:, 0]
                 desi_flux = DESI_spec.iloc[:, 1]
+                desi_flux_ivar = DESI_spec.iloc[:, 2]
+                desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
             except FileNotFoundError as e:
                 print('DESI File not found - trying download')
-                desi_lamb, desi_flux = get_primary_DESI_spectrum(int(DESI_name))
+                desi_lamb, desi_flux, desi_flux_unc = get_primary_DESI_spectrum(int(DESI_name))
 
         ebv = sfd.ebv(coord)
         inverse_SDSS_lamb = [1/(x*10**(-4)) for x in sdss_lamb] #need units of inverse microns for extinguishing
         inverse_DESI_lamb = [1/(x*10**(-4)) for x in desi_lamb]
         sdss_flux = sdss_flux/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv) #divide to remove the effect of dust
+        sdss_flux_unc = sdss_flux_unc/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv)
         desi_flux = desi_flux/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
+        desi_flux_unc = desi_flux_unc/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
 
         sdss_lamb = (sdss_lamb/(1+SDSS_z))
         desi_lamb = (desi_lamb/(1+DESI_z))
 
-        if len(sdss_flux) > 0:
+        if len(sdss_lamb) > 0 and max(sdss_flux) > 0:
             SDSS_min = min(sdss_lamb)
             SDSS_max = max(sdss_lamb)
         else:
             SDSS_min = 0
             SDSS_max = 1
-            sdss_flux = []
-        if len(desi_flux) > 0:
+        if len(desi_lamb) > 0 and max(desi_flux) > 0:
             DESI_min = min(desi_lamb)
             DESI_max = max(desi_lamb)
         else:
             DESI_min = 0
             DESI_max = 1
-            desi_flux = []
 
         #UV analysis
         if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020 and len(sdss_flux) > 0 and len(desi_flux) > 0:
@@ -664,57 +663,108 @@ for object_name in object_names:
             closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
             sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
             sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+            sdss_blue_flux_unc = sdss_flux_unc[closest_index_lower_sdss:closest_index_upper_sdss]
 
             desi_lamb = desi_lamb.tolist()
             closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
             closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
             desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
             desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+            desi_blue_flux_unc = desi_flux_unc[closest_index_lower_desi:closest_index_upper_desi]
 
             #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
             sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
             sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
             # Interpolation function for SDSS uncertainties
-            sdss_unc_interp_fn = interp1d(sdss_blue_lamb, sdss_flux_unc, kind='linear', fill_value='extrapolate')
-            SDSS_unc_interp = sdss_unc_interp_fn(desi_blue_lamb) # Interpolated SDSS flux uncertainties at DESI wavelengths
+            def interpolate_uncertainty(SDSS_wavel, SDSS_flux_unc, DESI_wavel):
+
+                SDSS_wavel = np.array(SDSS_wavel)
+                SDSS_flux_unc = np.array(SDSS_flux_unc)
+                DESI_wavel = np.array(DESI_wavel)
+
+                interpolated_uncs = np.zeros_like(DESI_wavel)
+
+                for i, desi_w in enumerate(DESI_wavel):
+                    # Find indices of nearest SDSS points
+                    before_idx = np.searchsorted(SDSS_wavel, desi_w) - 1
+                    after_idx = before_idx + 1
+
+                    # Handle edge cases
+                    if before_idx < 0:
+                        interpolated_uncs[i] = SDSS_flux_unc[after_idx]  # Use the first available uncertainty
+                    elif after_idx >= len(SDSS_wavel):
+                        interpolated_uncs[i] = SDSS_flux_unc[before_idx]  # Use the last available uncertainty
+                    else:
+                        # Get the SDSS wavelength and uncertainty values
+                        x1, x2 = SDSS_wavel[before_idx], SDSS_wavel[after_idx]
+                        sigma1, sigma2 = SDSS_flux_unc[before_idx], SDSS_flux_unc[after_idx]
+
+                        # Linear uncertainty interpolation formula
+                        weight1 = (x2 - desi_w) / (x2 - x1)
+                        weight2 = (desi_w - x1) / (x2 - x1)
+
+                        interpolated_uncs[i] = np.sqrt((weight1*sigma1)**2 + (weight2*sigma2)**2)
+
+                return interpolated_uncs
+            
+            SDSS_unc_interp = interpolate_uncertainty(sdss_blue_lamb, sdss_blue_flux_unc, desi_blue_lamb)
+
+            flux_difference_unc = np.where(
+            np.isnan(desi_blue_flux_unc) & np.isnan(SDSS_unc_interp),  # If both are NaN
+            0,  # Set to 0
+            np.where(
+                np.isnan(desi_blue_flux_unc),  # If only desi_blue_flux_unc is NaN
+                SDSS_unc_interp,  
+                np.where(
+                    np.isnan(SDSS_unc_interp),  # If only SDSS_unc_interp is NaN
+                    desi_blue_flux_unc,
+                    np.sqrt(SDSS_unc_interp**2 + np.array(desi_blue_flux_unc)**2)))) #otherwise propagate the uncertainty as normal.
 
             if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
                 flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
                 flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
                 norm_factor = np.median(flux_for_norm)
+                norm_factor_unc = median_abs_deviation(flux_for_norm)
                 UV_NFD = [flux/norm_factor for flux in flux_diff]
+                list_UV_NFD_unc = [abs(UV_NFD_value)*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+                                for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
             else:
                 flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
                 flux_for_norm = [sdss_flux[i] for i in range(len(sdss_lamb)) if 3980 <= sdss_lamb[i] <= 4020]
                 norm_factor = np.median(flux_for_norm)
+                norm_factor_unc = median_abs_deviation(flux_for_norm)
                 UV_NFD = [flux/norm_factor for flux in flux_diff]
+                list_UV_NFD_unc = [abs(UV_NFD_value)*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+                                for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
 
             median_UV_NFD.append(np.median(UV_NFD))
 
             #Now calculating unc in UV_NFD. Chi-squared fitting y = mx+c to the UV_NFD plot. uncertainty in m is the uncertainty in UV_NFD
             #xval is desi_blue_lamb. y_val is UV_NFD.
+            desi_blue_lamb = np.array(desi_blue_lamb)
+
             def model_funct(x, vals):
                 return vals[0] + vals[1]*x
             
-            initial = np.array([0.0, 0.9]) # Initial guess for fit parameters
-            deg_freedom = desi_blue_lamb.size - initial.size
+            initial = np.array([max(UV_NFD), -0.001]) # Initial guess for fit parameters
 
             def chisq(modelparams, x_data, y_data, y_err):
                 chisqval=0
-                for i in range(len(desi_blue_lamb)):
+                for i in range(len(x_data)):
                     chisqval += ((y_data[i] - model_funct(x_data[i], modelparams))/y_err[i])**2
                 return chisqval
             
-            fit = scipy.optimize.minimize(chisq, initial, args=(desi_blue_lamb, UV_NFD, yerr))
+            fit = scipy.optimize.minimize(chisq, initial, args=(desi_blue_lamb, UV_NFD, list_UV_NFD_unc), method="L-BFGS-B", jac="2-point")
+            print(fit)
             a_soln = fit.x[0]
             b_soln = fit.x[1]
 
-            chisq_min = chisq([a_soln, b_soln], desi_blue_lamb, UV_NFD, yerr)
-            chisq_reduced = chisq_min/deg_freedom
+            fit_line = model_funct(desi_blue_lamb, [a_soln, b_soln])
 
-            hess_inv = fit.hess_inv  # Approximation of covariance matrix
-            UV_NFD_unc = np.sqrt(hess_inv[0, 0])  # Uncertainty in gradient = uncertainty in UV_NFD
+            dist_from_grad = [UV_NFD_val - fit_line_val for UV_NFD_val, fit_line_val in zip(UV_NFD, fit_line)]
+
+            UV_NFD_unc = median_abs_deviation(dist_from_grad)
 
             UV_NFD_unc_list.append(UV_NFD_unc)
         else:

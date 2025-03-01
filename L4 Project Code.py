@@ -50,7 +50,10 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '114249.08+544709.7' #Object T - chosen because non-CLAGN and has a z score of 141
 # object_name = '131630.87+211915.1' #Object U - chosen because non-CLAGN and has a z score of 458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
-# object_name = '082012.50+352053.8'
+
+#Objects with unsuccessful convergence
+object_name = '152551.37+184552.0'
+object_name = '113737.38+511839.9'
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
 # object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
@@ -84,7 +87,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
-# object_name = '122133.20+330701.3'
+object_name = '122133.20+330701.3'
 
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
@@ -95,7 +98,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 5
+option = 7
 
 #Selecting which plots you want. Set = 1 if you want that plot
 MIR_epoch = 0 #Single epoch plot - set m & n below
@@ -105,7 +108,7 @@ SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
 UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
-UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
+UV_NFD_hist = 1 #histogram of the NFD across each wavelength value
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -366,7 +369,9 @@ ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
 inverse_SDSS_lamb = [1/(x*10**(-4)) for x in sdss_lamb] #need units of inverse microns for extinguishing
 inverse_DESI_lamb = [1/(x*10**(-4)) for x in desi_lamb]
 sdss_flux = sdss_flux/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv) #divide to remove the effect of dust
+sdss_flux_unc = sdss_flux_unc/ext_model.extinguish(inverse_SDSS_lamb, Ebv=ebv)
 desi_flux = desi_flux/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
+desi_flux_unc = desi_flux_unc/ext_model.extinguish(inverse_DESI_lamb, Ebv=ebv)
 
 # Correcting for redshift
 if object_name in Guo_table4.iloc[:, 0].values:
@@ -426,13 +431,13 @@ Ly_beta = 1025.722
 #NEL
 _O3_ = 5006.843 #underscores indicate square brackets
 #Note there are other [O III] lines, such as: 4958.911 A, 4363.210 A
-if len(sdss_lamb) > 0:
+if len(sdss_lamb) > 0 and max(sdss_flux) > 0:
     SDSS_min = min(sdss_lamb)
     SDSS_max = max(sdss_lamb)
 else:
     SDSS_min = 0
     SDSS_max = 1
-if len(desi_lamb) > 0:
+if len(desi_lamb) > 0 and max(desi_flux) > 0:
     DESI_min = min(desi_lamb)
     DESI_max = max(desi_lamb)
 else:
@@ -444,36 +449,80 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
     closest_index_lower_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_sdss = min(range(len(sdss_lamb)), key=lambda i: abs(sdss_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     sdss_blue_lamb = sdss_lamb[closest_index_lower_sdss:closest_index_upper_sdss]
-    # sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
+    sdss_blue_flux = sdss_flux[closest_index_lower_sdss:closest_index_upper_sdss]
     sdss_blue_flux_unc = sdss_flux_unc[closest_index_lower_sdss:closest_index_upper_sdss]
-    sdss_blue_flux = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
+    # sdss_blue_flux = Gaus_smoothed_SDSS[closest_index_lower_sdss:closest_index_upper_sdss]
 
     desi_lamb = desi_lamb.tolist()
     closest_index_lower_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3000)) #3000 to avoid Mg2 emission line
     closest_index_upper_desi = min(range(len(desi_lamb)), key=lambda i: abs(desi_lamb[i] - 3920)) #3920 to avoid K Fraunhofer line
     desi_blue_lamb = desi_lamb[closest_index_lower_desi:closest_index_upper_desi]
-    # desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
+    desi_blue_flux = desi_flux[closest_index_lower_desi:closest_index_upper_desi]
     desi_blue_flux_unc = desi_flux_unc[closest_index_lower_desi:closest_index_upper_desi]
-    desi_blue_flux = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
+    # desi_blue_flux = Gaus_smoothed_DESI[closest_index_lower_desi:closest_index_upper_desi]
 
     #interpolating SDSS flux so lambda values match up with DESI . Done this way round because DESI lambda values are closer together.
     sdss_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux, kind='linear', fill_value='extrapolate')
     sdss_blue_flux_interp = sdss_interp_fn(desi_blue_lamb) #interpolating the sdss flux to be in line with the desi lambda values
 
     # Interpolation function for SDSS uncertainties
-    sdss_unc_interp_fn = interp1d(sdss_blue_lamb, sdss_blue_flux_unc, kind='linear', fill_value='extrapolate')
-    SDSS_unc_interp = sdss_unc_interp_fn(desi_blue_lamb) # Interpolated SDSS flux uncertainties at DESI wavelengths
+    def interpolate_uncertainty(SDSS_wavel, SDSS_flux_unc, DESI_wavel):
 
-    flux_difference_unc = np.sqrt(SDSS_unc_interp**2 + np.array(desi_blue_flux_unc)**2)
+        SDSS_wavel = np.array(SDSS_wavel)
+        SDSS_flux_unc = np.array(SDSS_flux_unc)
+        DESI_wavel = np.array(DESI_wavel)
+
+        interpolated_uncs = np.zeros_like(DESI_wavel)
+
+        for i, desi_w in enumerate(DESI_wavel):
+            # Find indices of nearest SDSS points
+            before_idx = np.searchsorted(SDSS_wavel, desi_w) - 1
+            after_idx = before_idx + 1
+
+            # Handle edge cases
+            if before_idx < 0:
+                interpolated_uncs[i] = SDSS_flux_unc[after_idx]  # Use the first available uncertainty
+            elif after_idx >= len(SDSS_wavel):
+                interpolated_uncs[i] = SDSS_flux_unc[before_idx]  # Use the last available uncertainty
+            else:
+                # Get the SDSS wavelength and uncertainty values
+                x1, x2 = SDSS_wavel[before_idx], SDSS_wavel[after_idx]
+                sigma1, sigma2 = SDSS_flux_unc[before_idx], SDSS_flux_unc[after_idx]
+
+                # Linear uncertainty interpolation formula
+                weight1 = (x2 - desi_w) / (x2 - x1)
+                weight2 = (desi_w - x1) / (x2 - x1)
+
+                interpolated_uncs[i] = np.sqrt((weight1*sigma1)**2 + (weight2*sigma2)**2)
+
+        return interpolated_uncs
+    
+    SDSS_unc_interp = interpolate_uncertainty(sdss_blue_lamb, sdss_blue_flux_unc, desi_blue_lamb)
+
+    print(np.nanmedian(desi_blue_flux_unc))
+    print(np.nanmedian(SDSS_unc_interp))
+
+    flux_difference_unc = np.where(
+    np.isnan(desi_blue_flux_unc) & np.isnan(SDSS_unc_interp),  # If both are NaN
+    0,  # Set to 0
+    np.where(
+        np.isnan(desi_blue_flux_unc),  # If only desi_blue_flux_unc is NaN
+        SDSS_unc_interp,  
+        np.where(
+            np.isnan(SDSS_unc_interp),  # If only SDSS_unc_interp is NaN
+            desi_blue_flux_unc,
+            np.sqrt(SDSS_unc_interp**2 + np.array(desi_blue_flux_unc)**2)))) #otherwise propagate the uncertainty as normal.
+    
+    print(np.median(flux_difference_unc))
 
     if np.median(sdss_blue_flux) > np.median(desi_blue_flux): #want high-state minus low-state
         flux_diff = [sdss - desi for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
-        # flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
-        flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+        flux_for_norm = [desi_flux[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
+        # flux_for_norm = [Gaus_smoothed_DESI[i] for i in range(len(desi_lamb)) if 3980 <= desi_lamb[i] <= 4020]
         norm_factor = np.median(flux_for_norm)
         norm_factor_unc = median_abs_deviation(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
-        UV_NFD_unc_list = [UV_NFD_value*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+        UV_NFD_unc_list = [abs(UV_NFD_value)*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
                       for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
     else:
         flux_diff = [desi - sdss for sdss, desi in zip(sdss_blue_flux_interp, desi_blue_flux)]
@@ -481,44 +530,34 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         norm_factor = np.median(flux_for_norm)
         norm_factor_unc = median_abs_deviation(flux_for_norm)
         UV_NFD = [flux/norm_factor for flux in flux_diff]
-        UV_NFD_unc_list = [UV_NFD_value*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
+        UV_NFD_unc_list = [abs(UV_NFD_value)*np.sqrt((flux_difference_unc_value/flux_diff_value)**2 + (norm_factor_unc/norm_factor)**2)
                       for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
         
     #Now calculating unc in UV_NFD. Chi-squared fitting y = mx+c to the UV_NFD plot. uncertainty in m is the uncertainty in UV_NFD
     #xval is desi_blue_lamb. y_val is UV_NFD.
     desi_blue_lamb = np.array(desi_blue_lamb)
-    
-    print("NaN values in desi_blue_lamb:", np.isnan(desi_blue_lamb).any())
-    print("Zero values in desi_blue_lamb:", np.any(desi_blue_lamb == 0))
-
 
     def model_funct(x, vals):
         return vals[0] + vals[1]*x
     
-    initial = np.array([0.0, -0.001]) # Initial guess for fit parameters
-    deg_freedom = desi_blue_lamb.size - initial.size
+    initial = np.array([max(UV_NFD), -0.001]) # Initial guess for fit parameters
 
     def chisq(modelparams, x_data, y_data, y_err):
         chisqval=0
-        for i in range(len(desi_blue_lamb)):
+        for i in range(len(x_data)):
             chisqval += ((y_data[i] - model_funct(x_data[i], modelparams))/y_err[i])**2
         return chisqval
     
-    print(chisq(initial, desi_blue_lamb, UV_NFD, UV_NFD_unc_list))
-    
-    fit = scipy.optimize.minimize(chisq, initial, args=(desi_blue_lamb, UV_NFD, UV_NFD_unc_list))
+    fit = scipy.optimize.minimize(chisq, initial, args=(desi_blue_lamb, UV_NFD, UV_NFD_unc_list), method="L-BFGS-B", jac="2-point")
     print(fit)
     a_soln = fit.x[0]
     b_soln = fit.x[1]
 
-    print([a_soln, b_soln])
+    fit_line = model_funct(desi_blue_lamb, [a_soln, b_soln])
 
-    chisq_min = chisq([a_soln, b_soln], desi_blue_lamb, UV_NFD, UV_NFD_unc_list)
-    chisq_reduced = chisq_min/deg_freedom
+    dist_from_grad = [UV_NFD_val - fit_line_val for UV_NFD_val, fit_line_val in zip(UV_NFD, fit_line)]
 
-    hess_inv = fit.hess_inv  # Approximation of covariance matrix
-    UV_NFD_unc = np.sqrt(hess_inv[0, 0])  # Uncertainty in gradient = uncertainty in UV_NFD
-    print(UV_NFD_unc)
+    UV_NFD_unc = median_abs_deviation(dist_from_grad)
 
     if UV_NFD_plot == 1:
         fig = plt.figure(figsize=(12, 7))
@@ -555,14 +594,11 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
         #hspace and wspace adjust the spacing between rows and columns, respectively.
         plt.show()
 
-
-        fit_line = model_funct(desi_blue_lamb, [a_soln, b_soln])
-
         median_flux_diff = np.median(UV_NFD)
         plt.figure(figsize=(12,7))
         plt.plot(desi_blue_lamb, UV_NFD, color = 'darkorange')
         plt.axhline(median_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Median UV NFD = {median_flux_diff:.2f}')
-        plt.plot(desi_blue_lamb, fit_line, 'r', linestyle='-', label = f'Median UV NFD Unc = {UV_NFD_unc:.2f}')
+        plt.plot(desi_blue_lamb, fit_line, linewidth=2, linestyle='-', color = 'black', label = f'Median UV NFD Unc = {UV_NFD_unc:.2f}')
         plt.xlabel('Wavelength / Å', fontsize=26)
         plt.ylabel('UV NFD', fontsize=26)
         plt.xticks(fontsize=26)
@@ -574,25 +610,24 @@ if SDSS_min < 3000 and SDSS_max > 4020 and DESI_min < 3000 and DESI_max > 4020:
 
     if UV_NFD_hist == 1:
         #Histogram of the distribution of flux change values
-        median_flux_diff = np.median(UV_NFD)
-        MAD_flux_diff = median_abs_deviation(UV_NFD)
-        x_start = median_flux_diff - MAD_flux_diff
-        x_end = median_flux_diff + MAD_flux_diff
-        flux_diff_binsize = (max(UV_NFD)-min(UV_NFD))/50 #50 bins
-        bins_flux_diff = np.arange(min(UV_NFD), max(UV_NFD) + flux_diff_binsize, flux_diff_binsize)
-        counts, bin_edges = np.histogram(UV_NFD, bins=bins_flux_diff)
+        median_dist_from_grad = np.median(dist_from_grad)
+        x_start = median_dist_from_grad - UV_NFD_unc
+        x_end = median_dist_from_grad + UV_NFD_unc
+        dist_binsize = (max(dist_from_grad)-min(dist_from_grad))/50 #50 bins
+        bins_dist = np.arange(min(dist_from_grad), max(dist_from_grad) + dist_binsize, dist_binsize)
+        counts, bin_edges = np.histogram(dist_from_grad, bins=bins_dist)
         bin_centers = (bin_edges[:-1] + bin_edges[1:])/2
         bin_index_start = np.argmin(abs(bin_centers - x_start))
         bin_index_end = np.argmin(abs(bin_centers - x_end))
         height = 1.1*max([counts[bin_index_start], counts[bin_index_end]])
 
         plt.figure(figsize=(12,7))
-        plt.hist(UV_NFD, bins=bins_flux_diff, color='darkorange', edgecolor='black', label=f'binsize = {flux_diff_binsize:.2f}')
-        plt.axvline(median_flux_diff, linewidth=2, linestyle='--', color='black', label = f'Median = {median_flux_diff:.2f}')
-        plt.plot((x_start, x_end), (height, height), linewidth=2, color='black', label = f'Medain Absolute Deviation = {MAD_flux_diff:.2f}')
-        plt.xlabel('Turned On Flux - Turned Off Flux (Normalised)')
+        plt.hist(dist_from_grad, bins=bins_dist, color='darkorange', edgecolor='black', label=f'binsize = {dist_binsize:.2f}')
+        plt.axvline(median_dist_from_grad, linewidth=2, linestyle='--', color='black', label = f'Median Distance From Grad = {median_dist_from_grad:.2f}')
+        plt.plot((x_start, x_end), (height, height), linewidth=2, color='black', label = f'MAD dist from grad (UV NFD Unc) = {UV_NFD_unc:.2f}')
+        plt.xlabel('UV NFD data point distance from gradient')
         plt.ylabel('Frequency')
-        plt.title(f'UV NFD Values Across Wavelength Range ({object_name})')
+        plt.title(f'UV NFD data point distance from gradient ({object_name})')
         plt.legend(loc='upper right')
         plt.show()
 
