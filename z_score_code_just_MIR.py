@@ -8,7 +8,7 @@ from astroquery.ipac.irsa import Irsa
 
 c = 299792458
 
-my_object = 0 #0 = AGN. 1 = CLAGN
+my_object = 1 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0 #set to 1 to save figures
 
