@@ -41,7 +41,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
-# object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
+object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 # object_name = '163826.34+382512.1' #Object O - chosen because not a CLAGN, but has enourmous normalised flux change
 # object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
 # object_name = '121542.99+574702.3' #Object Q - chosen because not a CLAGN, but has a large normalised flux change.
@@ -86,7 +86,9 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
 # object_name = '115715.92+285401.4' #chosen because of very large UV NFD (4.5) for a non-CL AGN
-# object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
+object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
+# object_name = '074217.52+392612.0' #chosen because non-CL AGN that varies in the MIR (z-score = 13) but not UV
+# object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
 
 
 # turn_on_CLAGN = ['085913.72+323050.8', '095035.55+321601.0', '115210.24+520205.1', '122319.70+312737.0', 
@@ -108,14 +110,14 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 option = 2
 
 #Selecting which plots you want. Set = 1 if you want that plot
-UV_NFD_plot = 1 #plot with NFD on the top. SDSS & DESI on the bottom
+UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 0 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
+main_plot = 1 #main plot, with MIR, SDSS & DESI
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -1028,14 +1030,14 @@ if option >= 1 and option <= 4:
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
         plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
-        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
-        # plt.ylim(0, 1)
+        plt.ylim(1.55, 7.05)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-        plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
-        # plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
+        # plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
+        plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()
@@ -1080,17 +1082,17 @@ if SDSS_DESI == 1:
     # plt.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
     plt.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
     if SDSS_min <= H_alpha <= SDSS_max:
-        plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+        plt.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if SDSS_min <= H_beta <= SDSS_max:
-        plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+        plt.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
     if SDSS_min <= Mg2 <= SDSS_max:
-        plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+        plt.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
     if SDSS_min <= C3_ <= SDSS_max:
         plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if SDSS_min <= C4 <= SDSS_max:
         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
     if SDSS_min <= _O3_ <= SDSS_max:
-        plt.axvline(_O3_, linewidth=2, linestyle=':', color='grey', label = '[O III]')
+        plt.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if SDSS_min <= Ly_alpha <= SDSS_max:
         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if SDSS_min <= Ly_beta <= SDSS_max:
@@ -1109,17 +1111,17 @@ if SDSS_DESI == 1:
     plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
     plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
     if DESI_min <= H_alpha <= DESI_max:
-        plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+        plt.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if DESI_min <= H_beta <= DESI_max:
-        plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+        plt.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
     if DESI_min <= Mg2 <= DESI_max:
-        plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+        plt.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
     if DESI_min <= C3_ <= DESI_max:
         plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if DESI_min <= C4 <= DESI_max:
         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
     # if DESI_min <= _O3_ <= DESI_max:
-    #     plt.axvline(_O3_, linewidth=2, linestyle=':', color='grey', label = '[O III]')
+    #     plt.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if DESI_min <= Ly_alpha <= DESI_max:
         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if DESI_min <= Ly_beta <= DESI_max:
@@ -1152,17 +1154,17 @@ if SDSS_DESI_comb == 1:
     # plt.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
     plt.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
     if SDSS_min <= H_alpha <= SDSS_max or DESI_min <= H_alpha <= DESI_max:
-        plt.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+        plt.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if SDSS_min <= H_beta <= SDSS_max or DESI_min <= H_beta <= DESI_max:
-        plt.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+        plt.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
     if SDSS_min <= Mg2 <= SDSS_max or DESI_min <= Mg2 <= DESI_max:
-        plt.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+        plt.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
     if SDSS_min <= C3_ <= SDSS_max or DESI_min <= C3_ <= DESI_max:
         plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if SDSS_min <= C4 <= SDSS_max or DESI_min <= C4 <= DESI_max:
         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
     if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
-        plt.axvline(_O3_, linewidth=2, linestyle=':', color='grey', label = '[O III]')
+        plt.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if SDSS_min <= Ly_alpha <= SDSS_max or DESI_min <= Ly_alpha <= DESI_max:
         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if SDSS_min <= Ly_beta <= SDSS_max or DESI_min <= Ly_beta <= DESI_max:
@@ -1210,17 +1212,17 @@ if main_plot == 1:
     ax2.plot(sdss_lamb, sdss_flux, alpha=0.2, color='forestgreen')
     ax2.plot(sdss_lamb, Gaus_smoothed_SDSS, color='forestgreen')
     if SDSS_min <= H_alpha <= SDSS_max:
-        ax2.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+        ax2.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if SDSS_min <= H_beta <= SDSS_max:
-        ax2.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+        ax2.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
     if SDSS_min <= Mg2 <= SDSS_max:
-        ax2.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+        ax2.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
     if SDSS_min <= C3_ <= SDSS_max:
         ax2.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if SDSS_min <= C4 <= SDSS_max:
         ax2.axvline(C4, linewidth=2, color='violet', label = 'C IV')
     # if SDSS_min <= _O3_ <= SDSS_max:
-    #     ax2.axvline(_O3_, linewidth=2, linestyle=':', color='grey', label = '[O III]')
+    #     ax2.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if SDSS_min <= Ly_alpha <= SDSS_max:
         ax2.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if SDSS_min <= Ly_beta <= SDSS_max:
@@ -1229,7 +1231,7 @@ if main_plot == 1:
     ax2.set_ylim(common_ymin, common_ymax)
     ax2.set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 15)
     ax2.tick_params(axis='both', which='major', labelsize=16, length=8, width=2)
-    ax2.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
+    # ax2.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
     ax2.set_title('SDSS Spectrum', fontsize = 14)
     ax2.legend(loc='upper right', fontsize = 18)
 
@@ -1238,17 +1240,17 @@ if main_plot == 1:
     ax3.plot(desi_lamb, desi_flux, alpha=0.2, color='midnightblue')
     ax3.plot(desi_lamb, Gaus_smoothed_DESI, color='midnightblue')
     if DESI_min <= H_alpha <= DESI_max:
-        ax3.axvline(H_alpha, linewidth=2, color='goldenrod', label = u'H\u03B1')
+        ax3.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if DESI_min <= H_beta <= DESI_max:
-        ax3.axvline(H_beta, linewidth=2, color='springgreen', label = u'H\u03B2')
+        ax3.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
     if DESI_min <= Mg2 <= DESI_max:
-        ax3.axvline(Mg2, linewidth=2, color='turquoise', label = 'Mg II')
+        ax3.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
     if DESI_min <= C3_ <= DESI_max:
         ax3.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if DESI_min <= C4 <= DESI_max:
         ax3.axvline(C4, linewidth=2, color='violet', label = 'C IV')
     # if DESI_min <= _O3_ <= DESI_max:
-    #     ax3.axvline(_O3_, linewidth=2, linestyle=':', color='grey', label = '[O III]')
+    #     ax3.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if DESI_min <= Ly_alpha <= DESI_max:
         ax3.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if DESI_min <= Ly_beta <= DESI_max:
@@ -1257,7 +1259,7 @@ if main_plot == 1:
     ax3.set_ylim(common_ymin, common_ymax)
     ax3.set_yticks([])
     ax3.tick_params(axis='x', which='major', labelsize=16, length=8, width=2)
-    ax3.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
+    # ax3.xaxis.set_major_locator(MultipleLocator(750))  # Major ticks every 750 Å
     ax3.set_title('DESI Spectrum', fontsize = 14)
     ax3.legend(loc='upper right', fontsize = 18)
 

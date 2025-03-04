@@ -41,13 +41,14 @@ main_MIR_direction_on_vs_off = 0 #NFD vs z score with direction of change - on v
 z_score_hist_direction_on_vs_off = 0 #z score with direction of change histogram - on vs off CLAGN
 main_MIR_line_split = 0 # main zscore and NFD plot, for CLAGN only and split by emission line.
 main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
-main_MIR_NFD_hist_bright_dim = 1 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
+main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
-main_MIR_Zs_hist_bright_dim = 1 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
-UV_MIRZ = 0 #plot of UV normalised flux difference vs interpolated z score
+main_MIR_Zs_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
+UV_MIRZ = 0 #plot of UV NFD vs interpolated z score
 UV_MIR_NFD = 0 #plot of UV NFD vs interpolated NFD
 UVZ_MIRZ = 0 #plot of interpolated z-score vs max/min z-score
-UVNFD_MIRZ = 0 #plot of UV NFD vs max/min z-score
+UVNFD_MIRZ = 1 #plot of UV NFD vs max/min z-score
+UVNFD_MIRNFD = 1 #plot of UV NFD vs MIR max/min NFD
 UV_NFD_dist = 0 #plot of the UV NFD distribution for CLAGN vs non-CL AGN
 zs_W1_low = 0 #plot of zscore vs W1 low flux
 zs_W2_low = 0 #plot of zscore vs W2 low flux
@@ -909,6 +910,10 @@ if main_MIR_direction_on_vs_off == 1:
 
 if z_score_hist_direction_on_vs_off == 1:
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    
     CLAGN_quantifying_change_data_off = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-off'].iloc[:, 0])]
     CLAGN_W1_zscore_max_off = CLAGN_quantifying_change_data_off.iloc[:, 1].tolist()
     CLAGN_W1_zscore_min_off = CLAGN_quantifying_change_data_off.iloc[:, 3].tolist()
@@ -1017,7 +1022,7 @@ if z_score_hist_direction_on_vs_off == 1:
     ax1.set_title('Z-Score Distribution - Turn-Off vs Turn-On CLAGN', fontsize=20)
 
     # Histogram for CLAGN_mean_directional_zscore_on
-    ax2.hist(CLAGN_mean_directional_zscore_on, bins=bins_on, color='red', edgecolor='black', label='Turn-on CLAGN')
+    ax2.hist(CLAGN_mean_directional_zscore_on, bins=bins_on, color='darkred', edgecolor='black', label='Turn-on CLAGN')
     ax2.axvline(CLAGN_median_zscore_on, color='black', linestyle='-', label=f'Turn-on CLAGN Median Z-score = {CLAGN_median_zscore_on:.2f}')
     ax2.set_xlabel("Directional Z-Score", fontsize=18)
     ax2.set_ylabel("Frequency", fontsize=18)
@@ -1025,7 +1030,7 @@ if z_score_hist_direction_on_vs_off == 1:
     ax2.tick_params(axis='both', labelsize=18, length=8, width=2)
     ax2.legend(loc='best', fontsize=18)
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.show()
 
 
@@ -1551,18 +1556,31 @@ if UVNFD_MIRZ == 1:
     AGN_UV_all = AGN_UV_all.dropna(subset=[AGN_UV_all.columns[1]])
     AGN_UV_names = AGN_UV_all.iloc[:, 0]
     AGN_UV_NFD = AGN_UV_all.iloc[:, 1].tolist()
+    AGN_UV_NFD_unc = AGN_UV_all.iloc[:, 2].tolist()
 
     AGN_MIR_all = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_MIR_all = AGN_MIR_all[np.where(AGN_MIR_all.iloc[:, 27].notna(),  
+        AGN_MIR_all.iloc[:, 27] >= bright_dim_W1,  
+        AGN_MIR_all.iloc[:, 30] >= bright_dim_W2)]
     AGN_MIR_names = AGN_MIR_all.iloc[:, 0]
     AGN_zscores_MIR = AGN_MIR_all.iloc[:, 17]
+    AGN_zscores_MIR_unc = AGN_MIR_all.iloc[:, 18]
 
-    AGN_name_to_UV_NFD = dict(zip(AGN_UV_names, AGN_UV_NFD))
-    AGN_name_to_zs_MIR = dict(zip(AGN_MIR_names, AGN_zscores_MIR))
+    AGN_name_to_UV_NFD = dict(zip(AGN_UV_names, zip(AGN_UV_NFD, AGN_UV_NFD_unc)))
+    AGN_name_to_zs_MIR = dict(zip(AGN_MIR_names, zip(AGN_zscores_MIR, AGN_zscores_MIR_unc)))
     all_names = set(AGN_UV_names).union(set(AGN_MIR_names))
-
     matched_names = set(AGN_name_to_UV_NFD.keys()).intersection(set(AGN_name_to_zs_MIR.keys()))
-    AGN_UV_NFD = [AGN_name_to_UV_NFD[name] for name in matched_names]
-    AGN_zscores_MIR = [AGN_name_to_zs_MIR[name] for name in matched_names]
+
+    AGN_UV_NFD, AGN_UV_NFD_unc = zip(*[AGN_name_to_UV_NFD[name] for name in matched_names])
+    AGN_zscores_MIR, AGN_zscores_MIR_unc = zip(*[AGN_name_to_zs_MIR[name] for name in matched_names])
+
+    median_AGN_UV_NFD = np.nanmedian(AGN_UV_NFD)
+    median_AGN_UV_NFD_unc = np.nanmedian(AGN_UV_NFD_unc)
+    three_sigma_UV_NFD = median_AGN_UV_NFD + 3*median_AGN_UV_NFD_unc
+
+    median_AGN_zscores_MIR = np.nanmedian(AGN_zscores_MIR)
+    median_AGN_zscores_MIR_unc = np.nanmedian(AGN_zscores_MIR_unc)
+    three_sigma_zscores_MIR = median_AGN_zscores_MIR + 3*median_AGN_zscores_MIR_unc
 
     CLAGN_UV_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
     CLAGN_UV_all = CLAGN_UV_all.dropna(subset=[CLAGN_UV_all.columns[1]])
@@ -1570,6 +1588,9 @@ if UVNFD_MIRZ == 1:
     CLAGN_UV_NFD = CLAGN_UV_all.iloc[:, 1].tolist()
 
     CLAGN_MIR_all = pd.read_csv(f'CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_MIR_all = CLAGN_MIR_all[np.where(CLAGN_MIR_all.iloc[:, 27].notna(),  
+        CLAGN_MIR_all.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_MIR_all.iloc[:, 30] >= bright_dim_W2)]
     CLAGN_MIR_names = CLAGN_MIR_all.iloc[:, 0]
     CLAGN_zscores_MIR = CLAGN_MIR_all.iloc[:, 17]
 
@@ -1581,18 +1602,147 @@ if UVNFD_MIRZ == 1:
     CLAGN_UV_NFD = [CLAGN_name_to_UV_NFD[name] for name in matched_names]
     CLAGN_zscores_MIR = [CLAGN_name_to_zs_MIR[name] for name in matched_names]
 
+    a = 0
+    for my_NFD in AGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            a += 1
+    
+    b = 0
+    for my_zs in AGN_zscores_MIR:
+        if my_zs > three_sigma_zscores_MIR:
+            b += 1
+    
+    c = 0
+    for my_NFD in CLAGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            c += 1
+    
+    d = 0
+    for my_zs in CLAGN_zscores_MIR:
+        if my_zs > three_sigma_zscores_MIR:
+            d += 1
+
+    print(f'Number of CLAGN analysed = {len(CLAGN_UV_NFD)}')
+    print(f'Number of AGN analysed = {len(AGN_UV_NFD)}')
+
 
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_zscores_MIR, AGN_UV_NFD, color='blue', label='Non-CL AGN')
     plt.scatter(CLAGN_zscores_MIR, CLAGN_UV_NFD, s=100, color='red',  label='CLAGN')
+    plt.axvline(x=three_sigma_zscores_MIR, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2)
     # plt.xlim(0, 1.05*max(CLAGN_zscores_MIR+AGN_zscores_MIR))
     # plt.ylim(0, 1.05*max(CLAGN_UV_NFD+AGN_UV_NFD))
     plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("Z-Score", fontsize = 26) #max/min z-score
     plt.ylabel("UV NFD", fontsize = 26)
-    plt.title(f"Comparing Z-Score & UV NFD", fontsize = 28)
+    plt.title(f"Comparing UV NFD and MIR Z-Score - Bright Objects", fontsize = 28)
+    ax = plt.gca()
+    plt.text(0.32, 0.92, f'{c/len(CLAGN_UV_NFD)*100:.0f}% CLAGN,', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.32, 0.86, f'{a/len(AGN_UV_NFD)*100:.0f}% Non-CL AGN', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.32, 0.80, f'> UV NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.52, f'{d/len(CLAGN_zscores_MIR)*100:.0f}% CLAGN,', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.46, f'{b/len(AGN_zscores_MIR)*100:.0f}% Non-CL AGN', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.40, f'> Z-Score Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+
+
+if UVNFD_MIRNFD == 1:
+    AGN_UV_all = pd.read_csv(f'AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv')
+    AGN_UV_all = AGN_UV_all.dropna(subset=[AGN_UV_all.columns[1]])
+    AGN_UV_names = AGN_UV_all.iloc[:, 0]
+    AGN_UV_NFD = AGN_UV_all.iloc[:, 1].tolist()
+    AGN_UV_NFD_unc = AGN_UV_all.iloc[:, 2].tolist()
+
+    AGN_MIR_all = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_MIR_all = AGN_MIR_all[np.where(AGN_MIR_all.iloc[:, 27].notna(),  
+        AGN_MIR_all.iloc[:, 27] >= bright_dim_W1,  
+        AGN_MIR_all.iloc[:, 30] >= bright_dim_W2)]
+    AGN_MIR_names = AGN_MIR_all.iloc[:, 0]
+    AGN_NFD_MIR = AGN_MIR_all.iloc[:, 19]
+    AGN_NFD_MIR_unc = AGN_MIR_all.iloc[:, 20]
+
+    AGN_name_to_UV_NFD = dict(zip(AGN_UV_names, zip(AGN_UV_NFD, AGN_UV_NFD_unc)))
+    AGN_name_to_NFD_MIR = dict(zip(AGN_MIR_names, zip(AGN_NFD_MIR, AGN_NFD_MIR_unc)))
+    all_names = set(AGN_UV_names).union(set(AGN_MIR_names))
+    matched_names = set(AGN_name_to_UV_NFD.keys()).intersection(set(AGN_name_to_NFD_MIR.keys()))
+
+    AGN_UV_NFD, AGN_UV_NFD_unc = zip(*[AGN_name_to_UV_NFD[name] for name in matched_names])
+    AGN_NFD_MIR, AGN_NFD_MIR_unc = zip(*[AGN_name_to_NFD_MIR[name] for name in matched_names])
+
+    median_AGN_UV_NFD = np.nanmedian(AGN_UV_NFD)
+    median_AGN_UV_NFD_unc = np.nanmedian(AGN_UV_NFD_unc)
+    three_sigma_UV_NFD = median_AGN_UV_NFD + 3*median_AGN_UV_NFD_unc
+
+    median_AGN_NFD_MIR = np.nanmedian(AGN_NFD_MIR)
+    median_AGN_NFD_MIR_unc = np.nanmedian(AGN_NFD_MIR_unc)
+    three_sigma_NFD_MIR = median_AGN_NFD_MIR + 3*median_AGN_NFD_MIR_unc
+
+    CLAGN_UV_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
+    CLAGN_UV_all = CLAGN_UV_all.dropna(subset=[CLAGN_UV_all.columns[1]])
+    CLAGN_UV_names = CLAGN_UV_all.iloc[:, 0]
+    CLAGN_UV_NFD = CLAGN_UV_all.iloc[:, 1].tolist()
+
+    CLAGN_MIR_all = pd.read_csv(f'CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_MIR_all = CLAGN_MIR_all[np.where(CLAGN_MIR_all.iloc[:, 27].notna(),  
+        CLAGN_MIR_all.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_MIR_all.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_MIR_names = CLAGN_MIR_all.iloc[:, 0]
+    CLAGN_NFD_MIR = CLAGN_MIR_all.iloc[:, 19]
+
+    CLAGN_name_to_UV_NFD = dict(zip(CLAGN_UV_names, CLAGN_UV_NFD))
+    CLAGN_name_to_NFD_MIR = dict(zip(CLAGN_MIR_names, CLAGN_NFD_MIR))
+    all_names = set(CLAGN_UV_names).union(set(CLAGN_MIR_names))
+
+    matched_names = set(CLAGN_name_to_UV_NFD.keys()).intersection(set(CLAGN_name_to_NFD_MIR.keys()))
+    CLAGN_UV_NFD = [CLAGN_name_to_UV_NFD[name] for name in matched_names]
+    CLAGN_NFD_MIR = [CLAGN_name_to_NFD_MIR[name] for name in matched_names]
+
+    a = 0
+    for my_NFD in AGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            a += 1
+    
+    b = 0
+    for my_zs in AGN_NFD_MIR:
+        if my_zs > three_sigma_NFD_MIR:
+            b += 1
+    
+    c = 0
+    for my_NFD in CLAGN_UV_NFD:
+        if my_NFD > three_sigma_UV_NFD:
+            c += 1
+    
+    d = 0
+    for my_zs in CLAGN_NFD_MIR:
+        if my_zs > three_sigma_NFD_MIR:
+            d += 1
+
+    print(f'Number of CLAGN analysed = {len(CLAGN_UV_NFD)}')
+    print(f'Number of AGN analysed = {len(AGN_UV_NFD)}')
+
+
+    plt.figure(figsize=(12, 7))
+    plt.scatter(AGN_NFD_MIR, AGN_UV_NFD, color='blue', label='Non-CL AGN')
+    plt.scatter(CLAGN_NFD_MIR, CLAGN_UV_NFD, s=100, color='red',  label='CLAGN')
+    plt.axvline(x=three_sigma_NFD_MIR, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2)
+    # plt.xlim(0, 1.05*max(CLAGN_NFD_MIR+AGN_NFD_MIR))
+    # plt.ylim(0, 1.05*max(CLAGN_UV_NFD+AGN_UV_NFD))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel("MIR NFD", fontsize = 26) #max/min NFD
+    plt.ylabel("UV NFD", fontsize = 26)
+    plt.title(f"Comparing UV NFD and MIR NFD", fontsize = 28)
+    ax = plt.gca()
+    plt.text(0.02, 0.88, f'{c/len(CLAGN_UV_NFD)*100:.0f}% CLAGN,', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.02, 0.82, f'{a/len(AGN_UV_NFD)*100:.0f}% Non-CL AGN', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.02, 0.76, f'> UV NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.52, f'{d/len(CLAGN_NFD_MIR)*100:.0f}% CLAGN,', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.46, f'{b/len(AGN_NFD_MIR)*100:.0f}% Non-CL AGN', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.text(0.65, 0.40, f'> MIR NFD Threshold', fontsize = 25, horizontalalignment='left', verticalalignment='center', transform = ax.transAxes)
+    plt.legend(loc = 'best', fontsize=25)
     plt.tight_layout()
     plt.show()
 
@@ -1643,11 +1793,12 @@ if UV_NFD_dist == 1:
     ax1.hist(AGN_UV_NFD, bins=AGN_bins_UV_NFD, color='blue', edgecolor='black', label='Non-CL AGN Control Sample')
     ax1.axvline(median_AGN_UV_NFD, linewidth=2, linestyle='-', color='black', label=f'Non-CL AGN Median UV NFD = {median_AGN_UV_NFD:.2f}')
     ax1.axvline(three_sigma_UV_NFD, linewidth=2, linestyle='--', color='black', label=f'{a/len(AGN_UV_NFD)*100:.1f}% > Threshold = {three_sigma_UV_NFD:.2f}')
-    ax1.plot((x_start, x_end), (height-2, height-2), linewidth=2, color='peru')
+    ax1.plot((median_AGN_UV_NFD, x_end), (height-2, height-2), linewidth=2, color='peru')
     ax1.text(x_end+0.1, height-2, f'3X Median UV NFD Uncertainty = {3*median_AGN_UV_NFD_unc:.2f}', 
             ha='left', va='center', fontsize=16, color='peru')
     ax1.set_ylabel('Non-CL AGN Frequency', color='black', fontsize=18)
-    ax1.tick_params(axis='y', labelsize=18)  # Change font size for y-axis ticks
+    ax1.text(2.25, 75, f'Non-CL AGN', ha='left', va='center', fontsize=16, color='blue')
+    ax1.tick_params(axis='both', labelsize=18, length=8, width=2)
     ax1.legend(loc='upper right', fontsize=16)
 
     ax2.hist(CLAGN_UV_NFD, bins=CLAGN_bins_UV_NFD, color='red', edgecolor='black', label='Guo CLAGN Sample')
@@ -1655,8 +1806,8 @@ if UV_NFD_dist == 1:
     ax2.axvline(three_sigma_UV_NFD, linewidth=2, linestyle='--', color='black', label=f'{b/len(CLAGN_UV_NFD)*100:.1f}% > Threshold = {three_sigma_UV_NFD:.2f}')
     ax2.set_xlabel('UV NFD', fontsize=18)
     ax2.set_ylabel('CLAGN Frequency', color='black', fontsize=18)
-    ax2.tick_params(axis='x', labelsize=18)
-    ax2.tick_params(axis='y', labelsize=18)
+    ax2.text(2.25, 6, f'CLAGN', ha='left', va='center', fontsize=16, color='red')
+    ax2.tick_params(axis='both', labelsize=18, length=8, width=2)
     ax2.legend(loc='upper right', fontsize=16)
 
     plt.suptitle('UV NFD Distribution - Non-CL AGN Control vs Guo CLAGN', fontsize=22)
