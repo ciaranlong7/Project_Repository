@@ -9,15 +9,15 @@ AGN_sample_one = pd.read_csv("AGN_Sample.csv")
 AGN_sample_two = pd.read_csv("AGN_Sample_two.csv")
 AGN_sample_three = pd.read_csv("AGN_Sample_three.csv")
 
-CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv")
-AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
-AGN_sample_two_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv')
-AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
+# CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv")
+# AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# AGN_sample_two_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv')
+# AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv')
 # column_indexes = {col: idx for idx, col in enumerate(AGN_sample_three_df.columns)}
 # print(column_indexes)
 
 # #UV data
-# CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change.csv")
+# CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_UV_all.csv")
 # AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_Sample_1.csv')
 # AGN_sample_two_df = pd.read_csv('AGN_Quantifying_Change_Sample_2.csv')
 # AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_Sample_3.csv')
@@ -68,7 +68,7 @@ AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Samp
 # AGN_sample_three_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
 
 # #UV:
-# CLAGN_df.to_csv('CLAGN_Quantifying_Change.csv', index=False)
+# CLAGN_df.to_csv('CLAGN_Quantifying_Change_UV_all.csv', index=False)
 # AGN_sample_one_df.to_csv('AGN_Quantifying_Change_Sample_1.csv', index=False)
 # AGN_sample_two_df.to_csv('AGN_Quantifying_Change_Sample_2.csv', index=False)
 # AGN_sample_three_df.to_csv('AGN_Quantifying_Change_Sample_3.csv', index=False)
@@ -113,31 +113,31 @@ print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
 # plt.show()
 
 
-# #Sample 1
-combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts
-flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts))/50  # 50 bins
-bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
-fig, ax1 = plt.subplots(figsize=(12,7))
-ax2 = ax1.twinx()  # Create second y-axis
-# Plot Non-CL AGN histogram (left y-axis)
-hist1 = ax1.hist(AGN_sample_one_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN Control')
-# Plot CLAGN histogram (right y-axis)
-hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='Guo CLAGN')
-line1 = ax1.axvline(AGN_redshifts_one_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}')
-line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle=':', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
-ax1.tick_params(axis='both', labelsize=22, length=8, width=2)
-ax2.tick_params(axis='both', labelsize=22, length=8, width=2)
-ax1.set_xlabel('Redshift', fontsize = 22)
-ax1.set_ylabel('Non-CL AGN Frequency', color='blue', fontsize = 22)
-ax2.set_ylabel('CLAGN Frequency', color='red', fontsize = 22)
-# Combine legend handles from both axes
-handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
-labels = ['Non-CL AGN Control', 'Guo CLAGN', f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
-# Add a single legend
-ax1.legend(handles, labels, loc='upper right', fontsize = 21)
-plt.title('Redshift Distribution - Guo CLAGN & Non-CL AGN Control', fontsize=24)
-plt.tight_layout()
-plt.show()
+# # #Sample 1
+# combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts
+# flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts))/50  # 50 bins
+# bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
+# fig, ax1 = plt.subplots(figsize=(12,7))
+# ax2 = ax1.twinx()  # Create second y-axis
+# # Plot Non-CL AGN histogram (left y-axis)
+# hist1 = ax1.hist(AGN_sample_one_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN Control')
+# # Plot CLAGN histogram (right y-axis)
+# hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='Guo CLAGN')
+# line1 = ax1.axvline(AGN_redshifts_one_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}')
+# line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle=':', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
+# ax1.tick_params(axis='both', labelsize=22, length=8, width=2)
+# ax2.tick_params(axis='both', labelsize=22, length=8, width=2)
+# ax1.set_xlabel('Redshift', fontsize = 22)
+# ax1.set_ylabel('Non-CL AGN Frequency', color='blue', fontsize = 22)
+# ax2.set_ylabel('CLAGN Frequency', color='red', fontsize = 22)
+# # Combine legend handles from both axes
+# handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
+# labels = ['Non-CL AGN Control', 'Guo CLAGN', f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
+# # Add a single legend
+# ax1.legend(handles, labels, loc='upper right', fontsize = 21)
+# plt.title('Redshift Distribution - Guo CLAGN & Non-CL AGN Control', fontsize=24)
+# plt.tight_layout()
+# plt.show()
 
 
 # #Sample 2

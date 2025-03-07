@@ -185,6 +185,11 @@ if optical_analysis == 1:
                         sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
                         sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
                         print('SDSS file is in downloads - will proceed as normal')
+
+                        data = hdul[2].data  # Extract binary table data
+                        zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+                        if zwarning !=0:
+                            print(f"SDSS ZWARNING Flag: {zwarning}")
                         return sdss_lamb, sdss_flux, sdss_flux_unc
                 except FileNotFoundError as e:
                     print('No SDSS file already downloaded.')
@@ -200,6 +205,11 @@ if optical_analysis == 1:
                 sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
                 sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
                 sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+
+                data = hdul[2].data  # Extract binary table data
+                zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+                if zwarning !=0:
+                    print(f"SDSS ZWARNING Flag: {zwarning}")
                 return sdss_lamb, sdss_flux, sdss_flux_unc
         else:
             downloaded_SDSS_spec = downloaded_SDSS_spec[0]
@@ -214,12 +224,17 @@ if optical_analysis == 1:
             if SDSS_mjd - mjd_value > 2:
                 print(f"MJD from file header: {mjd_value}")
                 print(f"MJD from my csv: {SDSS_mjd}")
+
+            data = hdul[2].data  # Extract binary table data
+            zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+            if zwarning !=0:
+                print(f"SDSS ZWARNING Flag: {zwarning}")
             return sdss_lamb, sdss_flux, sdss_flux_unc
                 
     #DESI spectrum retrieval method
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
     def get_primary_DESI_spectrum(targetid): #some objects have multiple spectra for it in DESI- the best one is the 'primary' spectrum
-        res = client.retrieve_by_specid(specid_list=[targetid], include=['specprimary', 'wavelength', 'flux', 'ivar'], dataset_list=['DESI-EDR'])
+        res = client.retrieve_by_specid(specid_list=[targetid], include=['specprimary', 'wavelength', 'flux', 'ivar', 'redshift_warning'], dataset_list=['DESI-EDR'])
 
         records = res.records
 
@@ -268,6 +283,9 @@ if optical_analysis == 1:
         desi_flux = records[primary_idx].flux
         desi_flux_ivar = records[primary_idx].ivar
         desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
+        zwarning = records[primary_idx].redshift_warning
+        if zwarning !=0:
+            print(f"DESI ZWARNING Flag: {zwarning}")
         return desi_lamb, desi_flux, desi_flux_unc
 
     sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.com/kbarbary/sfdmap/blob/master/README.md
@@ -1322,10 +1340,10 @@ else:
         "DESI mjd": DESI_mjds, #4
     }
 
-    # Convert the data into a DataFrame
-    df = pd.DataFrame(quantifying_change_data)
+    # # Convert the data into a DataFrame
+    # df = pd.DataFrame(quantifying_change_data)
 
-    if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv", index=False)
-    elif my_object == 1:
-        df.to_csv(f"CLAGN_Quantifying_Change_UV_all.csv", index=False)
+    # if my_object == 0:
+    #     df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv", index=False)
+    # elif my_object == 1:
+    #     df.to_csv(f"CLAGN_Quantifying_Change_UV_all.csv", index=False)

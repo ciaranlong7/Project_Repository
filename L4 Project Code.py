@@ -25,7 +25,7 @@ c = 299792458
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-object_name = '152517.57+401357.6' #Object A - assigned to me
+# object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
 # object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
@@ -41,7 +41,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
-object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
+# object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 # object_name = '163826.34+382512.1' #Object O - chosen because not a CLAGN, but has enourmous normalised flux change
 # object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
 # object_name = '121542.99+574702.3' #Object Q - chosen because not a CLAGN, but has a large normalised flux change.
@@ -50,8 +50,6 @@ object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 # object_name = '114249.08+544709.7' #Object T - chosen because non-CLAGN and has a z score of 141
 # object_name = '131630.87+211915.1' #Object U - chosen because non-CLAGN and has a z score of 458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
-
-#Objects with unsuccessful convergence
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
 # object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
@@ -86,10 +84,15 @@ object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
 # object_name = '115715.92+285401.4' #chosen because of very large UV NFD (4.5) for a non-CL AGN
-object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
+# object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
 # object_name = '074217.52+392612.0' #chosen because non-CL AGN that varies in the MIR (z-score = 13) but not UV
 # object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
-
+# object_name = '213400.68+013828.4' #chosen because this is the CLAGN with the lowest UV NFD.
+# object_name = '152551.37+184552.0' #chosen because this is a CLAGN with a low UV NFD and low redshift
+object_name = '103818.29+332437.2' #chosen because of low UV NFD. potentially mistaken as a CLAGN.
+# object_name = '224657.70-003242.5'
+# object_name = '134554.00+084537.3'
+# object_name = '141801.50+525200.7'
 
 # turn_on_CLAGN = ['085913.72+323050.8', '095035.55+321601.0', '115210.24+520205.1', '122319.70+312737.0', 
 #                   '125610.42+260103.4', '134554.00+084537.3', '141923.44-030458.7', '142641.03+521214.3', 
@@ -107,7 +110,7 @@ object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the high
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 2
+option = 5
 
 #Selecting which plots you want. Set = 1 if you want that plot
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
@@ -116,8 +119,8 @@ MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 0 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
@@ -200,14 +203,20 @@ else:
 
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
+print(f'SDSS MJD = {SDSS_mjd}')
+
 # #Check MJD of a file
 # SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
 # SDSS_file_path = f'clagn_spectra/{SDSS_file}'
 # with fits.open(SDSS_file_path) as hdul:
-#     header = hdul[0].header
-#     print(header)
-#     mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
-#     print(f"MJD: {mjd_value}")
+    # header = hdul[0].header
+    # print(header)
+    # mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
+    # print(f"MJD: {mjd_value}")
+    # data = hdul[2].data  # Extract binary table data
+    # zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+    # print(f"ZWARNING Flag: {zwarning}")
+
 
 def get_sdss_spectra():
     #Automatically querying the SDSS database
@@ -226,6 +235,11 @@ def get_sdss_spectra():
                     sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
                     sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
                     print('SDSS file is in downloads - will proceed as normal')
+                    
+                    data = hdul[2].data  # Extract binary table data
+                    zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+                    if zwarning !=0:
+                        print(f"SDSS ZWARNING Flag: {zwarning}")
                     return sdss_lamb, sdss_flux, sdss_flux_unc
             except FileNotFoundError as e:
                 print('No SDSS file already downloaded.')
@@ -241,6 +255,10 @@ def get_sdss_spectra():
             sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
             sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
             sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+            data = hdul[2].data  # Extract binary table data
+            zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+            if zwarning !=0:
+                print(f"ZWARNING Flag: {zwarning}")
             return sdss_lamb, sdss_flux, sdss_flux_unc
     else:
         downloaded_SDSS_spec = downloaded_SDSS_spec[0]
@@ -250,12 +268,16 @@ def get_sdss_spectra():
         sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
         sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
         sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+        data = hdul[2].data  # Extract binary table data
+        zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+        if zwarning !=0:
+            print(f"SDSS ZWARNING Flag: {zwarning}")
         return sdss_lamb, sdss_flux, sdss_flux_unc
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
 def get_primary_spectrum(specid): #some objects have multiple spectra for it in DESI- the best one is the 'primary' spectrum
     
-    res = client.retrieve_by_specid(specid_list=[specid], include=['specprimary', 'wavelength', 'flux', 'ivar'], dataset_list=['DESI-EDR'])
+    res = client.retrieve_by_specid(specid_list=[specid], include=['specprimary', 'wavelength', 'flux', 'ivar', 'redshift_warning'], dataset_list=['DESI-EDR'])
 
     records = res.records
 
@@ -304,6 +326,9 @@ def get_primary_spectrum(specid): #some objects have multiple spectra for it in 
     desi_flux = records[primary_idx].flux
     desi_flux_ivar = records[primary_idx].ivar
     desi_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in desi_flux_ivar])
+    zwarning = records[primary_idx].redshift_warning
+    if zwarning !=0:
+        print(f"DESI ZWARNING Flag: {zwarning}")
     return desi_lamb, desi_flux, desi_flux_unc
 
 if option == 1:
@@ -372,6 +397,9 @@ if object_name in Guo_table4.iloc[:, 0].values:
     redshift = object_row.iloc[0, 3]
     SDSS_z = redshift
     DESI_z = redshift
+
+# SDSS_z = 0.45
+# DESI_z = SDSS_z
 
 sdss_lamb = (sdss_lamb/(1+SDSS_z))
 desi_lamb = (desi_lamb/(1+DESI_z))
@@ -873,8 +901,8 @@ if option >= 1 and option <= 4:
     W2_data = zip(W2_averages_flux, W2_av_mjd_date, W2_av_uncs_flux)
     W1_data = list(W1_data)
     W2_data = list(W2_data)
-    W1_data = remove_outliers_epochs(W1_data)
-    W2_data = remove_outliers_epochs(W2_data)
+    # W1_data = remove_outliers_epochs(W1_data)
+    # W2_data = remove_outliers_epochs(W2_data)
     W1_averages_flux = [tup[0] for tup in W1_data]
     W1_av_uncs_flux = [tup[2] for tup in W1_data]
     W2_averages_flux = [tup[0] for tup in W2_data]
@@ -1034,10 +1062,10 @@ if option >= 1 and option <= 4:
         # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
-        plt.ylim(1.55, 7.05)
+        # plt.ylim(1.55, 7.05)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-        # plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
-        plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
+        plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
+        # plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()
@@ -1157,14 +1185,14 @@ if SDSS_DESI_comb == 1:
         plt.axvline(H_alpha, linewidth=2, color='darkred', label = u'H\u03B1')
     if SDSS_min <= H_beta <= SDSS_max or DESI_min <= H_beta <= DESI_max:
         plt.axvline(H_beta, linewidth=2, color='salmon', label = u'H\u03B2')
-    if SDSS_min <= Mg2 <= SDSS_max or DESI_min <= Mg2 <= DESI_max:
-        plt.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
-    if SDSS_min <= C3_ <= SDSS_max or DESI_min <= C3_ <= DESI_max:
-        plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
+    # if SDSS_min <= Mg2 <= SDSS_max or DESI_min <= Mg2 <= DESI_max:
+    #     plt.axvline(Mg2, linewidth=2, color='goldenrod', label = 'Mg II')
+    # if SDSS_min <= C3_ <= SDSS_max or DESI_min <= C3_ <= DESI_max:
+    #     plt.axvline(C3_, linewidth=2, color='indigo', label = 'C III]')
     if SDSS_min <= C4 <= SDSS_max or DESI_min <= C4 <= DESI_max:
         plt.axvline(C4, linewidth=2, color='violet', label = 'C IV')
-    if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
-        plt.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
+    # if SDSS_min <= _O3_ <= SDSS_max or DESI_min <= _O3_ <= DESI_max:
+    #     plt.axvline(_O3_, linewidth=2, linestyle='--', color='darkgrey', label = '[O III]')
     if SDSS_min <= Ly_alpha <= SDSS_max or DESI_min <= Ly_alpha <= DESI_max:
         plt.axvline(Ly_alpha, linewidth=2, color='darkviolet', label = u'Ly\u03B1')
     if SDSS_min <= Ly_beta <= SDSS_max or DESI_min <= Ly_beta <= DESI_max:
@@ -1173,8 +1201,8 @@ if SDSS_DESI_comb == 1:
     plt.xlabel('Wavelength / Å', fontsize = 26)
     plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
-    plt.title(f'SDSS & DESI Spectra ({DESI_mjd-SDSS_mjd:.0f} Days Apart)', fontsize = 28)
-    # plt.title(f'SDSS & DESI Spectra ({object_name})', fontsize = 28)
+    # plt.title(f'SDSS & DESI Spectra ({DESI_mjd-SDSS_mjd:.0f} Days Apart)', fontsize = 28)
+    plt.title(f'SDSS & DESI Spectra ({object_name})', fontsize = 28)
     plt.legend(loc = 'best', fontsize = 25)
     plt.tight_layout()
     plt.show()
