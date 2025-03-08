@@ -140,26 +140,42 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 # ##Checking if any Guo CLAGN are in sample
 # Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
-# clean_sample = pd.read_csv('clean_parent_sample.csv')
+# clean_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 
 # object_names = [object_name for object_name in Guo_table4.iloc[:, 0] if pd.notna(object_name)]
 
+# #Below is a list of CLAGN candidate names.
+# object_names = [
+#     '091452.90+323347.1', '102012.84+324737.2', '102104.98+440355.5', '111634.91+540138.8',
+#     '111938.02+513315.5', '112634.33+511554.5', '120332.06+563100.3', '123557.86+582122.9',
+#     '124446.47+591510.8', '124931.53+364816.4', '125646.90+233854.8', '140337.55+043126.2',
+#     '141735.11+043954.6', '141841.39+333245.8', '142118.41+505945.2', '143421.56+044137.2',
+#     '143528.95+134705.7', '144813.63+080734.2', '150232.97+062337.6', '150754.87+274718.7',
+#     '151859.62+061840.5', '152425.40+232814.7', '153644.03+330721.1', '153920.83+020857.2',
+#     '153952.21+334930.8', '154025.23+211445.6', '155732.71+402546.3', '160129.75+401959.5',
+#     '160451.29+553223.4', '160712.23+151432.0', '160808.47+093715.5', '161235.23+053606.8',
+#     '161812.85+294416.6', '163959.17+511930.9', '164621.95+393623.8', '165919.33+304347.0',
+#     '170407.13+404747.1', '170624.94+423435.1', '172541.38+322937.8', '205407.92+005400.9',
+#     '212216.44-014959.8', '212338.71+004107.0', '213430.72-003906.7', '221932.80+251850.4'
+# ]
+
+# AGN_sample = pd.read_csv("AGN_Sample.csv")
+# print(f'Objects in cleaned sample before CLAGN removed = {len(clean_sample)}')
 # no_CLAGN = clean_sample[~clean_sample.iloc[:, 3].isin(object_names)]
 # print(f'Objects in cleaned sample after CLAGN removed = {len(no_CLAGN)}')
-
 # no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
 
 
 # ## Now constructing the sample of 280 AGN:
 # guo_CLAGN = pd.read_csv('Guo23_table4_clagn.csv')
+# guo_CLAGN = guo_CLAGN.dropna(subset=[guo_CLAGN.columns[0]]) #removing the 8 CLAGN with 2 CL lines
 # CLAGN_names = [object_name for object_name in guo_CLAGN.iloc[:, 0] if pd.notna(object_name)]
 # parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
 # no_duplicates_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 
 # AGN_Sample = []
-# for CLAGN_name in CLAGN_names:
-#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
-#     CLAGN_z = CLAGN_data.iloc[0, 2]
+# for _, CLAGN_row in guo_CLAGN.iterrows():
+#     CLAGN_z = CLAGN_row.iloc[3]
 #     # Calculates the difference between the every single parent z & this CLAGN's z
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z) #Creates a new 'difference' row in parent_sample df
     
@@ -173,13 +189,12 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample.append(parent_row)
 # output_df = pd.DataFrame(AGN_Sample)
-# output_df.to_csv('AGN_Sample_new.csv', index=False)
+# output_df.to_csv('AGN_Sample.csv', index=False)
 
 # AGN_Sample_two = []
 # #The 280 AGN in the first AGN_sample have already been removed
-# for CLAGN_name in CLAGN_names:
-#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
-#     CLAGN_z = CLAGN_data.iloc[0, 2]
+# for _, CLAGN_row in guo_CLAGN.iterrows():
+#     CLAGN_z = CLAGN_row.iloc[3]
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z)
 #     closest_rows = parent_sample.nsmallest(5, 'difference')
 #     parent_sample = parent_sample.drop(closest_rows.index)
@@ -187,13 +202,12 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample_two.append(parent_row)
 # output_df_two = pd.DataFrame(AGN_Sample_two)
-# output_df_two.to_csv('AGN_Sample_two_new.csv', index=False)
+# output_df_two.to_csv('AGN_Sample_two.csv', index=False)
 
 # AGN_Sample_three = []
 # #The 560 AGN in the first & second AGN_sample have already been removed
-# for CLAGN_name in CLAGN_names:
-#     CLAGN_data = no_duplicates_sample[no_duplicates_sample.iloc[:, 3] == CLAGN_name]
-#     CLAGN_z = CLAGN_data.iloc[0, 2]
+# for _, CLAGN_row in guo_CLAGN.iterrows():
+#     CLAGN_z = CLAGN_row.iloc[3]
 #     parent_sample['difference'] = np.abs(parent_sample.iloc[:, 9] - CLAGN_z)
 #     closest_rows = parent_sample.nsmallest(5, 'difference')
 #     parent_sample = parent_sample.drop(closest_rows.index)
@@ -201,7 +215,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 #     for _, parent_row in closest_rows.iterrows():
 #         AGN_Sample_three.append(parent_row)
 # output_df_three = pd.DataFrame(AGN_Sample_three)
-# output_df_three.to_csv('AGN_Sample_three_new.csv', index=False)
+# output_df_three.to_csv('AGN_Sample_three.csv', index=False)
 
 
 # #Final clean check
@@ -242,45 +256,81 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 # no_CLAGN.to_csv('clean_parent_sample_no_CLAGN.csv', index=False)
 
 
-# AGN_old_sample = pd.read_csv("AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv")
 # AGN_sample = pd.read_csv("AGN_Sample.csv")
-
-# names_old = AGN_old_sample.iloc[:, 0]
 # names = AGN_sample.iloc[:, 3]
+# AGN_sample_two = pd.read_csv("AGN_Sample_two.csv")
+# names_two = AGN_sample.iloc[:, 3]
+# AGN_sample_three = pd.read_csv("AGN_Sample_three.csv")
+# names_three = AGN_sample.iloc[:, 3]
 
-# difference = set(names) - set(names_old)
+# AGN_new_sample = output_df
+# names_new = AGN_new_sample.iloc[:, 3]
+# AGN_new_sample_two = output_df_two
+# names_new_two = AGN_new_sample_two.iloc[:, 3]
+# AGN_new_sample_three = output_df_three
+# names_new_three = AGN_new_sample_three.iloc[:, 3]
 
+# difference = set(names) - set(names_new)
+# print(len(difference))
+# difference_new = set(names_new) - set(names)
+# print(len(difference))
 # if difference:
-#     print(f"The names in AGN_sample that are not in AGN_old_sample are: {difference}")
+#     print(f"The names in AGN_sample that are not in AGN_new_sample are: {difference}")
+# if difference_new:
+#     print(f"The names in AGN_new_sample that are not in AGN_sample are: {difference_new}")
+
+# difference_two = set(names_two) - set(names_new_two)
+# print(len(difference_two))
+# difference_new_two = set(names_new_two) - set(names_two)
+# print(len(difference_new_two))
+# if difference_two:
+#     print(f"The names in AGN_sample_two that are not in AGN_new_sample_two are: {difference_two}")
+# if difference_new_two:
+#     print(f"The names in AGN_new_sample_two that are not in AGN_sample_two are: {difference_new_two}")
+
+# difference_three = set(names_three) - set(names_new_three)
+# print(len(difference_three))
+# difference_new_three = set(names_new_three) - set(names_three)
+# print(len(difference_new_three))
+# if difference_three:
+#     print(f"The names in AGN_sample_three that are not in AGN_new_sample_three are: {difference_three}")
+# if difference_new_three:
+#     print(f"The names in AGN_new_sample_three that are not in AGN_sample_three are: {difference_new_three}")
+
+# sample_difference_two = set(names_new) - set(names_new_two)
+# print(len(sample_difference_two))
+# sample_difference_three = set(names_new) - set(names_new_three)
+# print(len(sample_difference_three))
+# sample_difference = set(names_new_two) - set(names_new_three)
+# print(len(sample_difference))
 
 
 ##Uncomment below - then check the AGN figures 'extra' folder for any spurious epochs. after that I have my complete AGN sample 1 results
 ##Run quantifying change code - then I will have all up to date versions of my plots
 
 # # # ## Combining the three data frames created
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
-# print(len(quantifying_change))
-# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all_extra.csv')
+quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
+print(len(quantifying_change))
+# quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1_extra.csv')
 # print(len(quantifying_change_extra))
-# # # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
-# # # print(len(quantifying_change_extra_v2))
-# # # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
-# # # print(len(quantifying_change_extra_v3))
-# # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
-# # # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2], ignore_index=True)
+# # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
+# # print(len(quantifying_change_extra_v2))
+# # quantifying_change_extra_v3 = pd.read_csv('AGN_Quantifying_Change_sample_1_extra_v3.csv')
+# # print(len(quantifying_change_extra_v3))
+# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2, quantifying_change_extra_v3], ignore_index=True)
+# # combined_df = pd.concat([quantifying_change, quantifying_change_extra, quantifying_change_extra_v2], ignore_index=True)
 # combined_df = pd.concat([quantifying_change, quantifying_change_extra], ignore_index=True)
-# combined_df.to_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv', index=False)
+# combined_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
 
 ## Don't uncomment below this
 
 # # # Names_to_redo = pd.read_excel('Names_to_redo.xlsx')
 # # # Names_to_redo = set(Names_to_redo.iloc[:, 0].tolist())
-# Names_to_redo = ['122133.20+330701.3', '162935.00+315820.2', '170956.01+573225.5']
-# # # # # # for name in Names_to_redo:
-# # # # # #     print(name)
-# quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')
+# print(len(quantifying_change))
 # quantifying_change_filtered = quantifying_change[~quantifying_change.iloc[:, 0].isin(Names_to_redo)]
-# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv', index=False)
+# print(len(quantifying_change_filtered))
+# quantifying_change_filtered.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv', index=False)
 
 
 # quantifying_change = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1.csv')

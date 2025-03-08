@@ -8,7 +8,7 @@ from astroquery.ipac.irsa import Irsa
 
 c = 299792458
 
-my_object = 1 #0 = AGN. 1 = CLAGN
+my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0 #set to 1 to save figures
 
@@ -120,6 +120,7 @@ else:
     print('select a valid min SNR - 10, 3 or 2.')
 
 g = 0
+object_names = ['161940.30+540827.7']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -797,6 +798,6 @@ df = pd.DataFrame(quantifying_change_data)
 
 #max unc:
 if my_object == 0:
-    df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv", index=False)
+    df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_extra.csv", index=False)
 elif my_object == 1:
     df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv", index=False)

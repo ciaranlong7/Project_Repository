@@ -19,7 +19,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 c = 299792458
 
-my_object = 1 #0 = AGN. 1 = CLAGN
+my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0
 optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
@@ -293,6 +293,7 @@ if optical_analysis == 1:
     ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
 
 g = 0
+object_names = ['161940.30+540827.7']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -1340,10 +1341,10 @@ else:
         "DESI mjd": DESI_mjds, #4
     }
 
-    # # Convert the data into a DataFrame
-    # df = pd.DataFrame(quantifying_change_data)
+    # Convert the data into a DataFrame
+    df = pd.DataFrame(quantifying_change_data)
 
-    # if my_object == 0:
-    #     df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv", index=False)
-    # elif my_object == 1:
-    #     df.to_csv(f"CLAGN_Quantifying_Change_UV_all.csv", index=False)
+    if my_object == 0:
+        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all_extra.csv", index=False)
+    elif my_object == 1:
+        df.to_csv(f"CLAGN_Quantifying_Change_UV_all.csv", index=False)
