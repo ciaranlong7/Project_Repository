@@ -309,8 +309,8 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 ##Run quantifying change code - then I will have all up to date versions of my plots
 
 # # # ## Combining the three data frames created
-quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
-print(len(quantifying_change))
+# quantifying_change = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV_all.csv')
+# print(len(quantifying_change))
 # quantifying_change_extra = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_1_extra.csv')
 # print(len(quantifying_change_extra))
 # # quantifying_change_extra_v2 = pd.read_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2_Extra_v2.csv')
