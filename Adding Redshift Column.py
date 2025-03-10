@@ -112,82 +112,89 @@ print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
 # plt.legend(loc='upper right')
 # plt.show()
 
+print(AGN_sample_one_redshifts[20])
 
-# # #Sample 1
-# combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts
-# flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts))/50  # 50 bins
-# bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
-# fig, ax1 = plt.subplots(figsize=(12,7))
-# ax2 = ax1.twinx()  # Create second y-axis
-# # Plot Non-CL AGN histogram (left y-axis)
-# hist1 = ax1.hist(AGN_sample_one_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN Control')
-# # Plot CLAGN histogram (right y-axis)
-# hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='Guo CLAGN')
-# line1 = ax1.axvline(AGN_redshifts_one_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}')
-# line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle=':', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
-# ax1.tick_params(axis='both', labelsize=22, length=8, width=2)
-# ax2.tick_params(axis='both', labelsize=22, length=8, width=2)
-# ax1.set_xlabel('Redshift', fontsize = 22)
-# ax1.set_ylabel('Non-CL AGN Frequency', color='blue', fontsize = 22)
-# ax2.set_ylabel('CLAGN Frequency', color='red', fontsize = 22)
-# # Combine legend handles from both axes
-# handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
-# labels = ['Non-CL AGN Control', 'Guo CLAGN', f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
-# # Add a single legend
-# ax1.legend(handles, labels, loc='upper right', fontsize = 21)
-# plt.title('Redshift Distribution - Guo CLAGN & Non-CL AGN Control', fontsize=24)
-# plt.tight_layout()
-# plt.show()
-
-
-# #Sample 2
-# combined_redshifts = CLAGN_redshifts_original+AGN_sample_two_redshifts
-# flux_diff_binsize = (max(combined_redshifts)-min(combined_redshifts))/50 #50 bins
-# bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
-# fig, ax1 = plt.subplots(figsize=(12,7))
-# ax2 = ax1.twinx()  # Create second y-axis
-# # Plot Non-CL AGN histogram (left y-axis)
-# hist1 = ax1.hist(AGN_sample_two_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN')
-# # Plot CLAGN histogram (right y-axis)
-# hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
-# line1 = ax1.axvline(AGN_redshifts_two_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_two_median:.2f}')
-# line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle='--', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
-# ax1.set_xlabel('Redshift')
-# ax1.set_ylabel('Non-CL AGN Frequency', color='black')
-# ax2.set_ylabel('CLAGN Frequency', color='black')
-# # Combine legend handles from both axes
-# handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
-# labels = ['Non-CL AGN', 'CLAGN', f'Non-CL AGN Median = {AGN_redshifts_two_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
-# # Add a single legend
-# ax1.legend(handles, labels, loc='upper right')
-# plt.title('Redshift Distribution - CLAGN & Non-CL AGN Sample 2')
-# plt.tight_layout()
-# plt.show()
+# #Sample 1
+combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts
+flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts))/50  # 50 bins
+print(flux_diff_binsize)
+bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
+bins_test = bins_flux_diff
+fig, ax1 = plt.subplots(figsize=(12,7))
+ax2 = ax1.twinx()  # Create second y-axis
+#option 1
+# hist1 = ax1.hist(AGN_sample_one_redshifts, bins=bins_flux_diff, color='blue', alpha=1, edgecolor='black', 
+#                  label='Non-CL AGN Control', histtype='stepfilled')
+# hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='black', alpha=1, edgecolor='black', 
+#                  label='Guo CLAGN', histtype='step', hatch='//')
+#option 2
+hist1 = ax1.hist(AGN_sample_one_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN Control')
+hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='Guo CLAGN')
+line1 = ax1.axvline(AGN_redshifts_one_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}')
+line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle=':', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
+ax1.tick_params(axis='both', labelsize=22, length=8, width=2)
+ax2.tick_params(axis='both', labelsize=22, length=8, width=2)
+ax1.set_xlabel('Redshift', fontsize = 22)
+ax1.set_ylabel('Non-CL AGN Frequency', color='blue', fontsize = 22)
+ax2.set_ylabel('CLAGN Frequency', color='red', fontsize = 22)
+# Combine legend handles from both axes
+handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
+labels = ['Non-CL AGN Control', 'Guo CLAGN', f'Non-CL AGN Median = {AGN_redshifts_one_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
+# Add a single legend
+ax1.legend(handles, labels, loc='upper right', fontsize = 21)
+plt.title('Redshift Distribution - Guo CLAGN & Non-CL AGN Control', fontsize=24)
+plt.tight_layout()
+plt.show()
 
 
-# #Sample 3
-# combined_redshifts = CLAGN_redshifts_original+AGN_sample_three_redshifts
-# flux_diff_binsize = (max(combined_redshifts)-min(combined_redshifts))/50 #50 bins
-# bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
-# fig, ax1 = plt.subplots(figsize=(12,7))
-# ax2 = ax1.twinx()  # Create second y-axis
-# # Plot Non-CL AGN histogram (left y-axis)
-# hist1 = ax1.hist(AGN_sample_three_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN')
-# # Plot CLAGN histogram (right y-axis)
-# hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
-# line1 = ax1.axvline(AGN_redshifts_three_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_three_median:.2f}')
-# line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle='--', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
-# ax1.set_xlabel('Redshift')
-# ax1.set_ylabel('Non-CL AGN Frequency', color='black')
-# ax2.set_ylabel('CLAGN Frequency', color='black')
-# # Combine legend handles from both axes
-# handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
-# labels = ['Non-CL AGN', 'CLAGN', f'Non-CL AGN Median = {AGN_redshifts_three_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
-# # Add a single legend
-# ax1.legend(handles, labels, loc='upper right')
-# plt.title('Redshift Distribution - CLAGN & Non-CL AGN Sample 3')
-# plt.tight_layout()
-# plt.show()
+#Sample 2
+combined_redshifts = CLAGN_redshifts_original+AGN_sample_two_redshifts
+flux_diff_binsize = (max(combined_redshifts)-min(combined_redshifts))/50 #50 bins
+bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
+fig, ax1 = plt.subplots(figsize=(12,7))
+ax2 = ax1.twinx()  # Create second y-axis
+# Plot Non-CL AGN histogram (left y-axis)
+hist1 = ax1.hist(AGN_sample_two_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN')
+# Plot CLAGN histogram (right y-axis)
+hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
+line1 = ax1.axvline(AGN_redshifts_two_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_two_median:.2f}')
+line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle='--', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
+ax1.set_xlabel('Redshift')
+ax1.set_ylabel('Non-CL AGN Frequency', color='black')
+ax2.set_ylabel('CLAGN Frequency', color='black')
+# Combine legend handles from both axes
+handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
+labels = ['Non-CL AGN', 'CLAGN', f'Non-CL AGN Median = {AGN_redshifts_two_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
+# Add a single legend
+ax1.legend(handles, labels, loc='upper right')
+plt.title('Redshift Distribution - CLAGN & Non-CL AGN Sample 2')
+plt.tight_layout()
+plt.show()
+
+
+#Sample 3
+combined_redshifts = CLAGN_redshifts_original+AGN_sample_three_redshifts
+flux_diff_binsize = (max(combined_redshifts)-min(combined_redshifts))/50 #50 bins
+bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
+fig, ax1 = plt.subplots(figsize=(12,7))
+ax2 = ax1.twinx()  # Create second y-axis
+# Plot Non-CL AGN histogram (left y-axis)
+hist1 = ax1.hist(AGN_sample_three_redshifts, bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label='Non-CL AGN')
+# Plot CLAGN histogram (right y-axis)
+hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
+line1 = ax1.axvline(AGN_redshifts_three_median, linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_redshifts_three_median:.2f}')
+line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle='--', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
+ax1.set_xlabel('Redshift')
+ax1.set_ylabel('Non-CL AGN Frequency', color='black')
+ax2.set_ylabel('CLAGN Frequency', color='black')
+# Combine legend handles from both axes
+handles = [hist1[2][0], hist2[2][0], line1, line2]  # Use `hist[2][0]` to get a patch handle
+labels = ['Non-CL AGN', 'CLAGN', f'Non-CL AGN Median = {AGN_redshifts_three_median:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']
+# Add a single legend
+ax1.legend(handles, labels, loc='upper right')
+plt.title('Redshift Distribution - CLAGN & Non-CL AGN Sample 3')
+plt.tight_layout()
+plt.show()
 
 
 #Combining the plots to the same axes
@@ -207,26 +214,22 @@ print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
 
 
 combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts + AGN_sample_two_redshifts + AGN_sample_three_redshifts
-flux_diff_binsize = (max(combined_redshifts) - min(combined_redshifts)) / 50  # 50 bins
-bins_flux_diff = np.arange(min(combined_redshifts), max(combined_redshifts) + flux_diff_binsize, flux_diff_binsize)
+redshift_binsize = (max(combined_redshifts) - min(combined_redshifts)) / 50  # 50 bins
+bins_redshift = np.arange(min(combined_redshifts), max(combined_redshifts) + redshift_binsize, redshift_binsize)
 fig, axes = plt.subplots(3, 1, figsize=(12, 7), sharex=True)  # 3 rows, 1 column
 AGN_samples = [AGN_sample_one_redshifts, AGN_sample_two_redshifts, AGN_sample_three_redshifts]
 AGN_medians = [AGN_redshifts_one_median, AGN_redshifts_two_median, AGN_redshifts_three_median]
 sample_labels = ["Sample 1", "Sample 2", "Sample 3"]
-max_y_value = 0
-for AGN_data in AGN_samples:
-    counts, _ = np.histogram(AGN_data, bins=bins_flux_diff)
-    max_y_value = max(max_y_value, max(counts))  # Update max y-value
 
+#this plot looks better with the same bins as the sample 1 plot on its own
 for i, ax in enumerate(axes):
     ax2 = ax.twinx()  # Create second y-axis
-    hist1 = ax.hist(AGN_samples[i], bins=bins_flux_diff, color='blue', edgecolor='black', alpha=0.6, label=f'Non-CL AGN: {sample_labels[i]}')
-    hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_flux_diff, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
+    hist1 = ax.hist(AGN_samples[i], bins=bins_redshift, color='blue', edgecolor='black', alpha=0.6, label=f'Non-CL AGN: {sample_labels[i]}')
+    hist2 = ax2.hist(CLAGN_redshifts_original, bins=bins_redshift, color='red', edgecolor='black', alpha=0.6, label='CLAGN')
     line1 = ax.axvline(AGN_medians[i], linewidth=2, linestyle='--', color='darkblue', label=f'Non-CL AGN Median = {AGN_medians[i]:.2f}')
     line2 = ax2.axvline(CLAGN_redshifts_median, linewidth=2, linestyle='--', color='darkred', label=f'CLAGN Median = {CLAGN_redshifts_median:.2f}')
     ax.set_ylabel(f'Non-CL AGN Frequency', color='blue')
     ax2.set_ylabel(f'CLAGN Frequency', color='red')
-    ax.set_ylim(0, max_y_value*1.05)
     # Add a legend for each subplot
     handles = [hist1[2][0], hist2[2][0], line1, line2]
     labels = [f'Non-CL AGN: {sample_labels[i]}', 'CLAGN', f'Non-CL AGN Median = {AGN_medians[i]:.2f}', f'CLAGN Median = {CLAGN_redshifts_median:.2f}']

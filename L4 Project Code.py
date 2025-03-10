@@ -22,10 +22,19 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 
 c = 299792458
 
+# Irsa.ROW_LIMIT = 5  # Limit the number of results to reduce query size
+# coord = SkyCoord("10h00m00s +02d00m00s", frame='icrs')
+
+# try:
+#     result = Irsa.query_region(coordinates=coord, catalog="allwise_p3as_mep", spatial="Cone", radius=2 * u.arcsec)
+#     print(result)
+# except Exception as e:
+#     print("Error:", e)
+
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-# object_name = '152517.57+401357.6' #Object A - assigned to me
+object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
 # object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
@@ -89,7 +98,7 @@ c = 299792458
 # object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
 # object_name = '213400.68+013828.4' #chosen because this is the CLAGN with the lowest UV NFD.
 # object_name = '152551.37+184552.0' #chosen because this is a CLAGN with a low UV NFD and low redshift
-object_name = '103818.29+332437.2' #chosen because of low UV NFD. potentially mistaken as a CLAGN.
+# object_name = '103818.29+332437.2' #chosen because of low UV NFD. potentially mistaken as a CLAGN.
 # object_name = '224657.70-003242.5'
 # object_name = '134554.00+084537.3'
 # object_name = '141801.50+525200.7'
@@ -110,16 +119,16 @@ object_name = '103818.29+332437.2' #chosen because of low UV NFD. potentially mi
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 5
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 0 #plot with just MIR data on it
+MIR_only = 1 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
-SDSS_DESI_comb = 1 #SDSS & DESI spectra on same plot
+SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
 main_plot = 0 #main plot, with MIR, SDSS & DESI
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
@@ -683,36 +692,43 @@ if option >= 1 and option <= 4:
     WISE_data = WISE_data.sort_values(by=WISE_data.columns[10]) #sort in ascending mjd
     NEO_data = NEO_data.sort_values(by=NEO_data.columns[42]) #sort in ascending mjd
 
-    WISE_data.iloc[:, 6] = pd.to_numeric(WISE_data.iloc[:, 6], errors='coerce')
-    filtered_WISE_rows = WISE_data[(WISE_data.iloc[:, 6] == 0) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41] == '0000') & (WISE_data.iloc[:, 40] > 5)]
-    #filtering for cc_flags == 0 in all bands, qi_fact == 1, no moon masking flag & separation of the WISE instrument to the SAA > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
+    filtered_WISE_rows_W1 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[0] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[0] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+    filtered_WISE_rows_W2 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[1] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[1] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+    # filtered_WISE_rows = WISE_data[(WISE_data.iloc[:, 6] == 0) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41] == '0000') & (WISE_data.iloc[:, 40] > 5)]
+    #filtering for cc_flags (idx6) == 0, cat (idx7) == 1, qi_fact (idx39) == 1, no moon masking flag (idx41) & separation of the WISE instrument to the SAA (idx40) > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
     filtered_NEO_rows = NEO_data[(NEO_data.iloc[:, 37] == 1) & (NEO_data.iloc[:, 38] > 5) & (NEO_data.iloc[:, 35] == 0)] #checking for rows where qi_fact == 1 & separation of the WISE instrument to the South Atlantic Anomaly is > 5 degrees & sso_flg ==0
     #"Single-exposure source database entries having qual_frame=0 should be used with extreme caution" - from the column descriptions.
     # The qi_fact column seems to be equal to qual_frame/10.
 
     #Filtering for good SNR, no cc_flags & no moon scattering flux
     if MIR_SNR == 'C':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX', 'CA', 'CB', 'CC', 'CU', 'CX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB', 'AC', 'BC', 'CC', 'UC', 'XC'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
+        # filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX', 'CA', 'CB', 'CC', 'CU', 'CX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
+        # filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB', 'AC', 'BC', 'CC', 'UC', 'XC'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
     elif MIR_SNR == 'B':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
+        # filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
+        # filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
     elif MIR_SNR == 'A':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[0] == 'A') & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[1] == 'A') & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
+        # filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
+        # filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
 
-    mjd_date_W1 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
-    W1_mag = filtered_WISE_rows.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
+    mjd_date_W1 = filtered_WISE_rows_W1.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
+    W1_mag = filtered_WISE_rows_W1.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
     W1_flux = [flux(mag, W1_k, W1_wl) for mag in W1_mag]
-    W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
+    W1_unc = filtered_WISE_rows_W1.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
     W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
     W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
     W1_all = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
-    mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
-    W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
+    mjd_date_W2 = filtered_WISE_rows_W2.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
+    W2_mag = filtered_WISE_rows_W2.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
     W2_flux = [flux(mag, W2_k, W2_wl) for mag in W2_mag]
-    W2_unc = filtered_WISE_rows.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
+    W2_unc = filtered_WISE_rows_W2.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
     W2_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W2_unc, W2_flux)]
     W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]

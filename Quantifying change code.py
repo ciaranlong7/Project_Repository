@@ -24,9 +24,9 @@ def luminosity(flux, redshift):
 
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
-brightness = 0 #0: dim only objects. 1: bright only objects. 2: all objects
+brightness = 1 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 0 #0=UV. 1=MIR only
+MIR_UV = 1 #0=UV. 1=MIR only
 turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
 emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
 
@@ -43,7 +43,7 @@ main_MIR_line_split = 0 # main zscore and NFD plot, for CLAGN only and split by 
 main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
-main_MIR_Zs_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
+main_MIR_Zs_hist_bright_dim = 0 #histogram of distribution of z-score for both bright and dim AGN and non-CL AGN
 UV_MIRZ = 0 #plot of UV NFD vs interpolated z score
 UV_MIR_NFD = 0 #plot of UV NFD vs interpolated NFD
 UVZ_MIRZ = 0 #plot of interpolated z-score vs max/min z-score
@@ -61,7 +61,8 @@ W1_vs_W2_Zs_direction = 0 #plot of W1 Zs vs W2 Zs with direction
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
 Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
-Modified_Dev_vs_epoch_measurements_plot = 0 #plot of modified deviations for epochs vs epoch measurements
+Modified_Dev_vs_epoch_measurements_plot = 1 #plot of modified deviations for epochs vs epoch measurements
+Mean_unc_vs_epoch_meas_plot = 1 #plot of whether a mean unc was used vs number of epoch measurements.
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
@@ -70,8 +71,8 @@ redshift_dist_bright_dim = 0 #hist of redshift distribution for objects analysed
 redshift_dist_CLAGN_vs_non_CLAGN = 0 #hist of redshift distribution for objects analysed
 luminosity_dist_CLAGN = 0 #hist of luminosity distribution for CLAGN analysed
 luminosity_dist_AGN = 0 #hist of luminosity distribution for Non-CL AGN analysed
-UV_NFD_redshift = 1 #plot of UV NFD vs redshift
-UV_NFD_BEL = 1 #plot of UV NFD vs BEL
+UV_NFD_redshift = 0 #plot of UV NFD vs redshift
+UV_NFD_BEL = 0 #plot of UV NFD vs BEL
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -177,10 +178,10 @@ if MIR_UV == 0:
     CLAGN_W2_median_dev_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
     CLAGN_W1_epochs = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
     CLAGN_W2_epochs = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-    # CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    # CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
-    # CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
-    # CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
+    CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 43].tolist()
+    CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -322,10 +323,10 @@ if MIR_UV == 0:
     AGN_W2_median_dev_flux = AGN_quantifying_change_data.iloc[:, 38].tolist()
     AGN_W1_epochs = AGN_quantifying_change_data.iloc[:, 29].tolist()
     AGN_W2_epochs = AGN_quantifying_change_data.iloc[:, 30].tolist()
-    # AGN_W1_min_mjd = AGN_quantifying_change_data.iloc[:, 41].tolist()
-    # AGN_W1_max_mjd = AGN_quantifying_change_data.iloc[:, 42].tolist()
-    # AGN_W2_min_mjd = AGN_quantifying_change_data.iloc[:, 43].tolist()
-    # AGN_W2_max_mjd = AGN_quantifying_change_data.iloc[:, 44].tolist()
+    AGN_W1_min_mjd = AGN_quantifying_change_data.iloc[:, 41].tolist()
+    AGN_W1_max_mjd = AGN_quantifying_change_data.iloc[:, 42].tolist()
+    AGN_W2_min_mjd = AGN_quantifying_change_data.iloc[:, 43].tolist()
+    AGN_W2_max_mjd = AGN_quantifying_change_data.iloc[:, 44].tolist()
 
 #Quantifying change data - Just MIR
 elif MIR_UV == 1:
@@ -1345,7 +1346,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
     median_z_score_AGN_unc_dim = np.nanmedian(AGN_z_score_unc_dim)
     three_sigma_z_score_dim = median_z_score_AGN_dim + 3*median_z_score_AGN_unc_dim
 
-    AGN_z_score_binsize = (max(AGN_z_score_all) - min(AGN_z_score_all))/50
+    AGN_z_score_binsize = (max(AGN_z_score_all) - min(AGN_z_score_all))/25
     AGN_bins_z_score = np.arange(min(AGN_z_score_all), max(AGN_z_score_all) + AGN_z_score_binsize, AGN_z_score_binsize)
     x_start_threshold_bright = median_z_score_AGN_bright - 3*median_z_score_AGN_unc_bright
     x_end_threshold_bright = median_z_score_AGN_bright + 3*median_z_score_AGN_unc_bright
@@ -1380,10 +1381,10 @@ if main_MIR_Zs_hist_bright_dim == 1:
     ax1.plot((x_start_threshold_dim, x_end_threshold_dim), (height_dim+0.25, height_dim+0.25), linewidth=2, color='darkorange')
     ax1.text(x_end_threshold_bright+1, height_bright+1.25, f'3X Median Bright Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_bright:.2f}', 
             ha='left', va='center', fontsize=14, color='sienna')
-    ax1.text(x_end_threshold_bright+1, height_dim-3, f'3X Median Dim Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}', 
+    ax1.text(x_end_threshold_bright+1, height_bright+8.25, f'3X Median Dim Non-CL AGN Z-Score Uncertainty = {3*median_z_score_AGN_unc_dim:.2f}', 
             ha='left', va='center', fontsize=14, color='darkorange')
     ax1.text(60, 5, f'AD test - non-CL AGN p-value < {ad_result_AGN.pvalue:.0e}', fontsize=16, ha='right', va='center')
-    ax1.text(20, 40, f'Non-CL AGN', ha='left', va='center', fontsize=20, color='blue')
+    ax1.text(20, 47, f'Non-CL AGN', ha='left', va='center', fontsize=20, color='blue')
     ax1.tick_params(axis='both', labelsize=18, length=8, width=2)
     ax1.set_ylabel('Non-CL AGN Frequency', color='black', fontsize=18)
     ax1.legend(loc='upper right')
@@ -1404,7 +1405,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
     median_z_score_CLAGN_bright = np.nanmedian(CLAGN_z_score_bright)
     median_z_score_CLAGN_dim = np.nanmedian(CLAGN_z_score_dim)
 
-    CLAGN_z_score_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/20
+    CLAGN_z_score_binsize = (max(CLAGN_z_score_all) - min(CLAGN_z_score_all))/25
     CLAGN_bins_z_score = np.arange(min(CLAGN_z_score_all), max(CLAGN_z_score_all) + 2*CLAGN_z_score_binsize, CLAGN_z_score_binsize)
     
     c = 0
@@ -1421,6 +1422,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
     # ks_statistic_dim, p_value_dim = ks_2samp(AGN_z_score_dim, CLAGN_z_score_dim)
     # ad_result_bright = anderson_ksamp([AGN_z_score_bright, CLAGN_z_score_bright])
     # ad_result_dim = anderson_ksamp([AGN_z_score_dim, CLAGN_z_score_dim])
+    # print(f'AD test p-value, dim distributions = {ad_result_dim.pvalue}')
 
     ad_result_CLAGN = anderson_ksamp([CLAGN_z_score_bright, CLAGN_z_score_dim])
 
@@ -1438,7 +1440,7 @@ if main_MIR_Zs_hist_bright_dim == 1:
     # ax2.text(max_line+1, 10, f'AD test - bright objects. P-value = {ad_result_bright.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     # ax2.text(max_line+1, 8, f'AD test - dim objects. P-value = {ad_result_dim.pvalue:.2f}', fontsize = 10, ha='left', va='center')
     ax2.text(60, 3, f'AD test - CLAGN p-value < {ad_result_CLAGN.pvalue:.0e}', fontsize = 16, ha='right', va='center')
-    ax2.text(20, 17, f'CLAGN', ha='left', va='center', fontsize=20, color='red')
+    ax2.text(20, 13, f'CLAGN', ha='left', va='center', fontsize=20, color='red')
     ax2.set_xlabel('Z-Score', fontsize=18)
     ax2.set_ylabel('CLAGN Frequency', color='black', fontsize=18)
     ax2.tick_params(axis='both', labelsize=18, length=8, width=2)
@@ -2565,11 +2567,14 @@ if Modified_Dev_vs_epoch_measurements_plot == 1:
     CLAGN_mod_dev_W2 = pd.read_csv('CLAGN_modified_deviation_epoch_measurements_W2.csv')
     CLAGN_mod_dev_list_W2 = CLAGN_mod_dev_W2.iloc[:, 0].tolist()
     CLAGN_epoch_measurements_list_W2 = CLAGN_mod_dev_W2.iloc[:, 1].tolist()
-    threshold_CLAGN = 11
+    threshold_CLAGN = 10
     CLAGN_mod_dev_list_elim_W1 = [x for x in CLAGN_mod_dev_list_W1 if abs(x) > threshold_CLAGN]
     CLAGN_mod_dev_list_elim_W2 = [x for x in CLAGN_mod_dev_list_W2 if abs(x) > threshold_CLAGN]
     percentage_elim_CLAGN_W1 = len(CLAGN_mod_dev_list_elim_W1)/(len(CLAGN_mod_dev_list_elim_W1)+len(CLAGN_mod_dev_list_W1))*100
     percentage_elim_CLAGN_W2 = len(CLAGN_mod_dev_list_elim_W2)/(len(CLAGN_mod_dev_list_elim_W2)+len(CLAGN_mod_dev_list_W2))*100
+
+    print(f'Median number of CLAGN W1 measurements in an epoch = {np.nanmean(CLAGN_epoch_measurements_list_W1)}')
+    print(f'Median number of CLAGN W2 measurements in an epoch = {np.nanmean(CLAGN_epoch_measurements_list_W2)}')
 
     fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
     # First Histogram (W1)
@@ -2599,11 +2604,14 @@ if Modified_Dev_vs_epoch_measurements_plot == 1:
     AGN_mod_dev_W2 = pd.read_csv('AGN_modified_deviation_epoch_measurements_sample_1_W2.csv')
     AGN_mod_dev_list_W2 = AGN_mod_dev_W2.iloc[:, 0].tolist()
     AGN_epoch_measurements_list_W2 = AGN_mod_dev_W2.iloc[:, 1].tolist()
-    threshold_AGN = 11
+    threshold_AGN = 10
     AGN_mod_dev_list_elim_W1 = [x for x in AGN_mod_dev_list_W1 if abs(x) > threshold_AGN]
     AGN_mod_dev_list_elim_W2 = [x for x in AGN_mod_dev_list_W2 if abs(x) > threshold_AGN]
     percentage_elim_AGN_W1 = len(AGN_mod_dev_list_elim_W1)/(len(AGN_mod_dev_list_elim_W1)+len(AGN_mod_dev_list_W1))*100
     percentage_elim_AGN_W2 = len(AGN_mod_dev_list_elim_W2)/(len(AGN_mod_dev_list_elim_W2)+len(AGN_mod_dev_list_W2))*100
+
+    print(f'Median number of AGN W1 measurements in an epoch = {np.nanmean(AGN_epoch_measurements_list_W1)}')
+    print(f'Median number of AGN W2 measurements in an epoch = {np.nanmean(AGN_epoch_measurements_list_W2)}')
 
     fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
     # First Histogram (W1)
@@ -2626,6 +2634,42 @@ if Modified_Dev_vs_epoch_measurements_plot == 1:
     plt.show()
 
 
+if Mean_unc_vs_epoch_meas_plot == 1:
+    CLAGN_data_W1 = pd.read_csv(f'CLAGN_mean_unc_vs_epoch_meas_W1.csv')
+    CLAGN_mean_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 31] > 0.5]
+    CLAGN_epoch_measurements_mean_unc_W1 = CLAGN_data_W1.iloc[:, 1].tolist()
+    CLAGN_median_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 31] < 0.5]
+    CLAGN_epoch_measurements_median_unc_W1 = CLAGN_data_W1.iloc[:, 1].tolist()
+
+    CLAGN_data_W2 = pd.read_csv(f'CLAGN_mean_unc_vs_epoch_meas_W2.csv')
+    CLAGN_mean_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 31] > 0.5]
+    CLAGN_epoch_measurements_mean_unc_W2 = CLAGN_data_W2.iloc[:, 1].tolist()
+    CLAGN_median_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 31] < 0.5]
+    CLAGN_epoch_measurements_median_unc_W2 = CLAGN_data_W2.iloc[:, 1].tolist()
+
+    print(f'CLAGN - Mean number of measurements in an epoch when mean unc used (W1) = {np.nanmean(CLAGN_epoch_measurements_mean_unc_W1)}')
+    print(f'CLAGN - Mean number of measurements in an epoch when median unc used (W1) = {np.nanmean(CLAGN_epoch_measurements_median_unc_W1)}')
+    print(f'CLAGN - Mean number of measurements in an epoch when mean unc used (W2) = {np.nanmean(CLAGN_epoch_measurements_mean_unc_W2)}')
+    print(f'CLAGN - Mean number of measurements in an epoch when median unc used (W2) = {np.nanmean(CLAGN_epoch_measurements_median_unc_W2)}')
+
+    AGN_data_W1 = pd.read_csv(f'AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W1.csv')
+    AGN_mean_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 31] > 0.5]
+    AGN_epoch_measurements_mean_unc_W1 = AGN_data_W1.iloc[:, 1].tolist()
+    AGN_median_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 31] < 0.5]
+    AGN_epoch_measurements_median_unc_W1 = AGN_data_W1.iloc[:, 1].tolist()
+
+    AGN_data_W2 = pd.read_csv(f'AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W2.csv')
+    AGN_mean_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 31] > 0.5]
+    AGN_epoch_measurements_mean_unc_W2 = AGN_data_W2.iloc[:, 1].tolist()
+    AGN_median_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 31] < 0.5]
+    AGN_epoch_measurements_median_unc_W2 = AGN_data_W2.iloc[:, 1].tolist()
+
+    print(f'AGN - Mean number of measurements in an epoch when mean unc used (W1) = {np.nanmean(AGN_epoch_measurements_mean_unc_W1)}')
+    print(f'AGN - Mean number of measurements in an epoch when median unc used (W1) = {np.nanmean(AGN_epoch_measurements_median_unc_W1)}')
+    print(f'AGN - Mean number of measurements in an epoch when mean unc used (W2) = {np.nanmean(AGN_epoch_measurements_mean_unc_W2)}')
+    print(f'AGN - Mean number of measurements in an epoch when median unc used (W2) = {np.nanmean(AGN_epoch_measurements_median_unc_W2)}')
+
+
 # creating a 2d plot of W1 NFD vs W1 number of epochs
 if epochs_NFD_W1 == 1:
     plt.figure(figsize=(12, 7))
@@ -2633,8 +2677,7 @@ if epochs_NFD_W1 == 1:
     plt.scatter(CLAGN_W1_epochs, CLAGN_W1_NFD, color='red',  label='CLAGN')
     plt.xlim(0, 1.05*max(AGN_W1_epochs+CLAGN_W1_epochs))
     plt.ylim(0, 1.05*max(AGN_W1_NFD+CLAGN_W1_NFD))
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 Epochs", fontsize = 24)
     plt.ylabel("W1 NFD", fontsize = 24)
     plt.title("W1 NFD vs W1 Epochs", fontsize = 24)
@@ -2652,8 +2695,7 @@ if epochs_NFD_W2 == 1:
     plt.xlim(0, 1.05*max(AGN_W2_epochs+CLAGN_W2_epochs))
     max_W2 = max(CLAGN_W2_NFD+AGN_W2_NFD)
     plt.ylim(0, 1.05*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W2 Epochs", fontsize = 24)
     plt.ylabel("W2 NFD", fontsize = 24)
     plt.title("W2 NFD vs W2 Epochs", fontsize = 24)
@@ -2670,8 +2712,7 @@ if epochs_zs_W1 == 1:
     plt.scatter(CLAGN_W1_epochs, CLAGN_W1_zscore_mean, color='red',  label='CLAGN')
     plt.xlim(0, 1.05*max(AGN_W1_epochs+CLAGN_W1_epochs))
     plt.ylim(0, 1.05*max(AGN_W1_zscore_mean+CLAGN_W1_zscore_mean))
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 Epochs", fontsize = 24)
     plt.ylabel("W1 Z-Score", fontsize = 24)
     plt.title("W1 Z-Score vs W1 Epochs", fontsize = 24)
@@ -2689,8 +2730,7 @@ if epochs_zs_W2 == 1:
     plt.xlim(0, 1.05*max(AGN_W2_epochs+CLAGN_W2_epochs))
     max_W2 = max(CLAGN_W2_zscore_mean+AGN_W2_zscore_mean)
     plt.ylim(0, 1.05*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W2 Epochs", fontsize = 24)
     plt.ylabel("W2 Z-Score", fontsize = 24)
     plt.title("W2 Z-Score vs W2 Epochs", fontsize = 24)

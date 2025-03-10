@@ -23,7 +23,7 @@ my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0
 optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
-MIR_analysis = 0 #set = 1 if you wish to do optical analysis. set = 0 if not
+MIR_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -293,7 +293,6 @@ if optical_analysis == 1:
     ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
 
 g = 0
-object_names = ['161940.30+540827.7']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -347,37 +346,36 @@ for object_name in object_names:
         WISE_data = WISE_data.sort_values(by=WISE_data.columns[10]) #sort in ascending mjd
         NEO_data = NEO_data.sort_values(by=NEO_data.columns[42]) #sort in ascending mjd
 
-        WISE_data.iloc[:, 6] = pd.to_numeric(WISE_data.iloc[:, 6], errors='coerce')
-        filtered_WISE_rows = WISE_data[(WISE_data.iloc[:, 6] == 0) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41] == '0000') & (WISE_data.iloc[:, 40] > 5)]
-        #filtering for cc_flags == 0 in all bands, qi_fact == 1, no moon masking flag & separation of the WISE instrument to the SAA > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
-
+        filtered_WISE_rows_W1 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[0] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[0] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+        filtered_WISE_rows_W2 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[1] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[1] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+        #filtering for cc_flags (idx6) == 0, cat (idx7) == 1, qi_fact (idx39) == 1, no moon masking flag (idx41) & separation of the WISE instrument to the SAA (idx40) > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
         filtered_NEO_rows = NEO_data[(NEO_data.iloc[:, 37] == 1) & (NEO_data.iloc[:, 38] > 5) & (NEO_data.iloc[:, 35] == 0)] #checking for rows where qi_fact == 1 & separation of the WISE instrument to the South Atlantic Anomaly is > 5 degrees & sso_flg ==0
         #"Single-exposure source database entries having qual_frame=0 should be used with extreme caution" - from the column descriptions.
         # The qi_fact column seems to be equal to qual_frame/10.
 
         #Filtering for good SNR, no cc_flags & no moon scattering flux
         if MIR_SNR == 'C':
-            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX', 'CA', 'CB', 'CC', 'CU', 'CX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB', 'AC', 'BC', 'CC', 'UC', 'XC'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
         elif MIR_SNR == 'B':
-            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
         elif MIR_SNR == 'A':
-            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+            filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[0] == 'A') & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+            filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[1] == 'A') & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
 
-        mjd_date_W1 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
-        W1_mag = filtered_WISE_rows.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
+        mjd_date_W1 = filtered_WISE_rows_W1.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
+        W1_mag = filtered_WISE_rows_W1.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
         W1_flux = [flux(mag, W1_k, W1_wl) for mag in W1_mag]
-        W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
+        W1_unc = filtered_WISE_rows_W1.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
         W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
         W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
         W1_all = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
-        mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
-        W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
+        mjd_date_W2 = filtered_WISE_rows_W2.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
+        W2_mag = filtered_WISE_rows_W2.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
         W2_flux = [flux(mag, W2_k, W2_wl) for mag in W2_mag]
-        W2_unc = filtered_WISE_rows.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
+        W2_unc = filtered_WISE_rows_W2.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
         W2_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W2_unc, W2_flux)]
         W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
         W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
@@ -1162,8 +1160,8 @@ for object_name in object_names:
 
                 W1_first_mjd.append(np.nan)
                 W1_last_mjd.append(np.nan)
-                W1_min_mjd(np.nan)
-                W1_max_mjd(np.nan)
+                W1_min_mjd.append(np.nan)
+                W1_max_mjd.append(np.nan)
 
                 W2_largest = sorted(W2_averages_flux, reverse=True)[0]
                 W2_largest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_largest)]
@@ -1345,6 +1343,6 @@ else:
     df = pd.DataFrame(quantifying_change_data)
 
     if my_object == 0:
-        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all_extra.csv", index=False)
+        df.to_csv(f"AGN_Quantifying_Change_Sample_{my_sample}_UV_all.csv", index=False)
     elif my_object == 1:
         df.to_csv(f"CLAGN_Quantifying_Change_UV_all.csv", index=False)

@@ -11,6 +11,7 @@ c = 299792458
 my_object = 0 #0 = AGN. 1 = CLAGN
 my_sample = 1 #set which AGN sample you want
 save_figures = 0 #set to 1 to save figures
+mod_dev = 1
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -57,9 +58,22 @@ def remove_outliers_epochs(data, threshold=10):
 
     return [entry for entry, is_outlier in zip(data, mask) if not is_outlier]
 
-object_names_list = [] #Keeps track of objects that met MIR data requirements to take z score & absolute change
+if mod_dev == 1:
+    def MAD_function(data):
+        flux_values = np.array([entry[0] for entry in data])  # Extract flux values
+        median = np.median(flux_values)
+        mad = median_abs_deviation(flux_values)
 
-# z_score & absolute change lists
+        if mad == 0:
+            print("MAD is zero, no outliers can be detected.")
+            return []
+
+        modified_deviation = (flux_values - median) / mad
+
+        return modified_deviation.tolist()
+
+object_names_list = []
+
 W1_max = []
 W1_max_unc = []
 W1_min = []
@@ -78,6 +92,8 @@ W1_epochs = []
 W1_mean_uncs = []
 W1_min_mjd = []
 W1_max_mjd = []
+W1_mean_unc_tracker = []
+W1_epoch_measurements = []
 
 W1_mod_dev_list = []
 W1_epoch_measurements_list = []
@@ -100,6 +116,8 @@ W2_epochs = []
 W2_mean_uncs = []
 W2_min_mjd = []
 W2_max_mjd = []
+W2_mean_unc_tracker = []
+W2_epoch_measurements = []
 
 W2_mod_dev_list = []
 W2_epoch_measurements_list = []
@@ -120,7 +138,6 @@ else:
     print('select a valid min SNR - 10, 3 or 2.')
 
 g = 0
-object_names = ['161940.30+540827.7']
 for object_name in object_names:
     print(g)
     print(object_name)
@@ -146,37 +163,36 @@ for object_name in object_names:
     WISE_data = WISE_data.sort_values(by=WISE_data.columns[10]) #sort in ascending mjd
     NEO_data = NEO_data.sort_values(by=NEO_data.columns[42]) #sort in ascending mjd
 
-    WISE_data.iloc[:, 6] = pd.to_numeric(WISE_data.iloc[:, 6], errors='coerce')
-    filtered_WISE_rows = WISE_data[(WISE_data.iloc[:, 6] == 0) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41] == '0000') & (WISE_data.iloc[:, 40] > 5)]
-    #filtering for cc_flags == 0 in all bands, qi_fact == 1, no moon masking flag & separation of the WISE instrument to the SAA > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
-
+    filtered_WISE_rows_W1 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[0] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[0] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+    filtered_WISE_rows_W2 = WISE_data[(WISE_data.iloc[:, 6].astype(str).str[1] == '0') & (WISE_data.iloc[:, 7] == 1) & (WISE_data.iloc[:, 39] == 1) & (WISE_data.iloc[:, 41].astype(str).str[1] == '0') &  (WISE_data.iloc[:, 40] > 5)]
+    #filtering for cc_flags (idx6) == 0, cat (idx7) == 1, qi_fact (idx39) == 1, no moon masking flag (idx41) & separation of the WISE instrument to the SAA (idx40) > 5 degrees. Unlike with Neowise, there is no individual column for cc_flags in each band
     filtered_NEO_rows = NEO_data[(NEO_data.iloc[:, 37] == 1) & (NEO_data.iloc[:, 38] > 5) & (NEO_data.iloc[:, 35] == 0)] #checking for rows where qi_fact == 1 & separation of the WISE instrument to the South Atlantic Anomaly is > 5 degrees & sso_flg ==0
     #"Single-exposure source database entries having qual_frame=0 should be used with extreme caution" - from the column descriptions.
     # The qi_fact column seems to be equal to qual_frame/10.
 
     #Filtering for good SNR, no cc_flags & no moon scattering flux
     if MIR_SNR == 'C':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX', 'CA', 'CB', 'CC', 'CU', 'CX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB', 'AC', 'BC', 'CC', 'UC', 'XC'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B', 'C'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
     elif MIR_SNR == 'B':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX', 'BA', 'BB', 'BC', 'BU', 'BX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA', 'AB', 'BB', 'CB', 'UB', 'XB'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[0].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].str[1].isin(['A', 'B'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
     elif MIR_SNR == 'A':
-        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'AB', 'AC', 'AU', 'AX'])) & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '01']))]
-        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].isin(['AA', 'BA', 'CA', 'UA', 'XA'])) & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].isin(['00', '10']))]
+        filtered_NEO_rows_W1 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[0] == 'A') & (filtered_NEO_rows.iloc[:, 44] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[0] == '0')]
+        filtered_NEO_rows_W2 = filtered_NEO_rows[(filtered_NEO_rows.iloc[:, 34].astype(str).str[1] == 'A') & (filtered_NEO_rows.iloc[:, 46] == '') & (filtered_NEO_rows.iloc[:, 39].astype(str).str[1] == '0')]
 
-    mjd_date_W1 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
-    W1_mag = filtered_WISE_rows.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
+    mjd_date_W1 = filtered_WISE_rows_W1.iloc[:, 10].tolist() + filtered_NEO_rows_W1.iloc[:, 42].tolist()
+    W1_mag = filtered_WISE_rows_W1.iloc[:, 11].tolist() + filtered_NEO_rows_W1.iloc[:, 18].tolist()
     W1_flux = [flux(mag, W1_k, W1_wl) for mag in W1_mag]
-    W1_unc = filtered_WISE_rows.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
+    W1_unc = filtered_WISE_rows_W1.iloc[:, 12].tolist() + filtered_NEO_rows_W1.iloc[:, 19].tolist()
     W1_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W1_unc, W1_flux)]
     W1_all = list(zip(W1_flux, mjd_date_W1, W1_unc))
     W1_all = [tup for tup in W1_all if not np.isnan(tup[0])] #removing instances where the mag value is NaN
 
-    mjd_date_W2 = filtered_WISE_rows.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
-    W2_mag = filtered_WISE_rows.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
+    mjd_date_W2 = filtered_WISE_rows_W2.iloc[:, 10].tolist() + filtered_NEO_rows_W2.iloc[:, 42].tolist()
+    W2_mag = filtered_WISE_rows_W2.iloc[:, 14].tolist() + filtered_NEO_rows_W2.iloc[:, 22].tolist()
     W2_flux = [flux(mag, W2_k, W2_wl) for mag in W2_mag]
-    W2_unc = filtered_WISE_rows.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
+    W2_unc = filtered_WISE_rows_W2.iloc[:, 15].tolist() + filtered_NEO_rows_W2.iloc[:, 23].tolist()
     W2_unc = [((unc*np.log(10))/(2.5))*flux for unc, flux in zip(W2_unc, W2_flux)]
     W2_all = list(zip(W2_flux, mjd_date_W2, W2_unc))
     W2_all = [tup for tup in W2_all if not np.isnan(tup[0])]
@@ -191,6 +207,7 @@ for object_name in object_names:
     #2. There are 2 or more data points.
 
     # W1 data first
+    W1_mean_unc_tracker_list = []
     W1_mean_unc_counter = []
     W1_epoch_meas = []
     if len(W1_all) > 1:
@@ -214,6 +231,9 @@ for object_name in object_names:
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
                         a+=1
+                        W1_mean_unc_tracker_list.append(1)
+                    else:
+                        W1_mean_unc_tracker_list.append(0)
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
                     W1_mean_unc_counter.append(a)
                     W1_epoch_meas.append(len(W1_list))
@@ -223,9 +243,13 @@ for object_name in object_names:
                     median_unc = median_abs_deviation(W1_list)
                     if mean_unc > median_unc:
                         a+=1
+                        W1_mean_unc_tracker_list.append(1)
+                    else:
+                        W1_mean_unc_tracker_list.append(0)
                     W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
                     W1_epoch_meas.append(len(W1_list))
 
+                    W1_mean_unc_tracker_list.append(0)
                     W1_data.append( ( W1_all[i][0], W1_all[i][1], W1_all[i][2] ) )
                     W1_mean_unc_counter.append(a)
                     W1_epoch_meas.append(1)
@@ -240,6 +264,9 @@ for object_name in object_names:
                 median_unc = median_abs_deviation(W1_list)
                 if mean_unc > median_unc:
                     a+=1
+                    W1_mean_unc_tracker_list.append(1)
+                else:
+                    W1_mean_unc_tracker_list.append(0)
                 W1_data.append( ( np.median(W1_list), np.median(W1_mjds), max(mean_unc, median_unc) ) )
                 W1_epoch_meas.append(len(W1_list))
 
@@ -256,6 +283,7 @@ for object_name in object_names:
         W1_mean_unc_counter.append(np.nan)
 
     # W2 data second
+    W2_mean_unc_tracker_list = []
     W2_mean_unc_counter = []
     W2_epoch_meas = []
     if len(W2_all) > 1:
@@ -279,6 +307,9 @@ for object_name in object_names:
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
                         a+=1
+                        W2_mean_unc_tracker_list.append(1)
+                    else:
+                        W2_mean_unc_tracker_list.append(0)
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
                     W2_mean_unc_counter.append(a)
                     W2_epoch_meas.append(len(W2_list))
@@ -288,9 +319,13 @@ for object_name in object_names:
                     median_unc = median_abs_deviation(W2_list)
                     if mean_unc > median_unc:
                         a+=1
+                        W2_mean_unc_tracker_list.append(1)
+                    else:
+                        W2_mean_unc_tracker_list.append(0)
                     W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
                     W2_epoch_meas.append(len(W2_list))
 
+                    W2_mean_unc_tracker_list.append(0)
                     W2_data.append( ( W2_all[i][0], W2_all[i][1], W2_all[i][2] ) )
                     W2_mean_unc_counter.append(a)
                     W2_epoch_meas.append(1)
@@ -305,6 +340,9 @@ for object_name in object_names:
                 median_unc = median_abs_deviation(W2_list)
                 if mean_unc > median_unc:
                     a+=1
+                    W2_mean_unc_tracker_list.append(1)
+                else:
+                    W2_mean_unc_tracker_list.append(0)
                 W2_data.append( ( np.median(W2_list), np.median(W2_mjds), max(mean_unc, median_unc) ) )
                 W2_epoch_meas.append(len(W2_list))
 
@@ -320,36 +358,21 @@ for object_name in object_names:
         W2_mean_unc_counter.append(np.nan)
 
 
-# # #out of the for loop
-# W1_mod_dev_data = {
-#     "W1 modified deviation": W1_mod_dev_list, #0
-#     "W1 epoch measurements": W1_epoch_measurements_list, #1
-# }
-
-# W2_mod_dev_data = {
-#     "W2 modified deviation": W2_mod_dev_list, #0
-#     "W2 epoch measurements": W2_epoch_measurements_list, #1
-# }
-
-# # Convert the data into a DataFrame
-# df_W1 = pd.DataFrame(W1_mod_dev_data)
-# df_W2 = pd.DataFrame(W2_mod_dev_data)
-
-# if my_object == 0:
-#     df_W1.to_csv(f"AGN_modified_deviation_epoch_measurements_sample_{my_sample}_W1.csv", index=False)
-#     df_W2.to_csv(f"AGN_modified_deviation_epoch_measurements_sample_{my_sample}_W2.csv", index=False)
-# elif my_object == 1:
-#     df_W1.to_csv("CLAGN_modified_deviation_epoch_measurements_W1.csv", index=False)
-#     df_W2.to_csv("CLAGN_modified_deviation_epoch_measurements_W2.csv", index=False)
-
-
     #want a minimum of 9 (out of ~24 possible) epochs to conduct analysis on.
     if len(W1_data) > 8:
+        if mod_dev == 1:
+            W1_temp_mod_dev = MAD_function(W1_data)
+            W1_temp_epoch_meas = W1_epoch_meas
         W1_data = remove_outliers_epochs(W1_data)
         if len(W1_data) > 8:
             m = 0
             W1_first = W1_data[0][1]
             W1_last = W1_data[-1][1]
+            W1_mean_unc_tracker += W1_mean_unc_tracker_list
+            W1_epoch_measurements += W1_epoch_meas
+            if mod_dev == 1:
+                W1_mod_dev_list += W1_temp_mod_dev
+                W1_epoch_measurements_list += W1_temp_epoch_meas
         else:
             m = 1
             W1_first = np.nan
@@ -359,11 +382,19 @@ for object_name in object_names:
         W1_first = np.nan
         W1_last = np.nan
     if len(W2_data) > 8:
+        if mod_dev == 1:
+            W2_temp_mod_dev = MAD_function(W2_data)
+            W2_temp_epoch_meas = W2_epoch_meas
         W2_data = remove_outliers_epochs(W2_data)
         if len(W2_data) > 8:
             n = 0
             W2_first = W2_data[0][1]
             W2_last = W2_data[-1][1]
+            W2_mean_unc_tracker += W2_mean_unc_tracker_list
+            W2_epoch_measurements += W2_epoch_meas
+            if mod_dev == 1:
+                W2_mod_dev_list += W2_temp_mod_dev
+                W2_epoch_measurements_list += W2_temp_epoch_meas
         else:
             n = 1
             W2_first = np.nan
@@ -798,6 +829,48 @@ df = pd.DataFrame(quantifying_change_data)
 
 #max unc:
 if my_object == 0:
-    df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}_extra.csv", index=False)
+    df.to_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv", index=False)
 elif my_object == 1:
     df.to_csv("CLAGN_Quantifying_Change_just_MIR_max_uncs.csv", index=False)
+
+
+W1_epoch_meas_data = {
+    "W1 mean unc yes/no": W1_mean_unc_tracker, #0
+    "W1 epoch measurements": W1_epoch_measurements, #1
+}
+
+W2_epoch_meas_data = {
+    "W2 mean unc yes/no": W2_mean_unc_tracker, #0
+    "W2 epoch measurements": W2_epoch_measurements, #1
+}
+
+df_W1 = pd.DataFrame(W1_epoch_meas_data)
+df_W2 = pd.DataFrame(W2_epoch_meas_data)
+
+if my_object == 0:
+    df_W1.to_csv(f"AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W1.csv", index=False)
+    df_W2.to_csv(f"AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W2.csv", index=False)
+elif my_object == 1:
+    df_W1.to_csv("CLAGN_mean_unc_vs_epoch_meas_W1.csv", index=False)
+    df_W2.to_csv("CLAGN_mean_unc_vs_epoch_meas_W2.csv", index=False)
+
+if mod_dev == 1:
+    W1_mod_dev_data = {
+        "W1 Mod Dev for epoch": W1_mod_dev_list, #0
+        "W1 epoch measurements": W1_epoch_measurements, #1
+    }
+
+    W2_mod_dev_data = {
+        "W1 Mod Dev for epoch": W2_mod_dev_list, #0
+        "W2 epoch measurements": W2_epoch_measurements, #1
+    }
+
+    df_W1_mod_dev = pd.DataFrame(W1_mod_dev_data)
+    df_W2_mod_dev = pd.DataFrame(W2_mod_dev_data)
+
+    if my_object == 0:
+        df_W1_mod_dev.to_csv(f"AGN_modified_deviation_epoch_measurements_sample_{my_sample}_W1.csv", index=False)
+        df_W2_mod_dev.to_csv(f"AGN_modified_deviation_epoch_measurements_sample_{my_sample}_W2.csv", index=False)
+    elif my_object == 1:
+        df_W1_mod_dev.to_csv("CLAGN_modified_deviation_epoch_measurements_W1.csv", index=False)
+        df_W2_mod_dev.to_csv("CLAGN_modified_deviation_epoch_measurements_W2.csv", index=False)
