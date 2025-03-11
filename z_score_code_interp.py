@@ -20,7 +20,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 c = 299792458
 
 my_object = 0 #0 = AGN. 1 = CLAGN
-my_sample = 1 #set which AGN sample you want
+my_sample = 2 #set which AGN sample you want
 save_figures = 0
 optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
 MIR_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
@@ -604,8 +604,7 @@ for object_name in object_names:
             r = 1
         if save_figures == 1:
             plt.xlabel('Days since first observation', fontsize = 26)
-            plt.xticks(fontsize=26)
-            plt.yticks(fontsize=26)
+            plt.tick_params(axis='both', labelsize=26, length=8, width=2)
             plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
             plt.title(f'Flux vs Time (WISEA J{object_name})', fontsize = 28)
             plt.tight_layout()

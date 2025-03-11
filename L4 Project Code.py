@@ -47,7 +47,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '160833.97+421413.4' #Object I - chosen because not a CLAGN, but in AGN parent sample & has high normalised flux change
 # object_name = '164837.68+311652.7' #Object J - chosen because not a CLAGN, but in AGN parent sample & has high z scores
 # object_name = '085913.72+323050.8' #Chosen because can't search for SDSS spectrum automatically
-# object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
+object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
 # object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
@@ -119,7 +119,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 1
+option = 2
 
 #Selecting which plots you want. Set = 1 if you want that plot
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
@@ -129,7 +129,7 @@ MIR_only = 1 #plot with just MIR data on it
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 0 #main plot, with MIR, SDSS & DESI
+main_plot = 1 #main plot, with MIR, SDSS & DESI
 
 m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
 n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs

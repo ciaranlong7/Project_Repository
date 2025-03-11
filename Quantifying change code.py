@@ -24,9 +24,9 @@ def luminosity(flux, redshift):
 
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 my_sample = 1 #set which AGN sample you want
-brightness = 1 #0: dim only objects. 1: bright only objects. 2: all objects
+brightness = 2 #0: dim only objects. 1: bright only objects. 2: all objects
 my_redshift = 3 #0=low. 1=medium. 2=high. 3=don't filter
-MIR_UV = 1 #0=UV. 1=MIR only
+MIR_UV = 0 #0=UV. 1=MIR only
 turn_on_off = 2 #0=turn-off CLAGN. 1=turn-on CLAGN. #2=don't filter
 emission_line = 7 #0=H_alpha, 1=H_beta, 2=MG2, 3=C3_, 4=C4, 5=single emission line objects, 6=dual EL objects, 7=no filter
 
@@ -44,8 +44,8 @@ main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
 main_MIR_Zs_hist_bright_dim = 0 #histogram of distribution of z-score for both bright and dim AGN and non-CL AGN
-UV_MIRZ = 0 #plot of UV NFD vs interpolated z score
-UV_MIR_NFD = 0 #plot of UV NFD vs interpolated NFD
+UV_MIRZ = 1 #plot of UV NFD vs interpolated z score
+UV_MIR_NFD = 1 #plot of UV NFD vs interpolated NFD
 UVZ_MIRZ = 0 #plot of interpolated z-score vs max/min z-score
 UVNFD_MIRZ = 0 #plot of UV NFD vs max/min z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR max/min NFD
@@ -61,8 +61,8 @@ W1_vs_W2_Zs_direction = 0 #plot of W1 Zs vs W2 Zs with direction
 Modified_Dev_plot = 0 #plot of distribution of modified deviations
 Log_Modified_Dev_plot = 0 #same plot as Modified_Dev_plot but with a log scale
 Modified_Dev_epochs_plot = 0 #plot of distribution of modified deviations for epochs
-Modified_Dev_vs_epoch_measurements_plot = 1 #plot of modified deviations for epochs vs epoch measurements
-Mean_unc_vs_epoch_meas_plot = 1 #plot of whether a mean unc was used vs number of epoch measurements.
+Modified_Dev_vs_epoch_measurements_plot = 0 #plot of modified deviations for epochs vs epoch measurements
+Mean_unc_vs_epoch_meas_results = 0 #results of whether a mean unc was used vs number of epoch measurements.
 epochs_NFD_W1 = 0 #W1 NFD vs W1 epochs
 epochs_NFD_W2 = 0 #W2 NFD vs W2 epochs
 epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
@@ -1461,14 +1461,13 @@ if UV_MIRZ == 1:
     plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
     plt.axvline(x=three_sigma_zscore, color='black', linestyle='--', linewidth=2)
     plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
-    plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
+    plt.ylim(1.05*(min(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV)), 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
     plt.xlabel("Interpolated Z-Score", fontsize = 26)
     plt.ylabel("UV NFD", fontsize = 26)
-    plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.title("UV NFD vs Interpolated Z-Score", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     ax = plt.gca()
     plt.text(0.99, 0.25, f'{i/len(CLAGN_zscores)*100:.1f}% CLAGN > Z-Score Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
@@ -1488,14 +1487,13 @@ if UV_MIR_NFD == 1:
     plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label='Threshold')
     plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2)
     plt.xlim(0, 1.05*max(AGN_norm_flux_diff+CLAGN_norm_flux_diff))
-    plt.ylim(0, 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
+    plt.ylim(1.05*(min(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV)), 1.05*max(CLAGN_norm_flux_diff_UV+AGN_norm_flux_diff_UV))
     plt.xticks(fontsize=26)
     plt.yticks(fontsize=26)
     plt.xlabel("Interpolated NFD", fontsize = 26)
     plt.ylabel("UV NFD", fontsize = 26)
-    plt.title(f"Characterising Variability in AGN (Sample {my_sample})", fontsize = 28)
+    plt.title("UV NFD vs Interpolated MIR NFD", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     ax = plt.gca()
     plt.text(0.99, 0.25, f'{k/len(CLAGN_norm_flux_diff)*100:.1f}% CLAGN > NFD Threshold', fontsize = 25, horizontalalignment='right', verticalalignment='center', transform = ax.transAxes)
@@ -1832,13 +1830,11 @@ if zs_W1_low == 1:
     plt.axhline(y=bright_dim_W1, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W1}')
     plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
     plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
-    plt.xticks(fontsize=26)
-    plt.yticks(fontsize=26)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 Z-Score", fontsize = 26)
-    plt.ylabel("W1 Min Flux", fontsize = 26)
+    plt.ylabel("W1 Min Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$", fontsize = 26)
     plt.title("W1 Min Flux vs W1 Z-Score", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -1851,13 +1847,11 @@ if zs_W2_low == 1:
     plt.axhline(y=bright_dim_W2, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W2}')
     plt.xlim(0, 1.05*max(CLAGN_zscores+AGN_zscores))
     plt.ylim(0, 1.05*max(CLAGN_W2_low_flux+AGN_W2_low_flux))
-    plt.xticks(fontsize=26)
-    plt.yticks(fontsize=26)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W2 Z-Score", fontsize = 26)
-    plt.ylabel("W2 Min Flux", fontsize = 26)
+    plt.ylabel("W2 Min Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$", fontsize = 26)
     plt.title("W2 Min Flux vs W2 Z-Score", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -1867,17 +1861,17 @@ if NFD_W1_low == 1:
     plt.figure(figsize=(12, 7))
     plt.scatter(AGN_W1_NFD, AGN_W1_low_flux, color='blue', label='Non-CL AGN')
     plt.scatter(CLAGN_W1_NFD, CLAGN_W1_low_flux, color='red',  label='CLAGN')
-    plt.axvline(x=three_sigma_norm_flux_diff, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    if main_MIR_NFD_hist_bright_dim == 1:
+        plt.axvline(x=three_sigma_norm_flux_diff_bright, color='black', linestyle='--', linewidth=2, label = f'Bright Threshold = {three_sigma_norm_flux_diff_bright:.1f}')
+        plt.axvline(x=three_sigma_norm_flux_diff_dim, color='black', linestyle=':', linewidth=2, label = f'Dim Threshold = {three_sigma_norm_flux_diff_dim:.1f}')
     plt.axhline(y=bright_dim_W1, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W1}')
     plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
     plt.ylim(0, 1.05*max(CLAGN_W1_low_flux+AGN_W1_low_flux))
-    plt.xticks(fontsize=26)
-    plt.yticks(fontsize=26)
-    plt.xlabel("W1 NFD", fontsize = 26)
-    plt.ylabel("W1 Min Flux", fontsize = 26)
+    plt.tick_params(axis='both', labelsize=22, length=8, width=2)
+    plt.xlabel("W1 NFD", fontsize = 22)
+    plt.ylabel("W1 Min Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$", fontsize = 22)
     plt.title("W1 Min Flux vs W1 NFD", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -1889,13 +1883,11 @@ if NFD_W2_low == 1:
     plt.axhline(y=bright_dim_W2, color='black', linestyle='-', linewidth=2, label = f'Bright/Dim = {bright_dim_W2}')
     plt.xlim(0, 1.05*max(CLAGN_norm_flux_diff+AGN_norm_flux_diff))
     plt.ylim(0, 1.05*max(CLAGN_W2_low_flux+AGN_W2_low_flux))
-    plt.xticks(fontsize=26)
-    plt.yticks(fontsize=26)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W2 NFD", fontsize = 26)
-    plt.ylabel("W2 Min Flux", fontsize = 26)
+    plt.ylabel("W2 Min Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$", fontsize = 26)
     plt.title("W2 Min Flux vs W2 NFD", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -2091,8 +2083,7 @@ if W1_vs_W2_NFD == 1:
     plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
     plt.xlim(0, 1.05*max_W1)
     plt.ylim(0, 1.05*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 NFD", fontsize = 24)
     plt.ylabel("W2 NFD", fontsize = 24)
     if turn_on_off == 0:
@@ -2128,6 +2119,7 @@ if W1_vs_W2_NFD == 1:
 if W1_vs_W2_NFD_direction == 1:
     AGN_plot = 1
 
+    CLAGN_names_analysis = np.array(CLAGN_names_analysis)
     CLAGN_W1_min_mjd = np.array(CLAGN_W1_min_mjd)
     CLAGN_W1_max_mjd = np.array(CLAGN_W1_max_mjd)
     CLAGN_W1_NFD = np.array(CLAGN_W1_NFD)
@@ -2137,6 +2129,10 @@ if W1_vs_W2_NFD_direction == 1:
     # Make corresponding W1_NFD values negative
     CLAGN_W1_NFD[CLAGN_invert_indices_W1] *= -1
     CLAGN_W1_NFD = CLAGN_W1_NFD.tolist()
+    invert_list_W1 = CLAGN_names_analysis[CLAGN_invert_indices_W1]
+    not_invert_list_W1 = np.setdiff1d(CLAGN_names_analysis, invert_list_W1)
+    print(f'CLAGN with min flux AFTER max flux W1 = {invert_list_W1}')
+    print(f'CLAGN with min flux BEFORE max flux W1 = {not_invert_list_W1}')
 
     CLAGN_W2_min_mjd = np.array(CLAGN_W2_min_mjd)
     CLAGN_W2_max_mjd = np.array(CLAGN_W2_max_mjd)
@@ -2146,6 +2142,10 @@ if W1_vs_W2_NFD_direction == 1:
     # Make corresponding W2_NFD values negative
     CLAGN_W2_NFD[CLAGN_invert_indices_W2] *= -1
     CLAGN_W2_NFD = CLAGN_W2_NFD.tolist()
+    invert_list_W2 = CLAGN_names_analysis[CLAGN_invert_indices_W2]
+    not_invert_list_W2 = np.setdiff1d(CLAGN_names_analysis, invert_list_W2)
+    print(f'CLAGN with min flux AFTER max flux W2 = {invert_list_W2}')
+    print(f'CLAGN with min flux BEFORE max flux W2 = {not_invert_list_W2}')
 
     if AGN_plot == 1:
         AGN_W1_min_mjd = np.array(AGN_W1_min_mjd)
@@ -2154,7 +2154,7 @@ if W1_vs_W2_NFD_direction == 1:
         # Find indices where min_mjd > max_mjd
         AGN_invert_indices_W1 = AGN_W1_min_mjd > AGN_W1_max_mjd
         # Make corresponding W1_NFD values negative
-        AGN_W1_NFD[AGN_invert_indices_W1] *= -1
+        # AGN_W1_NFD[AGN_invert_indices_W1] *= -1
         AGN_W1_NFD = AGN_W1_NFD.tolist()
 
         AGN_W2_min_mjd = np.array(AGN_W2_min_mjd)
@@ -2163,7 +2163,7 @@ if W1_vs_W2_NFD_direction == 1:
         # Find indices where min_mjd > max_mjd
         AGN_invert_indices_W2 = AGN_W2_min_mjd > AGN_W2_max_mjd
         # Make corresponding W2_NFD values negative
-        AGN_W2_NFD[AGN_invert_indices_W2] *= -1
+        # AGN_W2_NFD[AGN_invert_indices_W2] *= -1
         AGN_W2_NFD = AGN_W2_NFD.tolist()
 
         max_W1 = np.nanmax(CLAGN_W1_NFD+AGN_W1_NFD)
@@ -2182,15 +2182,13 @@ if W1_vs_W2_NFD_direction == 1:
     CLAGN_median_W2_NFD = np.nanmedian(CLAGN_W2_NFD)
     plt.figure(figsize=(12, 7))
     if AGN_plot == 1:
-        print('Test')
-        # plt.scatter(AGN_W1_NFD, AGN_W2_NFD, color='blue',  label='Non-CL AGN')
+        plt.scatter(AGN_W1_NFD, AGN_W2_NFD, color='blue',  label='Non-CL AGN')
     plt.scatter(CLAGN_W1_NFD, CLAGN_W2_NFD, s=100, color='red',  label='CLAGN')
     plt.axvline(0, color='black', linestyle=':')
     plt.axhline(0, color='black', linestyle=':')
     plt.xlim(1.1*min_W1, 1.1*max_W1)
     plt.ylim(1.1*min_W2, 1.1*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 NFD", fontsize = 24)
     plt.ylabel("W2 NFD", fontsize = 24)
     if turn_on_off == 0:
@@ -2240,8 +2238,7 @@ if W1_vs_W2_Zs == 1:
     plt.plot(x, x, color='black', linestyle='-', label = 'y=x') #add a y=x line
     plt.xlim(0, 1.05*max_W1)
     plt.ylim(0, 1.05*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 Z-score", fontsize = 24)
     plt.ylabel("W2 Z-score", fontsize = 24)
     if turn_on_off == 0:
@@ -2300,7 +2297,7 @@ if W1_vs_W2_Zs_direction == 1:
         AGN_W1_zscore_mean = np.array(AGN_W1_zscore_mean)
         # Find indices where min_mjd > max_mjd
         invert_indices_W1 = AGN_W1_min_mjd > AGN_W1_max_mjd
-        AGN_W1_zscore_mean[invert_indices_W1] *= -1
+        # AGN_W1_zscore_mean[invert_indices_W1] *= -1
         AGN_W1_zscore_mean = AGN_W1_zscore_mean.tolist()
 
         AGN_W2_min_mjd = np.array(AGN_W2_min_mjd)
@@ -2308,7 +2305,7 @@ if W1_vs_W2_Zs_direction == 1:
         AGN_W2_zscore_mean = np.array(AGN_W2_zscore_mean)
         # Find indices where min_mjd > max_mjd
         invert_indices_W2 = AGN_W2_min_mjd > AGN_W2_max_mjd
-        AGN_W2_zscore_mean[invert_indices_W2] *= -1
+        # AGN_W2_zscore_mean[invert_indices_W2] *= -1
         AGN_W2_zscore_mean = AGN_W2_zscore_mean.tolist()
     
         max_W1 = np.nanmax(CLAGN_W1_zscore_mean+AGN_W1_zscore_mean)
@@ -2330,15 +2327,13 @@ if W1_vs_W2_Zs_direction == 1:
     x = np.linspace(0, min([max_W1, max_W2]), 100)
     plt.figure(figsize=(12, 7))
     if AGN_plot == 1:
-        print('Test')
-        # plt.scatter(AGN_W1_zscore_mean, AGN_W2_zscore_mean, color='blue',  label='Non-CL AGN')
+        plt.scatter(AGN_W1_zscore_mean, AGN_W2_zscore_mean, color='blue',  label='Non-CL AGN')
     plt.scatter(CLAGN_W1_zscore_mean, CLAGN_W2_zscore_mean, s=100, color='red',  label='CLAGN')
     plt.axhline(0, color='black', linestyle=':')
     plt.axvline(0, color='black', linestyle=':')
     plt.xlim(1.1*min_W1, 1.1*max_W1)
     plt.ylim(1.1*min_W2, 1.5*max_W2)
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("W1 Z-score", fontsize = 24)
     plt.ylabel("W2 Z-score", fontsize = 24)
     if turn_on_off == 0:
@@ -2634,40 +2629,75 @@ if Modified_Dev_vs_epoch_measurements_plot == 1:
     plt.show()
 
 
-if Mean_unc_vs_epoch_meas_plot == 1:
+if Mean_unc_vs_epoch_meas_results == 1:
     CLAGN_data_W1 = pd.read_csv(f'CLAGN_mean_unc_vs_epoch_meas_W1.csv')
-    CLAGN_mean_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 31] > 0.5]
-    CLAGN_epoch_measurements_mean_unc_W1 = CLAGN_data_W1.iloc[:, 1].tolist()
-    CLAGN_median_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 31] < 0.5]
-    CLAGN_epoch_measurements_median_unc_W1 = CLAGN_data_W1.iloc[:, 1].tolist()
+    CLAGN_epoch_measurements_list_W1 = CLAGN_data_W1.iloc[:, 1].tolist()
+    CLAGN_mean_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 0] > 0.5]
+    CLAGN_epoch_measurements_mean_unc_W1 = CLAGN_mean_unc_W1.iloc[:, 1].tolist()
+    CLAGN_median_unc_W1 = CLAGN_data_W1[CLAGN_data_W1.iloc[:, 0] < 0.5]
+    CLAGN_epoch_measurements_median_unc_W1 = CLAGN_median_unc_W1.iloc[:, 1].tolist()
+
+    a = 0
+    for measurements_in_epoch in CLAGN_epoch_measurements_list_W1:
+        if measurements_in_epoch <= 4:
+            a += 1
 
     CLAGN_data_W2 = pd.read_csv(f'CLAGN_mean_unc_vs_epoch_meas_W2.csv')
-    CLAGN_mean_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 31] > 0.5]
-    CLAGN_epoch_measurements_mean_unc_W2 = CLAGN_data_W2.iloc[:, 1].tolist()
-    CLAGN_median_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 31] < 0.5]
-    CLAGN_epoch_measurements_median_unc_W2 = CLAGN_data_W2.iloc[:, 1].tolist()
+    CLAGN_epoch_measurements_list_W2 = CLAGN_data_W2.iloc[:, 1].tolist()
+    CLAGN_mean_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 0] > 0.5]
+    CLAGN_epoch_measurements_mean_unc_W2 = CLAGN_mean_unc_W2.iloc[:, 1].tolist()
+    CLAGN_median_unc_W2 = CLAGN_data_W2[CLAGN_data_W2.iloc[:, 0] < 0.5]
+    CLAGN_epoch_measurements_median_unc_W2 = CLAGN_median_unc_W2.iloc[:, 1].tolist()
 
-    print(f'CLAGN - Mean number of measurements in an epoch when mean unc used (W1) = {np.nanmean(CLAGN_epoch_measurements_mean_unc_W1)}')
-    print(f'CLAGN - Mean number of measurements in an epoch when median unc used (W1) = {np.nanmean(CLAGN_epoch_measurements_median_unc_W1)}')
-    print(f'CLAGN - Mean number of measurements in an epoch when mean unc used (W2) = {np.nanmean(CLAGN_epoch_measurements_mean_unc_W2)}')
-    print(f'CLAGN - Mean number of measurements in an epoch when median unc used (W2) = {np.nanmean(CLAGN_epoch_measurements_median_unc_W2)}')
+    b = 0
+    for measurements_in_epoch in CLAGN_epoch_measurements_list_W2:
+        if measurements_in_epoch <= 4:
+            b += 1
+
+    print(f'CLAGN - % of epochs where mean unc used (W1) = {len(CLAGN_mean_unc_W1)/len(CLAGN_data_W1)*100:.2f}%')
+    print(f'CLAGN - % of epochs where mean unc used (W2) = {len(CLAGN_mean_unc_W2)/len(CLAGN_data_W2)*100:.2f}%')
+    print(f'CLAGN - % of epochs with 4 or less data points (W1) = {a/len(CLAGN_data_W1)*100:.2f}%')
+    print(f'CLAGN - % of epochs with 4 or less data points (W2) = {b/len(CLAGN_data_W2)*100:.2f}%')
+    print(f'CLAGN - Median number of measurements in epoch (W2) = {np.nanmedian(CLAGN_data_W2.iloc[:, 1].tolist())}')
+    print(f'CLAGN - Median number of measurements in an epoch when mean unc used (W1) = {np.nanmedian(CLAGN_epoch_measurements_mean_unc_W1)}')
+    print(f'CLAGN - Median number of measurements in an epoch when median unc used (W1) = {np.nanmedian(CLAGN_epoch_measurements_median_unc_W1)}')
+    print(f'CLAGN - Median number of measurements in an epoch when mean unc used (W2) = {np.nanmedian(CLAGN_epoch_measurements_mean_unc_W2)}')
+    print(f'CLAGN - Median number of measurements in an epoch when median unc used (W2) = {np.nanmedian(CLAGN_epoch_measurements_median_unc_W2)}')
 
     AGN_data_W1 = pd.read_csv(f'AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W1.csv')
-    AGN_mean_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 31] > 0.5]
-    AGN_epoch_measurements_mean_unc_W1 = AGN_data_W1.iloc[:, 1].tolist()
-    AGN_median_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 31] < 0.5]
-    AGN_epoch_measurements_median_unc_W1 = AGN_data_W1.iloc[:, 1].tolist()
+    AGN_epoch_measurements_list_W1 = AGN_data_W1.iloc[:, 1].tolist()
+    AGN_mean_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 0] > 0.5]
+    AGN_epoch_measurements_mean_unc_W1 = AGN_mean_unc_W1.iloc[:, 1].tolist()
+    AGN_median_unc_W1 = AGN_data_W1[AGN_data_W1.iloc[:, 0] < 0.5]
+    AGN_epoch_measurements_median_unc_W1 = AGN_median_unc_W1.iloc[:, 1].tolist()
+
+    c = 0
+    for measurements_in_epoch in AGN_epoch_measurements_list_W1:
+        if measurements_in_epoch <= 4:
+            c += 1
 
     AGN_data_W2 = pd.read_csv(f'AGN_mean_unc_vs_epoch_meas_Sample_{my_sample}_W2.csv')
-    AGN_mean_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 31] > 0.5]
-    AGN_epoch_measurements_mean_unc_W2 = AGN_data_W2.iloc[:, 1].tolist()
-    AGN_median_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 31] < 0.5]
-    AGN_epoch_measurements_median_unc_W2 = AGN_data_W2.iloc[:, 1].tolist()
+    AGN_epoch_measurements_list_W2 = AGN_data_W2.iloc[:, 1].tolist()
+    AGN_mean_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 0] > 0.5]
+    AGN_epoch_measurements_mean_unc_W2 = AGN_mean_unc_W2.iloc[:, 1].tolist()
+    AGN_median_unc_W2 = AGN_data_W2[AGN_data_W2.iloc[:, 0] < 0.5]
+    AGN_epoch_measurements_median_unc_W2 = AGN_median_unc_W2.iloc[:, 1].tolist()
 
-    print(f'AGN - Mean number of measurements in an epoch when mean unc used (W1) = {np.nanmean(AGN_epoch_measurements_mean_unc_W1)}')
-    print(f'AGN - Mean number of measurements in an epoch when median unc used (W1) = {np.nanmean(AGN_epoch_measurements_median_unc_W1)}')
-    print(f'AGN - Mean number of measurements in an epoch when mean unc used (W2) = {np.nanmean(AGN_epoch_measurements_mean_unc_W2)}')
-    print(f'AGN - Mean number of measurements in an epoch when median unc used (W2) = {np.nanmean(AGN_epoch_measurements_median_unc_W2)}')
+    d = 0
+    for measurements_in_epoch in AGN_epoch_measurements_list_W2:
+        if measurements_in_epoch <= 4:
+            d += 1
+
+    print(f'AGN - % of epochs where mean unc used (W1) = {len(AGN_mean_unc_W1)/len(AGN_data_W1)*100:.2f}%')
+    print(f'AGN - % of epochs where mean unc used (W2) = {len(AGN_mean_unc_W2)/len(AGN_data_W2)*100:.2f}%')
+    print(f'AGN - % of epochs with 4 or less data points (W1) = {c/len(AGN_data_W1)*100:.2f}%')
+    print(f'AGN - % of epochs with 4 or less data points (W2) = {d/len(AGN_data_W2)*100:.2f}%')
+    print(f'AGN - Median number of measurements in epoch (W1) = {np.nanmedian(AGN_data_W1.iloc[:, 1].tolist())}')
+    print(f'AGN - Median number of measurements in epoch (W2) = {np.nanmedian(AGN_data_W2.iloc[:, 1].tolist())}')
+    print(f'AGN - Median number of measurements in an epoch when mean unc used (W1) = {np.nanmedian(AGN_epoch_measurements_mean_unc_W1)}')
+    print(f'AGN - Median number of measurements in an epoch when median unc used (W1) = {np.nanmedian(AGN_epoch_measurements_median_unc_W1)}')
+    print(f'AGN - Median number of measurements in an epoch when mean unc used (W2) = {np.nanmedian(AGN_epoch_measurements_mean_unc_W2)}')
+    print(f'AGN - Median number of measurements in an epoch when median unc used (W2) = {np.nanmedian(AGN_epoch_measurements_median_unc_W2)}')
 
 
 # creating a 2d plot of W1 NFD vs W1 number of epochs
@@ -2682,7 +2712,6 @@ if epochs_NFD_W1 == 1:
     plt.ylabel("W1 NFD", fontsize = 24)
     plt.title("W1 NFD vs W1 Epochs", fontsize = 24)
     plt.legend(loc = 'best', fontsize=22)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -2700,7 +2729,6 @@ if epochs_NFD_W2 == 1:
     plt.ylabel("W2 NFD", fontsize = 24)
     plt.title("W2 NFD vs W2 Epochs", fontsize = 24)
     plt.legend(loc = 'best', fontsize=22)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -2717,7 +2745,6 @@ if epochs_zs_W1 == 1:
     plt.ylabel("W1 Z-Score", fontsize = 24)
     plt.title("W1 Z-Score vs W1 Epochs", fontsize = 24)
     plt.legend(loc = 'best', fontsize=22)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
@@ -2735,7 +2762,6 @@ if epochs_zs_W2 == 1:
     plt.ylabel("W2 Z-Score", fontsize = 24)
     plt.title("W2 Z-Score vs W2 Epochs", fontsize = 24)
     plt.legend(loc = 'best', fontsize=22)
-    plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.show()
 
