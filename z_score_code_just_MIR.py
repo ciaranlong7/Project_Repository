@@ -9,9 +9,9 @@ from astroquery.ipac.irsa import Irsa
 c = 299792458
 
 my_object = 0 #0 = AGN. 1 = CLAGN
-my_sample = 0 #set which AGN sample you want
+my_sample = 3 #set which AGN sample you want
 save_figures = 0 #set to 1 to save figures
-mod_dev = 1
+mod_dev = 1 #set to 1 to do modified deviation analysis
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -437,8 +437,7 @@ for object_name in object_names:
 
     if save_figures == 1:
         plt.xlabel('Days since first observation', fontsize = 26)
-        plt.xticks(fontsize=26)
-        plt.yticks(fontsize=26)
+        plt.tick_params(axis='both', labelsize=26, length=8, width=2)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Flux vs Time (WISEA J{object_name})', fontsize = 28)
         plt.tight_layout()

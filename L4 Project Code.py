@@ -47,9 +47,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '160833.97+421413.4' #Object I - chosen because not a CLAGN, but in AGN parent sample & has high normalised flux change
 # object_name = '164837.68+311652.7' #Object J - chosen because not a CLAGN, but in AGN parent sample & has high z scores
 # object_name = '085913.72+323050.8' #Chosen because can't search for SDSS spectrum automatically
-object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
-# object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
-# object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
+# object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for min dps limit, but need for max gap limit. Norm flux change = 2.19
 # object_name = '164331.90+304835.5' #Object N - chosen due to enourmous Z score
 # object_name = '163826.34+382512.1' #Object O - chosen because not a CLAGN, but has enourmous normalised flux change
 # object_name = '141535.46+022338.7' #Object P - chosen because of very high z score
@@ -68,48 +66,50 @@ object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for 
 # object_name = '160730.20+560305.5' #Object W - chosen because a CLAGN that exhibits no MIR change over SDSS-DESI range, but does exhibit a change after
 # object_name = '115838.31+541619.5' #Object X - chosen because not a CLAGN but shows some variability
 # object_name = '213628.50-003811.8' #Object Y - chosen becasue quite different W1 and W2 NFD
+# object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1. Z-score = 42. CLAGN candidate
 
-# object_name = '111938.02+513315.5' #Highly Variable Non-CL AGN 1. Z-score = 42
+#10 CLAGN for linear interpolation:
+#2 bright:
+# object_name = '221925.57+272806.4'
+# object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
+#8 dim:
+# object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
+# object_name = '141801.50+525200.7'
+# object_name = '152517.57+401357.6' #Object A - assigned to me
+# object_name = '153149.94+372755.4'
+# object_name = '161903.04+540529.0'
+# object_name = '164709.87+532202.2'
+# object_name = '164900.95+452016.8'
+# object_name = '213400.68+013828.4' #chosen because this is the CLAGN with the lowest UV NFD.
 
-# object_name = '160344.93+450146.4' #outlier = 12 (W2)
-# object_name = '112934.69+503103.4' #outlier = 116 (W2)
-# object_name = '115634.41+524502.1' #outlier = 240 (W2)
-# object_name = '083901.00+232352.4' #outlier = 131 (W2)
-# object_name = '161339.24+534552.0' #outlier = 29 (W2)
-# object_name = '154713.96+434217.3' #outlier = 35 (W2)
-# object_name = '154755.47+424120.0' #outlier = 9.5 (W2)
-# object_name = '141440.34+532057.1' #outlier = 27 (W2)
-# object_name = '013741.58+205156.6' #outlier = 10.6 (W2)
-# object_name = '154050.21+443310.8' #outlier = 27.7 (W2)
-# object_name = '115302.69+011027.8' #outlier = 213 (W2)
-# object_name = '142334.67+525712.9' #outlier = 4.5 (W2)
-# object_name = '153837.03+435132.3' #outlier = 18.5 (W2)
-# object_name = '161222.79+543154.9' #outlier = 26 (W2)
-# object_name = '142542.91+545710.1' #outlier = 479 (W2)
-
-# object_name = '121449.54+572734.1' #outliers = 163, 140 (W1)
-# object_name = '113115.72+533548.9' #outlier = 12.53 (W1)
-# object_name = '121234.41+573124.8' #outlier = 239 (W1)
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
 # object_name = '115715.92+285401.4' #chosen because of very large UV NFD (4.5) for a non-CL AGN
 # object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
 # object_name = '074217.52+392612.0' #chosen because non-CL AGN that varies in the MIR (z-score = 13) but not UV
 # object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
-# object_name = '213400.68+013828.4' #chosen because this is the CLAGN with the lowest UV NFD.
 # object_name = '152551.37+184552.0' #chosen because this is a CLAGN with a low UV NFD and low redshift
 # object_name = '103818.29+332437.2' #chosen because of low UV NFD. potentially mistaken as a CLAGN.
 # object_name = '224657.70-003242.5'
 # object_name = '134554.00+084537.3'
-# object_name = '141801.50+525200.7'
 
-# turn_on_CLAGN = ['085913.72+323050.8', '095035.55+321601.0', '115210.24+520205.1', '122319.70+312737.0', 
-#                   '125610.42+260103.4', '134554.00+084537.3', '141923.44-030458.7', '142641.03+521214.3', 
-#                   '144003.98+061936.5', '145913.90+360051.4', '153938.92+373853.8', '154742.72+012541.0', 
-#                   '160730.20+560305.5', '161903.04+540529.0', '164709.87+532202.2', '164725.15+351754.3', 
-#                   '164900.95+452016.8', '213135.84+001517.0', '213400.68+013828.4', '221044.76+245958.0', '224657.70-003242.5']
+#Sheng_2020 CLAGN that had their CL event time constrained
+RA = 0
+DEC = 0
+z = 0
+# object_name = '125258.72+591832.7'
+# RA = 193.2446719
+# DEC = 59.3091013
+# z = 0.124
+# object_name = '130716.99+450645.3'
+# RA = 196.8207892
+# DEC = 45.1125798
+# z = 0.084
+# object_name = '142846.71+172353.1'
+# RA = 217.1946288
+# DEC = 17.3980774
+# z = 0.104
 
-# object_name = turn_on_CLAGN[0]
 
 #option 1 = Not interested in SDSS or DESI spectrum (MIR only)
 #option 2 = Object is a CLAGN, so take SDSS and DESI spectrum from downloads + MIR
@@ -119,20 +119,23 @@ object_name = '115103.77+530140.6' #Object K - chosen to illustrate no need for 
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 2
+option = 1
 
 #Selecting which plots you want. Set = 1 if you want that plot
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
 MIR_only = 1 #plot with just MIR data on it
+colour_plot = 1 #plot of object colour over time
+MIR_only_mag = 1 #plot with just MIR data on it - mag not flux
+colour_plot_mag = 1 #plot of object colour over time - mag not flux
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
-main_plot = 1 #main plot, with MIR, SDSS & DESI
+main_plot = 0 #main plot, with MIR, SDSS & DESI
 
-m = 2 # W1 - Change depending on which epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
-n = 2 # W2 - Change depending on which epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
+m = 2 # W1 - Change depending on which W1 epoch you wish to look at. m = 0 represents epoch 1. Causes error if (m+1)>number of epochs
+n = 2 # W2 - Change depending on which W2 epoch you wish to look at. n = 0 represents epoch 1. Causes error if (n+1)>number of epochs
 
 def flux(mag, k, wavel): # k is the zero magnitude flux density. For W1 & W2, taken from a data table on the search website - https://wise2.ipac.caltech.edu/docs/release/allsky/expsup/sec4_4h.html
     k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
@@ -172,8 +175,6 @@ elif Min_SNR == 2:
 else:
     print('select a valid min SNR - 10, 3 or 2.')
 
-max_day_gap = 250 #max day gap to linearly interpolate over
-
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
 object_names = [x for x in Guo_table4.iloc[:, 0] if pd.notna(x)]
 if object_name in object_names:
@@ -196,19 +197,27 @@ if my_object == 1: #If a CLAGN; CLAGN are not in parent sample
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
 else:
-    parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv') 
-    object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
-    SDSS_RA = object_data.iloc[0, 0]
-    SDSS_DEC = object_data.iloc[0, 1]
-    SDSS_plate_number = object_data.iloc[0, 4]
-    SDSS_plate = f'{SDSS_plate_number:04}'
-    SDSS_fiberid_number = object_data.iloc[0, 6]
-    SDSS_fiberid = f"{SDSS_fiberid_number:04}"
-    SDSS_mjd = object_data.iloc[0, 5]
-    DESI_mjd = object_data.iloc[0, 11]
-    SDSS_z = object_data.iloc[0, 2]
-    DESI_z = object_data.iloc[0, 9]
-    DESI_name = object_data.iloc[0, 10]
+    parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+    try:
+        object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
+        SDSS_RA = object_data.iloc[0, 0]
+        SDSS_DEC = object_data.iloc[0, 1]
+        SDSS_plate_number = object_data.iloc[0, 4]
+        SDSS_plate = f'{SDSS_plate_number:04}'
+        SDSS_fiberid_number = object_data.iloc[0, 6]
+        SDSS_fiberid = f"{SDSS_fiberid_number:04}"
+        SDSS_mjd = object_data.iloc[0, 5]
+        DESI_mjd = object_data.iloc[0, 11]
+        SDSS_z = object_data.iloc[0, 2]
+        DESI_z = object_data.iloc[0, 9]
+        DESI_name = object_data.iloc[0, 10]
+    except IndexError as e:
+        SDSS_RA = RA
+        SDSS_DEC = DEC
+        SDSS_mjd = 55179
+        DESI_mjd = 55179
+        SDSS_z = np.float64(z)
+        DESI_z = np.float64(z)
 
 coord = SkyCoord(SDSS_RA, SDSS_DEC, unit='deg', frame='icrs') #This works
 
@@ -979,21 +988,6 @@ if option >= 1 and option <= 4:
     # plt.tight_layout()
     # plt.show()
 
-
-    # # Plotting colour (W1 mag[average] - W2 mag[average]):
-    # colour = [W1 - W2 for W1, W2 in zip(W1_averages_flux, W2_averages_flux)]
-    # colour_uncs = [np.sqrt((W1_unc_c)**2+(W2_unc_c)**2) for W1_unc_c, W2_unc_c in zip(W1_av_uncs_flux, W2_av_uncs_flux)]
-    # # Uncertainty propagation taken from Hughes & Hase; Z = A - B formula on back cover.
-
-    # plt.figure(figsize=(12,7))
-    # plt.errorbar(mjd_date_, colour, yerr=colour_uncs, fmt='o', color = 'orange', capsize=5)
-    # #Labels and Titles
-    # plt.xlabel('Days since first observation')
-    # plt.ylabel('Colour')
-    # plt.title('Colour (W1 mag - W2 mag) vs Time')
-    # plt.show()
-
-
     # Specifically looking at a particular epoch:
     # Change 'm = _' and 'n = _' in above code to change which epoch you look at. m = 0 represents epoch 1.
     # (measurements are taken with a few days hence considered repeats)
@@ -1069,19 +1063,119 @@ if option >= 1 and option <= 4:
 
 
     if MIR_only == 1:
-        # Plotting average W1 & W2 mags (or flux) vs days since first observation
+        # t0 = W1_av_mjd_date[5]
+        # t1 = 3000
+        # f0_W1 = W1_averages_flux[5]   # Value of W1 flux at t = t0
+        # f0_W2 = W2_averages_flux[5]   # Value of W2 flux at t = t0
+        # t = np.linspace(t0, t1, 100)  # Avoid t = 0
+        # alpha = -5/2
+        # f_W1 = f0_W1*(t/t0)**(alpha)
+        # f_W2 = f0_W2*(t/t0)**(alpha)
+        # Plotting average W1 & W2 flux vs days since first observation
         plt.figure(figsize=(12,7))
         # plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', markersize=10, elinewidth=5, color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         plt.errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
         plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
-        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        # plt.plot(t, f_W1, label=fr'$f=f_0\left(\frac{{t}}{{t_0}}\right)^{{{alpha}}}$', color='black')
+        # plt.plot(t, f_W2, color='black')
+        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
         # plt.ylim(1.55, 7.05)
         plt.ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
         # plt.title(f'CLAGN MIR Light Curve', fontsize = 28)
+        plt.legend(loc = 'best', fontsize = 25)
+        plt.tight_layout()
+        plt.show()
+
+    
+    if colour_plot == 1:
+        colour = []
+        colour_uncs = []
+        mjds = []
+        # Loop through W1 observations
+        for i, (W1, W1_unc, W1_mjd) in enumerate(zip(W1_averages_flux, W1_av_uncs_flux, W1_av_mjd_date)):
+            # check if there is a W2 epoch within 50 days
+            valid_W2_index = [j for j, W2_mjd in enumerate(W2_av_mjd_date) if abs(W1_mjd - W2_mjd) <= 50]
+            
+            if len(valid_W2_index) > 0:  # Ensure there is a valid W2 epoch
+                W2 = W2_averages_flux[valid_W2_index[0]]
+                W2_unc = W2_av_uncs_flux[valid_W2_index[0]]
+                mjds.append(W2_av_mjd_date[valid_W2_index[0]])
+                colour.append(W1 - W2)
+                colour_uncs.append(np.sqrt(W1_unc**2 + W2_unc**2))
+
+        plt.figure(figsize=(12,7))
+        plt.errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color = 'red', capsize=5, label = 'W1 - W2')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.xlabel('Days since first observation', fontsize = 26)
+        plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+        plt.ylabel('Colour / Flux $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+        plt.title(f'Colour vs Time (WISEA J{object_name})', fontsize = 28)
+        plt.legend(loc = 'best', fontsize = 25)
+        plt.tight_layout()
+        plt.show()
+
+
+    W1_AB_correction = 2.699
+    W2_AB_correction = 3.339
+    def mag(flux, k, wavel, AB_correction):
+        k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
+        return -2.5*np.log10(flux/k) + AB_correction
+    
+    if MIR_only_mag == 1:
+        W1_averages_mag = [mag(W1_flux, W1_k, W1_wl, W1_AB_correction) for W1_flux in W1_averages_flux]
+        W2_averages_mag = [mag(W2_flux, W2_k, W2_wl, W2_AB_correction) for W2_flux in W2_averages_flux]
+        W1_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(W1_av_uncs_flux, W1_averages_flux)]
+        W2_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(W2_av_uncs_flux, W2_averages_flux)]
+
+        # Plotting average W1 & W2 mags vs days since first observation
+        plt.figure(figsize=(12,7))
+        plt.errorbar(W1_av_mjd_date, W1_averages_mag, yerr=W1_av_uncs_mag, fmt='o', color = 'blue', capsize=5, label = u'W1 (3.4\u03bcm)')
+        plt.errorbar(W2_av_mjd_date, W2_averages_mag, yerr=W2_av_uncs_mag, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
+        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.xlabel('Days since first observation', fontsize = 26)
+        plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+        plt.ylabel('AB Magnitude', fontsize = 26)
+        plt.title(f'Light Curve (WISEA J{object_name})', fontsize = 28)
+        plt.legend(loc = 'best', fontsize = 25)
+        plt.tight_layout()
+        plt.show()
+
+    
+    if colour_plot_mag == 1:
+        W1_averages_mag = [mag(W1_flux, W1_k, W1_wl, W1_AB_correction) for W1_flux in W1_averages_flux]
+        W2_averages_mag = [mag(W2_flux, W2_k, W2_wl, W2_AB_correction) for W2_flux in W2_averages_flux]
+        W1_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(W1_av_uncs_flux, W1_averages_flux)]
+        W2_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(W2_av_uncs_flux, W2_averages_flux)]
+
+        colour = []
+        colour_uncs = []
+        mjds = []
+        # Loop through W1 observations
+        for i, (W1, W1_unc, W1_mjd) in enumerate(zip(W1_averages_mag, W1_av_uncs_mag, W1_av_mjd_date)):
+            # check if there is a W2 epoch within 50 days
+            valid_W2_index = [j for j, W2_mjd in enumerate(W2_av_mjd_date) if abs(W1_mjd - W2_mjd) <= 50]
+            
+            if len(valid_W2_index) > 0:  # Ensure there is a valid W2 epoch
+                W2 = W2_averages_mag[valid_W2_index[0]]
+                W2_unc = W2_av_uncs_mag[valid_W2_index[0]]
+                mjds.append(W2_av_mjd_date[valid_W2_index[0]])
+                colour.append(W1 - W2)
+                colour_uncs.append(np.sqrt(W1_unc**2 + W2_unc**2))
+
+        plt.figure(figsize=(12,7))
+        plt.errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color = 'red', capsize=5, label = 'W1 - W2')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.xlabel('Days since first observation', fontsize = 26)
+        plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+        plt.ylabel('Colour / AB Magnitude', fontsize = 26)
+        plt.title(f'Colour vs Time (WISEA J{object_name})', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
         plt.show()

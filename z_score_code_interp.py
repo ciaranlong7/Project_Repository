@@ -20,7 +20,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_t
 c = 299792458
 
 my_object = 0 #0 = AGN. 1 = CLAGN
-my_sample = 2 #set which AGN sample you want
+my_sample = 3 #set which AGN sample you want
 save_figures = 0
 optical_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
 MIR_analysis = 1 #set = 1 if you wish to do optical analysis. set = 0 if not
@@ -1228,11 +1228,11 @@ for object_name in object_names:
                 W2_first_mjd.append(W2_first)
                 W2_last_mjd.append(W2_last)
                 if W2_DESI_interp >= W2_SDSS_interp: #assume that DESI always taken after sdss
-                    W2_min_mjd(SDSS_mjd)
-                    W2_max_mjd(DESI_mjd)
+                    W2_min_mjd.append(SDSS_mjd)
+                    W2_max_mjd.append(DESI_mjd)
                 else:
-                    W2_min_mjd(DESI_mjd)
-                    W2_max_mjd(SDSS_mjd)
+                    W2_min_mjd.append(DESI_mjd)
+                    W2_max_mjd.append(SDSS_mjd)
 
                 zscores = np.sort([abs(W2_z_score_SDSS_DESI), abs(W1_z_score_DESI_SDSS), abs(W2_z_score_SDSS_DESI), abs(W2_z_score_DESI_SDSS)]) #sorts in ascending order, nans at end
                 zscore_uncs = np.sort([W1_z_score_SDSS_DESI_unc, W1_z_score_DESI_SDSS_unc, W2_z_score_SDSS_DESI_unc, W2_z_score_DESI_SDSS_unc])

@@ -16,11 +16,11 @@ AGN_sample_three = pd.read_csv("AGN_Sample_three.csv")
 # column_indexes = {col: idx for idx, col in enumerate(AGN_sample_three_df.columns)}
 # print(column_indexes)
 
-# #UV data
-# CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_UV_all.csv")
-# AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_Sample_1.csv')
-# AGN_sample_two_df = pd.read_csv('AGN_Quantifying_Change_Sample_2.csv')
-# AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_Sample_3.csv')
+#UV data
+CLAGN_df = pd.read_csv("CLAGN_Quantifying_Change_UV1.csv")
+AGN_sample_one_df = pd.read_csv('AGN_Quantifying_Change_Sample_1_UV1.csv')
+AGN_sample_two_df = pd.read_csv('AGN_Quantifying_Change_Sample_2_UV1.csv')
+AGN_sample_three_df = pd.read_csv('AGN_Quantifying_Change_Sample_3_UV1.csv')
 
 # # # del CLAGN_df['Redshift']
 # # # del AGN_sample_one_df['Redshift']
@@ -67,11 +67,11 @@ AGN_sample_three = pd.read_csv("AGN_Sample_three.csv")
 # AGN_sample_two_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_2.csv', index=False)
 # AGN_sample_three_df.to_csv('AGN_Quantifying_Change_just_MIR_max_uncs_Sample_3.csv', index=False)
 
-# #UV:
-# CLAGN_df.to_csv('CLAGN_Quantifying_Change_UV_all.csv', index=False)
-# AGN_sample_one_df.to_csv('AGN_Quantifying_Change_Sample_1.csv', index=False)
-# AGN_sample_two_df.to_csv('AGN_Quantifying_Change_Sample_2.csv', index=False)
-# AGN_sample_three_df.to_csv('AGN_Quantifying_Change_Sample_3.csv', index=False)
+# # #UV:
+# CLAGN_df.to_csv('CLAGN_Quantifying_Change_UV1.csv', index=False)
+# AGN_sample_one_df.to_csv('AGN_Quantifying_Change_Sample_1_UV1.csv', index=False)
+# AGN_sample_two_df.to_csv('AGN_Quantifying_Change_Sample_2_UV1.csv', index=False)
+# AGN_sample_three_df.to_csv('AGN_Quantifying_Change_Sample_3_UV1.csv', index=False)
 
 
 #Making a plot of the redshift distribution of each sample
@@ -197,20 +197,20 @@ plt.tight_layout()
 plt.show()
 
 
-#Combining the plots to the same axes
-# #Uncomment below if you want only objects analysed distribution.
-# CLAGN_redshifts_original = CLAGN_df.iloc[:, 35].tolist()
-# AGN_sample_one_redshifts = AGN_sample_one_df.iloc[:, 37].tolist()
-# AGN_sample_two_redshifts = AGN_sample_two_df.iloc[:, 37].tolist()
-# AGN_sample_three_redshifts = AGN_sample_three_df.iloc[:, 37].tolist()
-# CLAGN_redshifts_median = np.median(CLAGN_redshifts_original)
-# AGN_redshifts_one_median = np.median(AGN_sample_one_redshifts)
-# AGN_redshifts_two_median = np.median(AGN_sample_two_redshifts)
-# AGN_redshifts_three_median = np.median(AGN_sample_three_redshifts)
-# print(f'CLAGN median redshift = {CLAGN_redshifts_median}')
-# print(f'Sample 1 median redshift = {AGN_redshifts_one_median}')
-# print(f'Sample 2 median redshift = {AGN_redshifts_two_median}')
-# print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
+# Combining the plots to the same axes
+#Uncomment below if you want only objects analysed distribution.
+CLAGN_redshifts_original = CLAGN_df.iloc[:, 45].tolist()
+AGN_sample_one_redshifts = AGN_sample_one_df.iloc[:, 45].tolist()
+AGN_sample_two_redshifts = AGN_sample_two_df.iloc[:, 45].tolist()
+# AGN_sample_three_redshifts = AGN_sample_three_df.iloc[:, 45].tolist()
+CLAGN_redshifts_median = np.median(CLAGN_redshifts_original)
+AGN_redshifts_one_median = np.median(AGN_sample_one_redshifts)
+AGN_redshifts_two_median = np.median(AGN_sample_two_redshifts)
+AGN_redshifts_three_median = np.median(AGN_sample_three_redshifts)
+print(f'CLAGN median redshift = {CLAGN_redshifts_median}')
+print(f'Sample 1 median redshift = {AGN_redshifts_one_median}')
+print(f'Sample 2 median redshift = {AGN_redshifts_two_median}')
+print(f'Sample 3 median redshift = {AGN_redshifts_three_median}')
 
 
 combined_redshifts = CLAGN_redshifts_original + AGN_sample_one_redshifts + AGN_sample_two_redshifts + AGN_sample_three_redshifts
