@@ -34,7 +34,7 @@ c = 299792458
 #G23 dust extinction model:
 #https://dust-extinction.readthedocs.io/en/latest/api/dust_extinction.parameter_averages.G23.html#dust_extinction.parameter_averages.G23
 
-object_name = '152517.57+401357.6' #Object A - assigned to me
+# object_name = '152517.57+401357.6' #Object A - assigned to me
 # object_name = '141923.44-030458.7' #Object B - chosen because of very high redshift
 # object_name = '115403.00+003154.0' #Object C - randomly chose a CLAGN, but it had a low redshift also
 # object_name = '140957.72-012850.5' #Object D - chosen because of very high z scores
@@ -71,7 +71,7 @@ object_name = '152517.57+401357.6' #Object A - assigned to me
 #10 CLAGN for linear interpolation:
 #2 bright:
 # object_name = '221925.57+272806.4'
-# object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
+object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
 #8 dim:
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '141801.50+525200.7'
@@ -125,10 +125,12 @@ option = 1
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 1 #plot with just MIR data on it
-colour_plot = 1 #plot of object colour over time
-MIR_only_mag = 1 #plot with just MIR data on it - mag not flux
-colour_plot_mag = 1 #plot of object colour over time - mag not flux
+MIR_only = 0 #plot with just MIR data on it
+colour_plot = 0 #plot of object colour over time
+MIR_only_with_colour = 1 #plot with just MIR data on it - mag not flux. Also has colour in the figure
+MIR_only_mag = 0 #plot with just MIR data on it - mag not flux
+colour_plot_mag = 0 #plot of object colour over time - mag not flux
+MIR_only_mag_with_colour = 1 #plot with just MIR data on it - mag not flux. Also has colour in the figure
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
@@ -1109,14 +1111,53 @@ if option >= 1 and option <= 4:
 
         plt.figure(figsize=(12,7))
         plt.errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color = 'red', capsize=5, label = 'W1 - W2')
-        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
-        plt.ylabel('Colour / Flux $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
+        plt.ylabel('Colour / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize = 26)
         plt.title(f'Colour vs Time (WISEA J{object_name})', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
+        plt.show()
+
+
+    if MIR_only_with_colour == 1:
+        colour = []
+        colour_uncs = []
+        mjds = []
+        # Loop through W1 observations
+        for i, (W1, W1_unc, W1_mjd) in enumerate(zip(W1_averages_flux, W1_av_uncs_flux, W1_av_mjd_date)):
+            # check if there is a W2 epoch within 50 days
+            valid_W2_index = [j for j, W2_mjd in enumerate(W2_av_mjd_date) if abs(W1_mjd - W2_mjd) <= 50]
+            
+            if len(valid_W2_index) > 0:  # Ensure there is a valid W2 epoch
+                W2 = W2_averages_flux[valid_W2_index[0]]
+                W2_unc = W2_av_uncs_flux[valid_W2_index[0]]
+                mjds.append(W2_av_mjd_date[valid_W2_index[0]])
+                colour.append(W1 - W2)
+                colour_uncs.append(np.sqrt(W1_unc**2 + W2_unc**2))
+
+        fig, axs = plt.subplots(2, 1, figsize=(12, 7), sharex=True, gridspec_kw={'hspace': 0.25})
+
+        axs[0].errorbar(W1_av_mjd_date, W1_averages_flux, yerr=W1_av_uncs_flux, fmt='o', color='blue', capsize=5, label=u'W1 (3.4μm)')
+        axs[0].errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color='orange', capsize=5, label=u'W2 (4.6μm)')
+        axs[0].axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        axs[0].axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        axs[0].set_ylabel('Flux / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize=16)
+        axs[0].set_title(f'Light Curve (WISEA J{object_name})', fontsize=24)
+        axs[0].legend(loc='best', fontsize=20)
+        axs[0].tick_params(axis='both', labelsize=22, length=8, width=2)
+
+        axs[1].errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color='red', capsize=5, label='W1 - W2')
+        axs[1].axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--')
+        axs[1].axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--')
+        axs[1].set_xlabel('Days since first observation', fontsize=22)
+        axs[1].set_ylabel('Colour / $10^{-17}$ergs $s^{-1}cm^{-2}Å^{-1}$', fontsize=16)
+        axs[1].set_title(f'Colour vs Time', fontsize=24)
+        axs[1].legend(loc='best', fontsize=20)
+        axs[1].tick_params(axis='both', labelsize=22, length=8, width=2)
+
         plt.show()
 
 
@@ -1170,14 +1211,58 @@ if option >= 1 and option <= 4:
 
         plt.figure(figsize=(12,7))
         plt.errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color = 'red', capsize=5, label = 'W1 - W2')
-        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
         plt.ylabel('Colour / AB Magnitude', fontsize = 26)
         plt.title(f'Colour vs Time (WISEA J{object_name})', fontsize = 28)
         plt.legend(loc = 'best', fontsize = 25)
         plt.tight_layout()
+        plt.show()
+
+
+    if MIR_only_mag_with_colour == 1:
+        W1_averages_mag = [mag(W1_flux, W1_k, W1_wl, W1_AB_correction) for W1_flux in W1_averages_flux]
+        W2_averages_mag = [mag(W2_flux, W2_k, W2_wl, W2_AB_correction) for W2_flux in W2_averages_flux]
+        W1_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(W1_av_uncs_flux, W1_averages_flux)]
+        W2_av_uncs_mag = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(W2_av_uncs_flux, W2_averages_flux)]
+
+        colour = []
+        colour_uncs = []
+        mjds = []
+        # Loop through W1 observations
+        for i, (W1, W1_unc, W1_mjd) in enumerate(zip(W1_averages_mag, W1_av_uncs_mag, W1_av_mjd_date)):
+            # check if there is a W2 epoch within 50 days
+            valid_W2_index = [j for j, W2_mjd in enumerate(W2_av_mjd_date) if abs(W1_mjd - W2_mjd) <= 50]
+            
+            if len(valid_W2_index) > 0:  # Ensure there is a valid W2 epoch
+                W2 = W2_averages_mag[valid_W2_index[0]]
+                W2_unc = W2_av_uncs_mag[valid_W2_index[0]]
+                mjds.append(W2_av_mjd_date[valid_W2_index[0]])
+                colour.append(W1 - W2)
+                colour_uncs.append(np.sqrt(W1_unc**2 + W2_unc**2))
+
+        fig, axs = plt.subplots(2, 1, figsize=(12, 7), sharex=True, gridspec_kw={'hspace': 0.25})
+
+        axs[0].errorbar(W1_av_mjd_date, W1_averages_mag, yerr=W1_av_uncs_mag, fmt='o', color='blue', capsize=5, label=u'W1 (3.4μm)')
+        axs[0].errorbar(W2_av_mjd_date, W2_averages_mag, yerr=W2_av_uncs_mag, fmt='o', color='orange', capsize=5, label=u'W2 (4.6μm)')
+        axs[0].axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        axs[0].axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        axs[0].set_ylabel('AB Magnitude', fontsize=22)
+        axs[0].set_title(f'Light Curve (WISEA J{object_name})', fontsize=24)
+        axs[0].legend(loc='best', fontsize=20)
+        axs[0].tick_params(axis='both', labelsize=22, length=8, width=2)
+
+        axs[1].errorbar(mjds, colour, yerr=colour_uncs, fmt='o', color='red', capsize=5, label='W1 - W2')
+        axs[1].axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--')
+        axs[1].axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--')
+        axs[1].set_xlabel('Days since first observation', fontsize=22)
+        axs[1].set_ylabel('Colour / AB Magnitude', fontsize=22)
+        axs[1].set_title(f'Colour vs Time', fontsize=24)
+        axs[1].legend(loc='best', fontsize=20)
+        axs[1].tick_params(axis='both', labelsize=22, length=8, width=2)
+
         plt.show()
 
 

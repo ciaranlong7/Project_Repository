@@ -36,7 +36,7 @@ bright_dim_W1 = 0.40
 bright_dim_W2 = 0.40
 
 #plots:
-main_MIR = 1 #1 if want main zscore and NFD plot.
+main_MIR = 0 #1 if want main zscore and NFD plot.
 main_MIR_direction = 0 #NFD vs z score with direction of change
 main_MIR_direction_on_vs_off = 0 #NFD vs z score with direction of change - on vs off CLAGN
 z_score_hist_direction_on_vs_off = 0 #z score with direction of change histogram - on vs off CLAGN
@@ -45,8 +45,8 @@ main_MIR_NFD_hist = 0 #histogram of distribution of NFD for AGN and non-CL AGN
 main_MIR_NFD_hist_bright_dim = 0 #histogram of distribution of NFD for both bright and dim AGN and non-CL AGN
 main_MIR_Zs_hist = 0 #histogram of distribution of Z-score for AGN and non-CL AGN
 main_MIR_Zs_hist_bright_dim = 0 #histogram of distribution of z-score for both bright and dim AGN and non-CL AGN
-UV_MIRZ = 1 #plot of UV NFD vs interpolated z score
-UV_MIR_NFD = 1 #plot of UV NFD vs interpolated NFD
+UV_MIRZ = 0 #plot of UV NFD vs interpolated z score
+UV_MIR_NFD = 0 #plot of UV NFD vs interpolated NFD
 UVZ_MIRZ = 0 #plot of interpolated z-score vs max/min z-score
 UVNFD_MIRZ = 0 #plot of UV NFD vs max/min z-score
 UVNFD_MIRNFD = 0 #plot of UV NFD vs MIR max/min NFD
@@ -70,8 +70,8 @@ epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
 epochs_zs_W2 = 0 #W2 Zs vs W2 epochs
 redshift_dist_bright_dim = 0 #hist of redshift distribution for objects analysed
 redshift_dist_CLAGN_vs_non_CLAGN = 0 #hist of redshift distribution for objects analysed
-luminosity_dist_CLAGN = 0 #hist of luminosity distribution for CLAGN analysed
-luminosity_dist_AGN = 0 #hist of luminosity distribution for Non-CL AGN analysed
+luminosity_dist_CLAGN = 1 #hist of luminosity distribution for CLAGN analysed
+luminosity_dist_AGN = 1 #hist of luminosity distribution for Non-CL AGN analysed
 UV_NFD_redshift = 0 #plot of UV NFD vs redshift
 UV_NFD_BEL = 0 #plot of UV NFD vs BEL
 
@@ -2915,13 +2915,15 @@ if luminosity_dist_CLAGN == 1:
             redshift = object_row.iloc[0, 3]
             CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
 
-    combined_luminosities = [lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_brightflux + CLAGN_luminosity_dimflux]
+    CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_brightflux]
+    CLAGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_dimflux]
+    combined_luminosities = CLAGN_luminosity_brightflux + CLAGN_luminosity_dimflux
     combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
     CLAGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in CLAGN_luminosity_brightflux]
     CLAGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in CLAGN_luminosity_dimflux]
     bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
-    CLAGN_median_luminosity_bright = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_brightflux])
-    CLAGN_median_luminosity_dim = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in CLAGN_luminosity_dimflux])
+    CLAGN_median_luminosity_bright = np.median(CLAGN_luminosity_brightflux)
+    CLAGN_median_luminosity_dim = np.median(CLAGN_luminosity_dimflux)
     plt.figure(figsize=(12,7))
     plt.hist(CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
     plt.hist(CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
@@ -2970,13 +2972,15 @@ if luminosity_dist_AGN == 1:
             redshift = object_row.iloc[0, 2]
             AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
 
-    combined_luminosities = [lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_brightflux + AGN_luminosity_dimflux]
+    AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_brightflux]
+    AGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_dimflux]
+    combined_luminosities = AGN_luminosity_brightflux + AGN_luminosity_dimflux
     combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
     AGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in AGN_luminosity_brightflux]
     AGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in AGN_luminosity_dimflux]
     bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
-    AGN_median_luminosity_bright = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_brightflux])
-    AGN_median_luminosity_dim = np.median([lum.to_value(u.erg / (u.s * u.AA)) for lum in AGN_luminosity_dimflux])
+    AGN_median_luminosity_bright = np.median(AGN_luminosity_brightflux)
+    AGN_median_luminosity_dim = np.median(AGN_luminosity_dimflux)
     plt.figure(figsize=(12,7))
     plt.hist(AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
     plt.hist(AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
