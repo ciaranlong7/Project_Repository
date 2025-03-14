@@ -116,6 +116,7 @@ UV_NFD_unc_list = []
 
 SDSS_mjds = []
 DESI_mjds = []
+off_spectrum_flux = []
 
 Min_SNR = 3 #Options are 10, 3, or 2. #A (SNR>10), B (3<SNR<10) or C (2<SNR<3)
 if Min_SNR == 10: #Select Min_SNR on line above.
@@ -170,32 +171,47 @@ if optical_analysis == 1:
     #SDSS spectrum retrieval method
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
     def get_primary_SDSS_spectrum(SDSS_plate_number, SDSS_fiberid_number, SDSS_mjd, coord, SDSS_plate, SDSS_fiberid):
-        downloaded_SDSS_spec = SDSS.get_spectra_async(plate=SDSS_plate_number, fiberID=SDSS_fiberid_number, mjd=SDSS_mjd)
-        if downloaded_SDSS_spec == None:
-            downloaded_SDSS_spec = SDSS.get_spectra_async(coordinates=coord, radius=2. * u.arcsec)
+        try:
+            downloaded_SDSS_spec = SDSS.get_spectra_async(plate=SDSS_plate_number, fiberID=SDSS_fiberid_number, mjd=SDSS_mjd)
             if downloaded_SDSS_spec == None:
-                print(f'SDSS Spectrum cannot be found for object_name = {object_name}')
-                try:
-                    SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
-                    SDSS_file_path = f'clagn_spectra/{SDSS_file}'
-                    with fits.open(SDSS_file_path) as hdul:
-                        subset = hdul[1]
+                downloaded_SDSS_spec = SDSS.get_spectra_async(coordinates=coord, radius=2. * u.arcsec)
+                if downloaded_SDSS_spec == None:
+                    print(f'SDSS Spectrum cannot be found for object_name = {object_name}')
+                    try:
+                        SDSS_file = f'spec-{SDSS_plate}-{SDSS_mjd:.0f}-{SDSS_fiberid}.fits'
+                        SDSS_file_path = f'clagn_spectra/{SDSS_file}'
+                        with fits.open(SDSS_file_path) as hdul:
+                            subset = hdul[1]
 
-                        sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
-                        sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-                        sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
-                        print('SDSS file is in downloads - will proceed as normal')
+                            sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
+                            sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+                            sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+                            print('SDSS file is in downloads - will proceed as normal')
 
-                        data = hdul[2].data  # Extract binary table data
-                        zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
-                        if zwarning !=0:
-                            print(f"SDSS ZWARNING Flag: {zwarning}")
+                            data = hdul[2].data  # Extract binary table data
+                            zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+                            if zwarning !=0:
+                                print(f"SDSS ZWARNING Flag: {zwarning}")
+                            return sdss_lamb, sdss_flux, sdss_flux_unc
+                    except FileNotFoundError as e:
+                        print('No SDSS file already downloaded.')
+                        sdss_flux = []
+                        sdss_lamb = []
+                        sdss_flux_unc = []
                         return sdss_lamb, sdss_flux, sdss_flux_unc
-                except FileNotFoundError as e:
-                    print('No SDSS file already downloaded.')
-                    sdss_flux = []
-                    sdss_lamb = []
-                    sdss_flux_unc = []
+                else:
+                    downloaded_SDSS_spec = downloaded_SDSS_spec[0]
+                    hdul = HDUList(downloaded_SDSS_spec.get_fits())
+                    subset = hdul[1]
+
+                    sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
+                    sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
+                    sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+
+                    data = hdul[2].data  # Extract binary table data
+                    zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+                    if zwarning !=0:
+                        print(f"SDSS ZWARNING Flag: {zwarning}")
                     return sdss_lamb, sdss_flux, sdss_flux_unc
             else:
                 downloaded_SDSS_spec = downloaded_SDSS_spec[0]
@@ -205,31 +221,20 @@ if optical_analysis == 1:
                 sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
                 sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
                 sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+                header = hdul[0].header
+                mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
+                if SDSS_mjd - mjd_value > 2:
+                    print(f"MJD from file header: {mjd_value}")
+                    print(f"MJD from my csv: {SDSS_mjd}")
 
                 data = hdul[2].data  # Extract binary table data
                 zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
                 if zwarning !=0:
                     print(f"SDSS ZWARNING Flag: {zwarning}")
                 return sdss_lamb, sdss_flux, sdss_flux_unc
-        else:
-            downloaded_SDSS_spec = downloaded_SDSS_spec[0]
-            hdul = HDUList(downloaded_SDSS_spec.get_fits())
-            subset = hdul[1]
-
-            sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
-            sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
-            sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
-            header = hdul[0].header
-            mjd_value = header.get('MJD', 'MJD not found in header')  # Using .get() avoids KeyError if 'MJD' is missing
-            if SDSS_mjd - mjd_value > 2:
-                print(f"MJD from file header: {mjd_value}")
-                print(f"MJD from my csv: {SDSS_mjd}")
-
-            data = hdul[2].data  # Extract binary table data
-            zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
-            if zwarning !=0:
-                print(f"SDSS ZWARNING Flag: {zwarning}")
-            return sdss_lamb, sdss_flux, sdss_flux_unc
+        except KeyError as e:
+            print('KeyError. No SDSS spectrum downloaded.')
+            return [], [], []
                 
     #DESI spectrum retrieval method
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
@@ -291,6 +296,10 @@ if optical_analysis == 1:
     sfd = sfdmap.SFDMap('SFD_dust_files') #called SFD map, but see - https://github.com/kbarbary/sfdmap/blob/master/README.md
     # It explains how "By default, a scaling of 0.86 is applied to the map values to reflect the recalibration by Schlafly & Finkbeiner (2011)"
     ext_model = G23(Rv=3.1) #Rv=3.1 is typical for MW - Schultz, Wiemer, 1975
+
+objects_analysed = pd.read_csv(f"AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv")
+object_names = objects_analysed.iloc[:, 0]
+MIR_analysis = 0
 
 g = 0
 for object_name in object_names:
@@ -755,6 +764,7 @@ for object_name in object_names:
                                 for UV_NFD_value, flux_difference_unc_value, flux_diff_value in zip (UV_NFD, flux_difference_unc, flux_diff)]
 
             median_UV_NFD.append(np.median(UV_NFD))
+            off_spectrum_flux.append(norm_factor)
 
             #Now calculating unc in UV_NFD. Chi-squared fitting y = mx+c to the UV_NFD plot. uncertainty in m is the uncertainty in UV_NFD
             #xval is desi_blue_lamb. y_val is UV_NFD.
@@ -785,9 +795,11 @@ for object_name in object_names:
             UV_NFD_unc_list.append(UV_NFD_unc)
         else:
             median_UV_NFD.append(np.nan)
+            off_spectrum_flux.append(np.nan)
             UV_NFD_unc_list.append(np.nan)
     else:
         median_UV_NFD.append(np.nan)
+        off_spectrum_flux.append(np.nan)
         UV_NFD_unc_list.append(np.nan)
 
     object_names_list.append(object_name)
@@ -1317,6 +1329,7 @@ if MIR_analysis == 1:
         "W1 max mjd": W1_max_mjd, #42
         "W2 min mjd": W2_min_mjd, #43
         "W2 max mjd": W2_max_mjd, #44
+        "Off spectrum 4000A flux": off_spectrum_flux #45
     }
 
     # Convert the data into a DataFrame
@@ -1336,6 +1349,7 @@ else:
 
         "SDSS mjd": SDSS_mjds, #3
         "DESI mjd": DESI_mjds, #4
+        "Off spectrum 4000A flux": off_spectrum_flux #5
     }
 
     # Convert the data into a DataFrame

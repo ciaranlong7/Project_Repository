@@ -70,8 +70,8 @@ c = 299792458
 
 #10 CLAGN for linear interpolation:
 #2 bright:
-# object_name = '221925.57+272806.4'
-object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
+# object_name = '221925.57+272806.4' #this is a turn-off CLAGN. In MIR it has its max W1 before min, but in W2 it's the opposite
+# object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into ALLWISE-NEOWISE gap. Norm flux change = 1.88
 #8 dim:
 # object_name = '075448.10+345828.5' #Object L - chosen because only 1 day into ALLWISE-NEOWISE gap
 # object_name = '141801.50+525200.7'
@@ -85,7 +85,7 @@ object_name = '144051.17+024415.8' #Object M - chosen because only 30 days into 
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
 # object_name = '115715.92+285401.4' #chosen because of very large UV NFD (4.5) for a non-CL AGN
-# object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2)
+object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2). This is a turn-on CLAGN. In MIR it has its max W1 after min, but in W2 it's the opposite
 # object_name = '074217.52+392612.0' #chosen because non-CL AGN that varies in the MIR (z-score = 13) but not UV
 # object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
 # object_name = '152551.37+184552.0' #chosen because this is a CLAGN with a low UV NFD and low redshift
@@ -125,12 +125,12 @@ option = 1
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 0 #plot with just MIR data on it
+MIR_only = 1 #plot with just MIR data on it
 colour_plot = 0 #plot of object colour over time
-MIR_only_with_colour = 1 #plot with just MIR data on it - mag not flux. Also has colour in the figure
+MIR_only_with_colour = 0 #plot with just MIR data on it - mag not flux. Also has colour in the figure
 MIR_only_mag = 0 #plot with just MIR data on it - mag not flux
 colour_plot_mag = 0 #plot of object colour over time - mag not flux
-MIR_only_mag_with_colour = 1 #plot with just MIR data on it - mag not flux. Also has colour in the figure
+MIR_only_mag_with_colour = 0 #plot with just MIR data on it - mag not flux. Also has colour in the figure
 MIR_only_no_epoch = 0 #plot with just MIR data on it - not in epochs
 SDSS_DESI = 0 #2 plots, each one with just a SDSS or DESI spectrum
 SDSS_DESI_comb = 0 #SDSS & DESI spectra on same plot
@@ -1080,8 +1080,8 @@ if option >= 1 and option <= 4:
         plt.errorbar(W2_av_mjd_date, W2_averages_flux, yerr=W2_av_uncs_flux, fmt='o', color = 'orange', capsize=5, label = u'W2 (4.6\u03bcm)')
         # plt.plot(t, f_W1, label=fr'$f=f_0\left(\frac{{t}}{{t_0}}\right)^{{{alpha}}}$', color='black')
         # plt.plot(t, f_W2, color='black')
-        plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
-        plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
+        # plt.axvline(SDSS_mjd, linewidth=2, color='forestgreen', linestyle='--', label='SDSS Observation')
+        # plt.axvline(DESI_mjd, linewidth=2, color='midnightblue', linestyle='--', label='DESI Observation')
         plt.xlabel('Days since first observation', fontsize = 26)
         plt.tick_params(axis='both', labelsize=26, length=8, width=2)
         # plt.ylim(1.55, 7.05)

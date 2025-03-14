@@ -70,9 +70,15 @@ epochs_zs_W1 = 0 #W1 Zs vs W1 epochs
 epochs_zs_W2 = 0 #W2 Zs vs W2 epochs
 redshift_dist_bright_dim = 0 #hist of redshift distribution for objects analysed
 redshift_dist_CLAGN_vs_non_CLAGN = 0 #hist of redshift distribution for objects analysed
-luminosity_dist_CLAGN = 1 #hist of luminosity distribution for CLAGN analysed
-luminosity_dist_AGN = 1 #hist of luminosity distribution for Non-CL AGN analysed
+luminosity_dist_CLAGN = 0 #hist of MIR luminosity distribution for CLAGN analysed
+luminosity_dist_AGN = 0 #hist of MIR luminosity distribution for Non-CL AGN analysed
+luminosity_dist_CLAGN_vs_AGN = 0 #hist of MIR luminosity distribution for CLAGN and Non-CL AGN analysed
+luminosity_dist_CLAGN_vs_AGN_optical = 0 #hist of optical luminosity distribution for CLAGN and Non-CL AGN analysed
+luminosity_dist_variable_objects = 0 #hist of MIR luminosity distribution for MIR variable CLAGN and Non-CL AGN analysed
+luminosity_dist_variable_objects_optical = 1 #hist of optical luminosity distribution for MIR variable CLAGN and Non-CL AGN analysed
+lum_vs_zscore = 0 #plot of luminosity vs z-score
 UV_NFD_redshift = 0 #plot of UV NFD vs redshift
+UV_NFD_time_gap = 0 #plot of UV NFD vs time between observations
 UV_NFD_BEL = 0 #plot of UV NFD vs BEL
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
@@ -279,7 +285,6 @@ CLAGN_W2_zscore_mean = [
 CLAGN_W2_NFD = CLAGN_quantifying_change_data.iloc[:, 15].tolist()
 
 CLAGN_names_analysis = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
-print(CLAGN_names_analysis)
 
 CLAGN_mod_dev = pd.read_csv('CLAGN_mod_dev.csv')
 CLAGN_mod_dev_list = CLAGN_mod_dev.iloc[:, 0].tolist()
@@ -644,7 +649,12 @@ if main_MIR == 1:
     plt.tick_params(axis='both', labelsize=26, length=8, width=2)
     plt.xlabel("Z-Score", fontsize = 26)
     plt.ylabel("NFD", fontsize = 26)
-    plt.title("Characterising MIR Variability - Dim Objects", fontsize = 28)
+    if brightness == 0:
+        plt.title("Characterising MIR Variability - Dim Objects", fontsize = 28)
+    elif brightness == 1:
+        plt.title("Characterising MIR Variability - Bright Objects", fontsize = 28)
+    elif brightness == 2:
+        plt.title("Characterising MIR Variability", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.tight_layout()
     ax = plt.gca()
@@ -782,8 +792,6 @@ if main_MIR_direction == 1:
 
 
 if main_MIR_direction_on_vs_off == 1:
-    # bright_dim_W1 = 1
-    # bright_dim_W2 = 1
     CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
     CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
         CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
@@ -812,6 +820,7 @@ if main_MIR_direction_on_vs_off == 1:
     CLAGN_W1_max_mjd_off = CLAGN_quantifying_change_data_off.iloc[:, 38].tolist()
     CLAGN_W2_min_mjd_off = CLAGN_quantifying_change_data_off.iloc[:, 39].tolist()
     CLAGN_W2_max_mjd_off = CLAGN_quantifying_change_data_off.iloc[:, 40].tolist()
+    CLAGN_names_analysis_off = CLAGN_quantifying_change_data_off.iloc[:, 0].tolist()
     
     CLAGN_quantifying_change_data_on = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 0].isin(Guo_table4[Guo_table4['transition'] == 'turn-on'].iloc[:, 0])]
     CLAGN_W1_zscore_max_on = CLAGN_quantifying_change_data_on.iloc[:, 1].tolist()
@@ -836,7 +845,7 @@ if main_MIR_direction_on_vs_off == 1:
     CLAGN_W1_max_mjd_on = CLAGN_quantifying_change_data_on.iloc[:, 38].tolist()
     CLAGN_W2_min_mjd_on = CLAGN_quantifying_change_data_on.iloc[:, 39].tolist()
     CLAGN_W2_max_mjd_on = CLAGN_quantifying_change_data_on.iloc[:, 40].tolist()
-
+    CLAGN_names_analysis_on = CLAGN_quantifying_change_data_on.iloc[:, 0].tolist()
 
     CLAGN_W1_min_mjd_off = np.array(CLAGN_W1_min_mjd_off)
     CLAGN_W1_max_mjd_off = np.array(CLAGN_W1_max_mjd_off)
@@ -864,7 +873,8 @@ if main_MIR_direction_on_vs_off == 1:
 
     CLAGN_mean_directional_NFD_off = [np.nanmean([x,y]) for x, y in zip(CLAGN_W1_NFD_off, CLAGN_W2_NFD_off)]
     CLAGN_mean_directional_zscore_off = [np.nanmean([x,y]) for x, y in zip(CLAGN_W1_zscore_mean_off, CLAGN_W2_zscore_mean_off)]
-
+    print(CLAGN_names_analysis_off)
+    print(CLAGN_mean_directional_zscore_off)
 
     CLAGN_W1_min_mjd_on = np.array(CLAGN_W1_min_mjd_on)
     CLAGN_W1_max_mjd_on = np.array(CLAGN_W1_max_mjd_on)
@@ -892,6 +902,8 @@ if main_MIR_direction_on_vs_off == 1:
 
     CLAGN_mean_directional_NFD_on = [np.nanmean([x,y]) for x, y in zip(CLAGN_W1_NFD_on, CLAGN_W2_NFD_on)]
     CLAGN_mean_directional_zscore_on = [np.nanmean([x,y]) for x, y in zip(CLAGN_W1_zscore_mean_on, CLAGN_W2_zscore_mean_on)]
+    print(CLAGN_names_analysis_on)
+    print(CLAGN_mean_directional_zscore_on)
 
     max_NFD = np.nanmax(CLAGN_mean_directional_NFD_off+CLAGN_mean_directional_NFD_on)
     min_NFD = np.nanmin(CLAGN_mean_directional_NFD_off+CLAGN_mean_directional_NFD_on)
@@ -904,7 +916,7 @@ if main_MIR_direction_on_vs_off == 1:
     CLAGN_median_zscore_on = np.nanmedian(CLAGN_mean_directional_zscore_on)
 
     plt.figure(figsize=(12, 7))
-    plt.scatter(CLAGN_mean_directional_zscore_off, CLAGN_mean_directional_NFD_off, s=100, color='brown',  label=u'Turn-off CLAGN')
+    plt.scatter(CLAGN_mean_directional_zscore_off, CLAGN_mean_directional_NFD_off, s=100, marker='s', color='brown',  label=u'Turn-off CLAGN')
     plt.scatter(CLAGN_mean_directional_zscore_on, CLAGN_mean_directional_NFD_on, s=100, color='salmon',  label=u'Turn-on CLAGN')
     plt.axvline(0, color='black', linestyle=':')
     plt.axhline(0, color='black', linestyle=':')
@@ -2984,8 +2996,8 @@ if luminosity_dist_AGN == 1:
     plt.figure(figsize=(12,7))
     plt.hist(AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
     plt.hist(AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
-    plt.axvline(AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label = f'Bright Flux Non-CL AGN Median = {AGN_median_luminosity_bright:.2e}')
-    plt.axvline(AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label = f'Dim Flux Non-CL AGN Median = {AGN_median_luminosity_dim:.2e}')
+    plt.axvline(AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkblue', label = f'Bright Flux Non-CL AGN Median = {AGN_median_luminosity_bright:.2e}')
+    plt.axvline(AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkblue', label = f'Dim Flux Non-CL AGN Median = {AGN_median_luminosity_dim:.2e}')
     plt.xscale('log')
     plt.xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize=26)
     plt.ylabel('Frequency', fontsize=26)
@@ -2996,35 +3008,665 @@ if luminosity_dist_AGN == 1:
     plt.show()
 
 
+if luminosity_dist_CLAGN_vs_AGN == 1:
+    fig, ax = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    CLAGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_bright, CLAGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    CLAGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_dim, CLAGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_brightflux]
+    CLAGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_dimflux]
+    combined_luminosities = CLAGN_luminosity_brightflux + CLAGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
+    CLAGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in CLAGN_luminosity_brightflux]
+    CLAGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in CLAGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    CLAGN_median_luminosity_bright = np.median(CLAGN_luminosity_brightflux)
+    CLAGN_median_luminosity_dim = np.median(CLAGN_luminosity_dimflux)
+
+    # Plot for CLAGN
+    ax[0].hist(CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax[0].hist(CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax[0].axvline(CLAGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright Flux CLAGN Median = {CLAGN_median_luminosity_bright:.2e}')
+    ax[0].axvline(CLAGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim Flux CLAGN Median = {CLAGN_median_luminosity_dim:.2e}')
+    ax[0].set_xscale('log')
+    ax[0].set_ylabel('Frequency', fontsize=26)
+    ax[0].set_title(u'Distribution of Luminosities (3.4\u03bcm) - \nDim vs Bright Objects', fontsize=28)
+    ax[0].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[0].legend(loc='best', fontsize=15)
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
+
+    AGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_bright, AGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_names_analysis_dim = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_W1_low_flux = AGN_quantifying_change_data.iloc[:, 31].tolist()
+
+    AGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_dim, AGN_W1_low_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_brightflux]
+    AGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_dimflux]
+    combined_luminosities = AGN_luminosity_brightflux + AGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
+    AGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in AGN_luminosity_brightflux]
+    AGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in AGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    AGN_median_luminosity_bright = np.median(AGN_luminosity_brightflux)
+    AGN_median_luminosity_dim = np.median(AGN_luminosity_dimflux)
+
+    # Plot for Non-CL AGN
+    ax[1].hist(AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax[1].hist(AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax[1].axvline(AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Flux Non-CL AGN Median = {AGN_median_luminosity_bright:.2e}')
+    ax[1].axvline(AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Flux Non-CL AGN Median = {AGN_median_luminosity_dim:.2e}')
+    ax[1].set_xscale('log')
+    ax[1].set_xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize=26)
+    ax[1].set_ylabel('Frequency', fontsize=26)
+    ax[1].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[1].legend(loc='upper right', fontsize=15)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
+
+
+if luminosity_dist_CLAGN_vs_AGN_optical == 1:
+    fig, ax = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_optical_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    CLAGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_bright, CLAGN_optical_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    CLAGN_optical_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    CLAGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(CLAGN_names_analysis_dim, CLAGN_optical_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_brightflux]
+    CLAGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in CLAGN_luminosity_dimflux]
+    combined_luminosities = CLAGN_luminosity_brightflux + CLAGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(4000*10**-10) for lum in combined_luminosities]
+    CLAGN_luminosity_brightflux = [lum*(4000*10**-10) for lum in CLAGN_luminosity_brightflux]
+    CLAGN_luminosity_dimflux = [lum*(4000*10**-10) for lum in CLAGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    CLAGN_median_luminosity_bright = np.median(CLAGN_luminosity_brightflux)
+    CLAGN_median_luminosity_dim = np.median(CLAGN_luminosity_dimflux)
+
+    # Plot for CLAGN
+    ax[0].hist(CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax[0].hist(CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax[0].axvline(CLAGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright Flux CLAGN Median = {CLAGN_median_luminosity_bright:.2e}')
+    ax[0].axvline(CLAGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim Flux CLAGN Median = {CLAGN_median_luminosity_dim:.2e}')
+    ax[0].set_xscale('log')
+    ax[0].set_ylabel('Frequency', fontsize=26)
+    ax[0].set_title('Distribution of Luminosities (4000Å) - \nDim vs Bright Objects', fontsize=28)
+    ax[0].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[0].legend(loc='best', fontsize=15)
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_optical_flux = AGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    AGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_bright, AGN_optical_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_names_analysis_dim = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    AGN_optical_flux = AGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    AGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(AGN_names_analysis_dim, AGN_optical_flux):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_brightflux]
+    AGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in AGN_luminosity_dimflux]
+    combined_luminosities = AGN_luminosity_brightflux + AGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(4000*10**-10) for lum in combined_luminosities]
+    AGN_luminosity_brightflux = [lum*(4000*10**-10) for lum in AGN_luminosity_brightflux]
+    AGN_luminosity_dimflux = [lum*(4000*10**-10) for lum in AGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    AGN_median_luminosity_bright = np.median(AGN_luminosity_brightflux)
+    AGN_median_luminosity_dim = np.median(AGN_luminosity_dimflux)
+
+    # Plot for Non-CL AGN
+    ax[1].hist(AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax[1].hist(AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax[1].axvline(AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Flux Non-CL AGN Median = {AGN_median_luminosity_bright:.2e}')
+    ax[1].axvline(AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Flux Non-CL AGN Median = {AGN_median_luminosity_dim:.2e}')
+    ax[1].set_xscale('log')
+    ax[1].set_xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize=26)
+    ax[1].set_ylabel('Frequency', fontsize=26)
+    ax[1].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[1].legend(loc='upper right', fontsize=15)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
+
+
+if luminosity_dist_variable_objects == 1:
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_zscores_bright = AGN_quantifying_change_data.iloc[:, 17].tolist()
+    AGN_zscore_uncs_bright = AGN_quantifying_change_data.iloc[:, 18].tolist()
+
+    median_zscore_bright = np.nanmedian(AGN_zscores_bright)
+    median_zscore_unc_bright = np.nanmedian(AGN_zscore_uncs_bright)
+    three_sigma_zscore_bright = median_zscore_bright + 3*median_zscore_unc_bright
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_zscores_dim = AGN_quantifying_change_data.iloc[:, 17].tolist()
+    AGN_zscore_uncs_dim = AGN_quantifying_change_data.iloc[:, 18].tolist()
+
+    median_zscore_dim = np.nanmedian(AGN_zscores_dim)
+    median_zscore_unc_dim = np.nanmedian(AGN_zscore_uncs_dim)
+    three_sigma_zscore_dim = median_zscore_dim + 3*median_zscore_unc_dim
+    
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_bright]
+    variable_CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_CLAGN_W1_low_flux_bright = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_CLAGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(variable_CLAGN_names_analysis_bright, variable_CLAGN_W1_low_flux_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            variable_CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_dim]
+    variable_CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_CLAGN_W1_low_flux_dim = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_CLAGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(variable_CLAGN_names_analysis_dim, variable_CLAGN_W1_low_flux_dim):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            variable_CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    variable_CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_CLAGN_luminosity_dimflux]
+    combined_luminosities = variable_CLAGN_luminosity_brightflux + variable_CLAGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
+    variable_CLAGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in variable_CLAGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    variable_CLAGN_median_luminosity_bright = np.median(variable_CLAGN_luminosity_brightflux)
+    variable_CLAGN_median_luminosity_dim = np.median(variable_CLAGN_luminosity_dimflux)
+    
+    fig, ax = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+
+    # Plot for CLAGN
+    ax[0].hist(variable_CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax[0].hist(variable_CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax[0].axvline(variable_CLAGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright Flux CLAGN Median = {variable_CLAGN_median_luminosity_bright:.2e}')
+    ax[0].axvline(variable_CLAGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim Flux CLAGN Median = {variable_CLAGN_median_luminosity_dim:.2e}')
+    ax[0].set_xscale('log')
+    ax[0].set_ylabel('Frequency', fontsize=26)
+    ax[0].set_title(u'Distribution of Luminosities (3.4\u03bcm) - \nDim vs Bright Objects with Z-score > Threshold', fontsize=28)
+    ax[0].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[0].legend(loc='best', fontsize=15)
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_bright]
+    variable_AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_AGN_W1_low_flux_bright = AGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_AGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(variable_AGN_names_analysis_bright, variable_AGN_W1_low_flux_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            variable_AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_dim]
+    variable_AGN_names_analysis_dim = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_AGN_W1_low_flux_dim = AGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_AGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(variable_AGN_names_analysis_dim, variable_AGN_W1_low_flux_dim):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            variable_AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    variable_AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_AGN_luminosity_dimflux]
+    combined_luminosities = variable_AGN_luminosity_brightflux + variable_AGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(3.4*10**-6) for lum in combined_luminosities]
+    variable_AGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_luminosity_dimflux = [lum*(3.4*10**-6) for lum in variable_AGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    variable_AGN_median_luminosity_bright = np.median(variable_AGN_luminosity_brightflux)
+    variable_AGN_median_luminosity_dim = np.median(variable_AGN_luminosity_dimflux)
+
+    # Plot for Non-CL AGN
+    ax[1].hist(variable_AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax[1].hist(variable_AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax[1].axvline(variable_AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Flux Non-CL AGN Median = {variable_AGN_median_luminosity_bright:.2e}')
+    ax[1].axvline(variable_AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Flux Non-CL AGN Median = {variable_AGN_median_luminosity_dim:.2e}')
+    ax[1].set_xscale('log')
+    ax[1].set_xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize=26)
+    ax[1].set_ylabel('Frequency', fontsize=26)
+    ax[1].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[1].legend(loc='upper right', fontsize=15)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.show()
+
+
+if luminosity_dist_variable_objects_optical == 1:
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_zscores_bright = AGN_quantifying_change_data.iloc[:, 17].tolist()
+    AGN_zscore_uncs_bright = AGN_quantifying_change_data.iloc[:, 18].tolist()
+
+    median_zscore_bright = np.nanmedian(AGN_zscores_bright)
+    median_zscore_unc_bright = np.nanmedian(AGN_zscore_uncs_bright)
+    three_sigma_zscore_bright = median_zscore_bright + 3*median_zscore_unc_bright
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_zscores_dim = AGN_quantifying_change_data.iloc[:, 17].tolist()
+    AGN_zscore_uncs_dim = AGN_quantifying_change_data.iloc[:, 18].tolist()
+
+    median_zscore_dim = np.nanmedian(AGN_zscores_dim)
+    median_zscore_unc_dim = np.nanmedian(AGN_zscore_uncs_dim)
+    three_sigma_zscore_dim = median_zscore_dim + 3*median_zscore_unc_dim
+    
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_bright]
+    variable_CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_CLAGN_optical_flux_bright = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    variable_CLAGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(variable_CLAGN_names_analysis_bright, variable_CLAGN_optical_flux_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            variable_CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,  
+        CLAGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[CLAGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_dim]
+    variable_CLAGN_names_analysis_dim = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_CLAGN_optical_flux_dim = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    variable_CLAGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(variable_CLAGN_names_analysis_dim, variable_CLAGN_optical_flux_dim):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            variable_CLAGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    variable_CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_CLAGN_luminosity_dimflux]
+    combined_luminosities = variable_CLAGN_luminosity_brightflux + variable_CLAGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(4000*10**-10) for lum in combined_luminosities]
+    variable_CLAGN_luminosity_brightflux = [lum*(4000*10**-10) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_luminosity_dimflux = [lum*(4000*10**-10) for lum in variable_CLAGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    variable_CLAGN_median_luminosity_bright = np.median(variable_CLAGN_luminosity_brightflux)
+    variable_CLAGN_median_luminosity_dim = np.median(variable_CLAGN_luminosity_dimflux)
+    
+    fig, ax = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
+
+    # Plot for CLAGN
+    ax[0].hist(variable_CLAGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright CLAGN')
+    ax[0].hist(variable_CLAGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim CLAGN')
+    ax[0].axvline(variable_CLAGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkred', label=f'Bright Flux CLAGN Median = {variable_CLAGN_median_luminosity_bright:.2e}')
+    ax[0].axvline(variable_CLAGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkred', label=f'Dim Flux CLAGN Median = {variable_CLAGN_median_luminosity_dim:.2e}')
+    ax[0].set_xscale('log')
+    ax[0].set_ylabel('Frequency', fontsize=26)
+    ax[0].set_title(u'Distribution of Luminosities (4000Å) - \nDim vs Bright Objects with Z-score > Threshold', fontsize=28)
+    ax[0].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[0].legend(loc='best', fontsize=15)
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_bright]
+    variable_AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_AGN_optical_flux_bright = AGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    variable_AGN_luminosity_brightflux = []
+    for object_name, min_flux in zip(variable_AGN_names_analysis_bright, variable_AGN_optical_flux_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            variable_AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] < bright_dim_W1,
+        AGN_quantifying_change_data.iloc[:, 30] < bright_dim_W2)]
+    AGN_quantifying_change_data = AGN_quantifying_change_data[AGN_quantifying_change_data.iloc[:, 17] > three_sigma_zscore_dim]
+    variable_AGN_names_analysis_dim = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_AGN_optical_flux_dim = AGN_quantifying_change_data.iloc[:, 41].tolist()
+
+    variable_AGN_luminosity_dimflux = []
+    for object_name, min_flux in zip(variable_AGN_names_analysis_dim, variable_AGN_optical_flux_dim):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            variable_AGN_luminosity_dimflux.append(luminosity(min_flux, redshift))
+
+    variable_AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_luminosity_dimflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_AGN_luminosity_dimflux]
+    combined_luminosities = variable_AGN_luminosity_brightflux + variable_AGN_luminosity_dimflux
+    combined_lambda_lum = [lum*(4000*10**-10) for lum in combined_luminosities]
+    variable_AGN_luminosity_brightflux = [lum*(4000*10**-10) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_luminosity_dimflux = [lum*(4000*10**-10) for lum in variable_AGN_luminosity_dimflux]
+    bins_mod_dev = np.logspace(np.log10(min(combined_lambda_lum)), np.log10(max(combined_lambda_lum)), num=20)
+    variable_AGN_median_luminosity_bright = np.median(variable_AGN_luminosity_brightflux)
+    variable_AGN_median_luminosity_dim = np.median(variable_AGN_luminosity_dimflux)
+
+    # Plot for Non-CL AGN
+    ax[1].hist(variable_AGN_luminosity_brightflux, bins=bins_mod_dev, color='black', histtype='step', linewidth=2, label='Bright Non-CL AGN')
+    ax[1].hist(variable_AGN_luminosity_dimflux, bins=bins_mod_dev, color='gray', alpha=0.7, label='Dim Non-CL AGN')
+    ax[1].axvline(variable_AGN_median_luminosity_bright, linewidth=2, linestyle='-', color='darkblue', label=f'Bright Flux Non-CL AGN Median = {variable_AGN_median_luminosity_bright:.2e}')
+    ax[1].axvline(variable_AGN_median_luminosity_dim, linewidth=2, linestyle='--', color='darkblue', label=f'Dim Flux Non-CL AGN Median = {variable_AGN_median_luminosity_dim:.2e}')
+    ax[1].set_xscale('log')
+    ax[1].set_xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize=26)
+    ax[1].set_ylabel('Frequency', fontsize=26)
+    ax[1].tick_params(axis='both', labelsize=26, length=8, width=2)
+    ax[1].legend(loc='upper right', fontsize=15)
+
+    plt.tight_layout(rect=[0.04, 0, 1, 0.96])
+    plt.show()
+
+
+if lum_vs_zscore == 1:
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    variable_CLAGN_zscores_bright = CLAGN_quantifying_change_data.iloc[:, 17].tolist()
+    variable_CLAGN_names_analysis_bright = CLAGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_CLAGN_W1_low_flux_bright = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_CLAGN_luminosity_brightflux = []
+    variable_CLAGN_zscores_bright_tracker = []
+    for object_name, min_flux, zscore in zip(variable_CLAGN_names_analysis_bright, variable_CLAGN_W1_low_flux_bright, variable_CLAGN_zscores_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = Guo_table4[Guo_table4.iloc[:, 0] == object_name]
+            redshift = object_row.iloc[0, 3]
+            variable_CLAGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+            variable_CLAGN_zscores_bright_tracker.append(zscore)
+
+    variable_CLAGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in variable_CLAGN_luminosity_brightflux]
+    variable_CLAGN_median_luminosity_bright = np.median(variable_CLAGN_luminosity_brightflux)
+
+    AGN_quantifying_change_data = pd.read_csv(f'AGN_Quantifying_Change_just_MIR_max_uncs_Sample_{my_sample}.csv')
+    AGN_quantifying_change_data = AGN_quantifying_change_data[np.where(AGN_quantifying_change_data.iloc[:, 27].notna(),  
+        AGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,  
+        AGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    variable_AGN_zscores_bright = AGN_quantifying_change_data.iloc[:, 17].tolist()
+    variable_AGN_names_analysis_bright = AGN_quantifying_change_data.iloc[:, 0].tolist()
+    variable_AGN_W1_low_flux_bright = AGN_quantifying_change_data.iloc[:, 27].tolist()
+
+    variable_AGN_luminosity_brightflux = []
+    variable_AGN_zscores_bright_tracker = []
+    for object_name, min_flux, zscore in zip(variable_AGN_names_analysis_bright, variable_AGN_W1_low_flux_bright, variable_AGN_zscores_bright):
+        if np.isnan(min_flux):
+            continue
+        else:
+            object_row = AGN_sample[AGN_sample.iloc[:, 3] == object_name]
+            redshift = object_row.iloc[0, 2]
+            variable_AGN_luminosity_brightflux.append(luminosity(min_flux, redshift))
+            variable_AGN_zscores_bright_tracker.append(zscore)
+
+    variable_AGN_luminosity_brightflux = [lum.to_value(u.erg / (u.s * u.m)) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_luminosity_brightflux = [lum*(3.4*10**-6) for lum in variable_AGN_luminosity_brightflux]
+    variable_AGN_median_luminosity_bright = np.median(variable_AGN_luminosity_brightflux)
+
+    plt.figure(figsize=(12, 7))
+    plt.scatter(variable_AGN_luminosity_brightflux, variable_AGN_zscores_bright_tracker, color='blue', label='Non-CL AGN')
+    plt.scatter(variable_CLAGN_luminosity_brightflux, variable_CLAGN_zscores_bright_tracker, s=100, color='red',  label='CLAGN')
+    plt.xscale('log')
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel(r'λ$L_{λ}$ / erg s$^{-1}$', fontsize = 26)
+    plt.ylabel("Z-Score", fontsize = 26)
+    plt.title(u'Z-Score vs Luminosity at 3.4\u03bcm', fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
 if UV_NFD_redshift == 1:
     CLAGN_UV_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
     CLAGN_UV_all = CLAGN_UV_all.dropna(subset=[CLAGN_UV_all.columns[1]])
     combined_CLAGN_UV_NFD = CLAGN_UV_all.iloc[:, 1]
-    combined_CLAGN_redshift = CLAGN_UV_all.iloc[:, 5]
+    combined_CLAGN_redshift = CLAGN_UV_all.iloc[:, 6]
+
+    AGN_UV_all = pd.read_csv(f'AGN_Quantifying_Change_Sample_{1}_UV_all.csv')
+    AGN_UV_all = AGN_UV_all.dropna(subset=[AGN_UV_all.columns[1]])
+    combined_AGN_UV_NFD = AGN_UV_all.iloc[:, 1]
+    combined_AGN_UV_NFD_unc = AGN_UV_all.iloc[:, 2]
+    combined_AGN_redshift = AGN_UV_all.iloc[:, 6]
+
+    median_UV_NFD = np.nanmedian(combined_AGN_UV_NFD)
+    median_UV_NFD_unc = np.nanmedian(combined_AGN_UV_NFD_unc)
+    three_sigma_UV_NFD = median_UV_NFD + 3*median_UV_NFD_unc
+
+    plt.figure(figsize=(12, 7))
+    plt.scatter(combined_CLAGN_redshift, combined_CLAGN_UV_NFD, s=100, color='red',  label='CLAGN')
+    plt.scatter(combined_AGN_redshift, combined_AGN_UV_NFD, color='blue', label='Non-CL AGN')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.xlim(0, 1.05*max(combined_CLAGN_redshift+combined_AGN_redshift))
+    plt.ylim(-0.25, 1.05*max(combined_CLAGN_UV_NFD+combined_AGN_UV_NFD))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel("Redshift", fontsize = 26)
+    plt.ylabel("UV NFD", fontsize = 26)
+    plt.title("UV NFD vs Redshift", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
+if UV_NFD_time_gap == 1:
+    CLAGN_UV_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
+    CLAGN_UV_all = CLAGN_UV_all.dropna(subset=[CLAGN_UV_all.columns[1]])
+    combined_CLAGN_UV_NFD = CLAGN_UV_all.iloc[:, 1]
+    CLAGN_SDSS_mjd = CLAGN_UV_all.iloc[:, 3]
+    CLAGN_DESI_mjd = CLAGN_UV_all.iloc[:, 4]
+    CLAGN_time_gap = [DESI-SDSS for SDSS, DESI in zip(CLAGN_SDSS_mjd, CLAGN_DESI_mjd)]
+
+    AGN_UV_all = pd.read_csv(f'AGN_Quantifying_Change_Sample_{1}_UV_all.csv')
+    AGN_UV_all = AGN_UV_all.dropna(subset=[AGN_UV_all.columns[1]])
+    combined_AGN_UV_NFD = AGN_UV_all.iloc[:, 1]
+    combined_AGN_UV_NFD_unc = AGN_UV_all.iloc[:, 2]
+    AGN_SDSS_mjd = AGN_UV_all.iloc[:, 3]
+    AGN_DESI_mjd = AGN_UV_all.iloc[:, 4]
+    AGN_time_gap = [DESI-SDSS for SDSS, DESI in zip(AGN_SDSS_mjd, AGN_DESI_mjd)]
+
+    median_UV_NFD = np.nanmedian(combined_AGN_UV_NFD)
+    median_UV_NFD_unc = np.nanmedian(combined_AGN_UV_NFD_unc)
+    three_sigma_UV_NFD = median_UV_NFD + 3*median_UV_NFD_unc
+
+    plt.figure(figsize=(12, 7))
+    plt.scatter(CLAGN_time_gap, combined_CLAGN_UV_NFD, s=100, color='red',  label='CLAGN')
+    plt.scatter(AGN_time_gap, combined_AGN_UV_NFD, color='blue', label='Non-CL AGN')
+    plt.axhline(y=three_sigma_UV_NFD, color='black', linestyle='--', linewidth=2, label = 'Threshold')
+    plt.xlim(0, 1.05*max(CLAGN_time_gap+AGN_time_gap))
+    plt.ylim(-0.25, 1.05*max(combined_CLAGN_UV_NFD+combined_AGN_UV_NFD))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel("Time between Observations / Days", fontsize = 26)
+    plt.ylabel("UV NFD", fontsize = 26)
+    plt.title("UV NFD vs Time between observations", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
+if UV_NFD_BEL == 1:
+    CLAGN_UV_all = pd.read_csv('CLAGN_Quantifying_Change_UV_all.csv')
+    CLAGN_UV_all = CLAGN_UV_all.dropna(subset=[CLAGN_UV_all.columns[1]])
+    combined_CLAGN_UV_NFD = CLAGN_UV_all.iloc[:, 1]
+    combined_CLAGN_redshift = CLAGN_UV_all.iloc[:, 6]
 
     CLAGN_UV_all_Halpha = CLAGN_UV_all[CLAGN_UV_all.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Halpha'].iloc[:, 0])]
     CLAGN_UV_NFD_Halpha = CLAGN_UV_all_Halpha.iloc[:, 1]
-    CLAGN_redshift_Halpha = CLAGN_UV_all_Halpha.iloc[:, 5]
+    CLAGN_redshift_Halpha = CLAGN_UV_all_Halpha.iloc[:, 6]
     print(f'number of Halpha CLAGN = {len(CLAGN_UV_NFD_Halpha)}')
 
     CLAGN_UV_all_Hbeta = CLAGN_UV_all[CLAGN_UV_all.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Hbeta'].iloc[:, 0])]
     CLAGN_UV_NFD_Hbeta = CLAGN_UV_all_Hbeta.iloc[:, 1]
-    CLAGN_redshift_Hbeta = CLAGN_UV_all_Hbeta.iloc[:, 5]
+    CLAGN_redshift_Hbeta = CLAGN_UV_all_Hbeta.iloc[:, 6]
     print(f'number of Hbeta CLAGN = {len(CLAGN_UV_NFD_Hbeta)}')
 
     CLAGN_UV_all_Mg2 = CLAGN_UV_all[CLAGN_UV_all.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'Mg ii'].iloc[:, 0])]
     CLAGN_UV_NFD_Mg2 = CLAGN_UV_all_Mg2.iloc[:, 1]
-    CLAGN_redshift_Mg2 = CLAGN_UV_all_Mg2.iloc[:, 5]
+    CLAGN_redshift_Mg2 = CLAGN_UV_all_Mg2.iloc[:, 6]
     print(f'number of Mg2 CLAGN = {len(CLAGN_UV_NFD_Mg2)}')
 
     CLAGN_UV_all_C3_ = CLAGN_UV_all[CLAGN_UV_all.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iii]'].iloc[:, 0])]
     CLAGN_UV_NFD_C3_ = CLAGN_UV_all_C3_.iloc[:, 1]
-    CLAGN_redshift_C3_ = CLAGN_UV_all_C3_.iloc[:, 5]
+    CLAGN_redshift_C3_ = CLAGN_UV_all_C3_.iloc[:, 6]
     print(f'number of C3_ CLAGN = {len(CLAGN_UV_NFD_C3_)}')
 
     CLAGN_UV_all_C4 = CLAGN_UV_all[CLAGN_UV_all.iloc[:, 0].isin(Guo_table4_filled[Guo_table4_filled['Line'] == 'C iv'].iloc[:, 0])]
     CLAGN_UV_NFD_C4 = CLAGN_UV_all_C4.iloc[:, 1]
-    CLAGN_redshift_C4 = CLAGN_UV_all_C4.iloc[:, 5]
+    CLAGN_redshift_C4 = CLAGN_UV_all_C4.iloc[:, 6]
     print(f'number of C4 CLAGN = {len(CLAGN_UV_NFD_C4)}')
     
     plt.figure(figsize=(12, 7))
