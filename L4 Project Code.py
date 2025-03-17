@@ -59,7 +59,7 @@ c = 299792458
 # object_name = '155426.13+200527.7' #chosen because had different z scores
 
 #Below are the 3 non-CL AGN that have norm flux difference > threshold.
-# object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
+object_name = '143054.79+531713.9' #Object V - chosen because non-CLAGN and has a norm flux change of > 1
 # object_name = '125449.57+574805.3' #Object R
 # object_name = '121947.25+575744.4'
 
@@ -85,7 +85,7 @@ c = 299792458
 
 # object_name = '161315.68+545443.3' #chosen because gives a nice light curve for a non-CL AGN.
 # object_name = '115715.92+285401.4' #chosen because of very large UV NFD (4.5) for a non-CL AGN
-object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2). This is a turn-on CLAGN. In MIR it has its max W1 after min, but in W2 it's the opposite
+# object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the highest UV NFD (7.2). This is a turn-on CLAGN. In MIR it has its max W1 after min, but in W2 it's the opposite
 # object_name = '074217.52+392612.0' #chosen because non-CL AGN that varies in the MIR (z-score = 13) but not UV
 # object_name = '123807.76+532555.9' #chosen because non-CL AGN that varies a lot in MIR (z-score = 21) and a bit in the UV (UV NFD = 0.9)
 # object_name = '152551.37+184552.0' #chosen because this is a CLAGN with a low UV NFD and low redshift
@@ -93,7 +93,7 @@ object_name = '145913.90+360051.4' #chosen because it is the CLAGN with the high
 # object_name = '224657.70-003242.5'
 # object_name = '134554.00+084537.3'
 
-#Sheng_2020 CLAGN that had their CL event time constrained
+#Sheng_2020 CLAGN that had their CL event time constrained:
 RA = 0
 DEC = 0
 z = 0
@@ -119,13 +119,13 @@ z = 0
 #option 6 = download just sdss spectrum from the internet (No MIR)
 #option 7 = download both sdss & desi spectra from the internet (No MIR)
 #This prevents unnecessary querying of the databases. DESI database will time out if you spam it.
-option = 1
+option = 6
 
 #Selecting which plots you want. Set = 1 if you want that plot
 UV_NFD_plot = 0 #plot with NFD on the top. SDSS & DESI on the bottom
 UV_NFD_hist = 0 #histogram of the NFD across each wavelength value
 MIR_epoch = 0 #Single epoch plot - set m & n below
-MIR_only = 1 #plot with just MIR data on it
+MIR_only = 0 #plot with just MIR data on it
 colour_plot = 0 #plot of object colour over time
 MIR_only_with_colour = 0 #plot with just MIR data on it - mag not flux. Also has colour in the figure
 MIR_only_mag = 0 #plot with just MIR data on it - mag not flux
@@ -199,7 +199,7 @@ if my_object == 1: #If a CLAGN; CLAGN are not in parent sample
     DESI_z = object_data.iloc[0, 9]
     DESI_name = object_data.iloc[0, 10]
 else:
-    parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv')
+    parent_sample = pd.read_csv('clean_parent_sample_no_CLAGN.csv') #code breaks for CLAGN candidates
     try:
         object_data = parent_sample[parent_sample.iloc[:, 3] == object_name]
         SDSS_RA = object_data.iloc[0, 0]
@@ -292,6 +292,27 @@ def get_sdss_spectra():
         zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
         if zwarning !=0:
             print(f"SDSS ZWARNING Flag: {zwarning}")
+
+        # Extract black hole mass values from the FITS header
+        header = hdul[0].header  # Primary header
+
+        for i, hdu in enumerate(hdul):
+            if i >3:
+                continue
+            print(f"Extension {i}:")
+            print(repr(hdu.header))  # Print each header
+            print("\n" + "="*50 + "\n")
+
+        log_mbh = header.get('LOGMBH', np.nan)  # Fiducial single-epoch BH mass
+        log_mbh_hb = header.get('LOGMBH_HB', np.nan)  # Mass from Hβ
+        log_mbh_mgii = header.get('LOGMBH_MGII', np.nan)  # Mass from Mg II
+        log_mbh_civ = header.get('LOGMBH_CIV', np.nan)  # Mass from C IV
+
+        print(f"LOGMBH (fiducial): {log_mbh}")
+        print(f"LOGMBH_HB (Hβ-based): {log_mbh_hb}")
+        print(f"LOGMBH_MGII (Mg II-based): {log_mbh_mgii}")
+        print(f"LOGMBH_CIV (C IV-based): {log_mbh_civ}")
+
         return sdss_lamb, sdss_flux, sdss_flux_unc
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(10), retry=retry_if_exception_type((ConnectTimeout, TimeoutError, ConnectionError)))
@@ -363,9 +384,31 @@ elif option == 2 or option == 5:
     SDSS_file_path = f'clagn_spectra/{SDSS_file}'
     with fits.open(SDSS_file_path) as hdul:
         subset = hdul[1]
+        data = hdul[2].data  # Extract binary table data
+        zwarning = data['ZWARNING_NOQSO'][0] # Extract ZWARNING flag
+        if zwarning !=0:
+            print(f"SDSS ZWARNING Flag: {zwarning}")
         sdss_flux = subset.data['flux'] # 10-17 ergs/s/cm2/Å
         sdss_lamb = 10**subset.data['loglam'] #Wavelength in Angstroms
         sdss_flux_unc = np.array([np.sqrt(1/val) if val!=0 else np.nan for val in subset.data['ivar']])
+
+    # Extract black hole mass values from the FITS header
+    header = hdul[0].header  # Primary header
+
+    log_mbh = header.get('LOGMBH', np.nan)  # Fiducial single-epoch BH mass
+    log_mbh_hb = header.get('LOGMBH_HB', np.nan)  # Mass from Hβ
+    log_mbh_mgii = header.get('LOGMBH_MGII', np.nan)  # Mass from Mg II
+    log_mbh_civ = header.get('LOGMBH_CIV', np.nan)  # Mass from C IV
+
+    print(f"LOGMBH (fiducial): {log_mbh}")
+    print(f"LOGMBH_HB (Hβ-based): {log_mbh_hb}")
+    print(f"LOGMBH_MGII (Mg II-based): {log_mbh_mgii}")
+    print(f"LOGMBH_CIV (C IV-based): {log_mbh_civ}")
+
+    for i, hdu in enumerate(hdul):
+        print(f"Extension {i}:")
+        print(repr(hdu.header))  # Print each header
+        print("\n" + "="*50 + "\n")
 
     DESI_file = f'spectrum_desi_{object_name}.csv'
     DESI_file_path = f'clagn_spectra/{DESI_file}'

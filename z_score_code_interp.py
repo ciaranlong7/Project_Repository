@@ -73,6 +73,7 @@ W1_SDSS_DESI = []
 W1_SDSS_DESI_unc = []
 W1_DESI_SDSS = []
 W1_DESI_SDSS_unc = []
+W1_high = []
 W1_high_unc = []
 W1_low = []
 W1_low_unc = []
@@ -92,6 +93,7 @@ W2_SDSS_DESI = []
 W2_SDSS_DESI_unc = []
 W2_DESI_SDSS = []
 W2_DESI_SDSS_unc = []
+W2_high = []
 W2_high_unc = []
 W2_low = []
 W2_low_unc = []
@@ -823,6 +825,7 @@ for object_name in object_names:
                 W1_smallest = sorted(W1_averages_flux)[0]
                 W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
 
+                W1_high.append(W1_largest)
                 W1_high_unc.append(W1_largest_unc)
                 W1_low.append(W1_smallest)
                 W1_low_unc.append(W1_smallest_unc)
@@ -902,6 +905,7 @@ for object_name in object_names:
                 W2_smallest = sorted(W2_averages_flux)[0]
                 W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
 
+                W2_high.append(W2_largest)
                 W2_high_unc.append(W2_largest_unc)
                 W2_low.append(W2_smallest)
                 W2_low_unc.append(W2_smallest_unc)
@@ -1007,6 +1011,7 @@ for object_name in object_names:
 
                 W1_median_dev.append(median_abs_deviation(W1_averages_flux))
 
+                W2_high.append(np.nan)
                 W2_high_unc.append(np.nan)
                 W2_low.append(np.nan)
                 W2_low_unc.append(np.nan)
@@ -1017,6 +1022,7 @@ for object_name in object_names:
                 W1_smallest = sorted(W1_averages_flux)[0]
                 W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
 
+                W1_high.append(W1_largest)
                 W1_high_unc.append(W1_largest_unc)
                 W1_low.append(W1_smallest)
                 W1_low_unc.append(W1_smallest_unc)
@@ -1142,8 +1148,9 @@ for object_name in object_names:
                 W1_mean_uncs.append(W1_mean_unc_counter[0])
                 W2_mean_uncs.append(W2_mean_unc_counter[0])
                 W1_epochs.append(len(W1_data))
-                W2_epochs.append(len(W2_data))
-                
+                W2_epochs.append(len(W2_data)) 
+
+                W1_high.append(np.nan)
                 W1_high_unc.append(np.nan)
                 W1_low.append(np.nan)
                 W1_low_unc.append(np.nan)
@@ -1179,6 +1186,7 @@ for object_name in object_names:
                 W2_smallest = sorted(W2_averages_flux)[0]
                 W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
 
+                W2_high.append(W2_largest)
                 W2_high_unc.append(W2_largest_unc)
                 W2_low.append(W2_smallest)
                 W2_low_unc.append(W2_smallest_unc)
@@ -1329,7 +1337,9 @@ if MIR_analysis == 1:
         "W1 max mjd": W1_max_mjd, #42
         "W2 min mjd": W2_min_mjd, #43
         "W2 max mjd": W2_max_mjd, #44
-        "Off spectrum 4000A flux": off_spectrum_flux #45
+        "Off spectrum 4000A flux": off_spectrum_flux, #45
+        "W1 Max Flux": W1_high, #46
+        "W2 Max Flux": W2_high #47
     }
 
     # Convert the data into a DataFrame

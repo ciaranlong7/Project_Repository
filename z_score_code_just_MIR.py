@@ -8,10 +8,10 @@ from astroquery.ipac.irsa import Irsa
 
 c = 299792458
 
-my_object = 0 #0 = AGN. 1 = CLAGN
+my_object = 1 #0 = AGN. 1 = CLAGN
 my_sample = 3 #set which AGN sample you want
 save_figures = 0 #set to 1 to save figures
-mod_dev = 1 #set to 1 to do modified deviation analysis
+mod_dev = 0 #set to 1 to do modified deviation analysis
 
 parent_sample = pd.read_csv('guo23_parent_sample_no_duplicates.csv')
 Guo_table4 = pd.read_csv("Guo23_table4_clagn.csv")
@@ -78,6 +78,7 @@ W1_max = []
 W1_max_unc = []
 W1_min = []
 W1_min_unc = []
+W1_high = []
 W1_high_unc = []
 W1_low = []
 W1_low_unc = []
@@ -102,6 +103,7 @@ W2_max = []
 W2_max_unc = []
 W2_min = []
 W2_min_unc = []
+W2_high = []
 W2_high_unc = []
 W2_low = []
 W2_low_unc = []
@@ -468,6 +470,7 @@ for object_name in object_names:
             W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
             W1_smallest_mjd = W1_av_mjd_date[W1_averages_flux.index(W1_smallest)]
 
+            W1_high.append(W1_largest)
             W1_high_unc.append(W1_largest_unc)
             W1_low.append(W1_smallest)
             W1_low_unc.append(W1_smallest_unc)
@@ -507,6 +510,7 @@ for object_name in object_names:
             W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
             W2_smallest_mjd = W2_av_mjd_date[W2_averages_flux.index(W2_smallest)]
 
+            W2_high.append(W2_largest)
             W2_high_unc.append(W2_largest_unc)
             W2_low.append(W2_smallest)
             W2_low_unc.append(W2_smallest_unc)
@@ -576,6 +580,7 @@ for object_name in object_names:
 
             W1_median_dev.append(median_abs_deviation(W1_averages_flux))
 
+            W2_high.append(np.nan)
             W2_high_unc.append(np.nan)
             W2_low.append(np.nan)
             W2_low_unc.append(np.nan)
@@ -588,6 +593,7 @@ for object_name in object_names:
             W1_smallest_unc = W1_av_uncs_flux[W1_averages_flux.index(W1_smallest)]
             W1_smallest_mjd = W1_av_mjd_date[W1_averages_flux.index(W1_smallest)]
 
+            W1_high.append(W1_largest)
             W1_high_unc.append(W1_largest_unc)
             W1_low.append(W1_smallest)
             W1_low_unc.append(W1_smallest_unc)
@@ -677,7 +683,8 @@ for object_name in object_names:
             W2_mean_uncs.append(W2_mean_unc_counter[0])
             W1_epochs.append(len(W1_data))
             W2_epochs.append(len(W2_data))
-            
+
+            W1_high.append(np.nan)
             W1_high_unc.append(np.nan)
             W1_low.append(np.nan)
             W1_low_unc.append(np.nan)
@@ -715,6 +722,7 @@ for object_name in object_names:
             W2_smallest_unc = W2_av_uncs_flux[W2_averages_flux.index(W2_smallest)]
             W2_smallest_mjd = W2_av_mjd_date[W2_averages_flux.index(W2_smallest)]
 
+            W2_high.append(W2_largest)
             W2_high_unc.append(W2_largest_unc)
             W2_low.append(W2_smallest)
             W2_low_unc.append(W2_smallest_unc)
@@ -821,6 +829,8 @@ quantifying_change_data = {
     "W1 max mjd": W1_max_mjd, #38 (#42)
     "W2 min mjd": W2_min_mjd, #39 (#43)
     "W2 max mjd": W2_max_mjd, #40 (#44)
+    "W1 Max Flux": W1_high, #41 (#46)
+    "W2 Max Flux": W2_high #42 (#47)
 }
 
 # Convert the data into a DataFrame
