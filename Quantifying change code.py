@@ -81,7 +81,9 @@ luminosity_dist_variable_objects_optical = 0 #hist of optical luminosity distrib
 luminosity_dist_nonvariable_objects = 0 #hist of MIR luminosity distribution for non MIR variable CLAGN and Non-CL AGN analysed
 luminosity_dist_nonvariable_objects_optical = 0 #hist of optical luminosity distribution for non MIR variable CLAGN and Non-CL AGN analysed
 lum_vs_zscore = 0 #plot of luminosity vs z-score
-delta_W2mag_vs_delta_W1mag_CLAGN = 1 #plot of change in W2 magnitude vs change in W1 magnitude for CLAGN
+delta_W2mag_vs_delta_W1mag_CLAGN = 0 #plot of change in W2 magnitude vs change in W1 magnitude for CLAGN
+delta_W2mag_vs_delta_W1mag_CLAGN_Yang2025_repeat = 0 #plot of change in W2 magnitude vs change in W1 magnitude for CLAGN (Yang 2025 repeat - same timeframe for W1 and W2)
+Comparing_Yang2025_analysis_to_mine = 1 #plot of W2 NFD/W1 NFD and similar plot for z-score. Comparing my analysis to Yang's
 delta_W2mag_vs_delta_W1mag_AGN = 0 #plot of change in W2 magnitude vs change in W1 magnitude for non-CL AGN
 UV_NFD_redshift = 0 #plot of UV NFD vs redshift
 UV_NFD_time_gap = 0 #plot of UV NFD vs time between observations
@@ -3986,52 +3988,56 @@ if delta_W2mag_vs_delta_W1mag_CLAGN:
         return -2.5*np.log10(flux/k) + AB_correction
     
     ###BEST FIT LINE###
-    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    #drop objects that don't have analysis in both W1 and W2
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[28]])
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[29]])
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[31]])
-    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[32]])
+    # CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+    #     CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+    #     CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    # #drop objects that don't have analysis in both W1 and W2
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[28]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[29]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[31]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[32]])
+    # print(len(CLAGN_quantifying_change_data))
     
-    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
-    CLAGN_W1_low_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_low_flux]
-    CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
-    CLAGN_W1_low_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_low_flux_unc, CLAGN_W1_low_flux)]
-    CLAGN_W1_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
-    CLAGN_W1_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    CLAGN_W1_high_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_high_flux]
-    CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
-    CLAGN_W1_high_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_high_flux_unc, CLAGN_W1_high_flux)]
-    CLAGN_W1_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+    # CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+    # CLAGN_W1_low_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_low_flux]
+    # CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
+    # CLAGN_W1_low_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_low_flux_unc, CLAGN_W1_low_flux)]
+    # CLAGN_W1_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
+    # CLAGN_W1_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    # CLAGN_W1_high_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_high_flux]
+    # CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
+    # CLAGN_W1_high_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_high_flux_unc, CLAGN_W1_high_flux)]
+    # CLAGN_W1_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
 
-    CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-    CLAGN_W2_low_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_low_flux]
-    CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
-    CLAGN_W2_low_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_low_flux_unc, CLAGN_W2_low_flux)]
-    CLAGN_W2_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
-    CLAGN_W2_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    CLAGN_W2_high_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_high_flux]
-    CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
-    CLAGN_W2_high_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_high_flux_unc, CLAGN_W2_high_flux)]
-    CLAGN_W2_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
+    # CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+    # CLAGN_W2_low_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_low_flux]
+    # CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+    # CLAGN_W2_low_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_low_flux_unc, CLAGN_W2_low_flux)]
+    # CLAGN_W2_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
+    # CLAGN_W2_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    # CLAGN_W2_high_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_high_flux]
+    # CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+    # CLAGN_W2_high_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_high_flux_unc, CLAGN_W2_high_flux)]
+    # CLAGN_W2_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
 
-    delta_W1 = []
-    delta_W1_unc = []
-    for i in range(len(CLAGN_quantifying_change_data)):
-        if CLAGN_W1_high_flux_mjd[i] > CLAGN_W1_low_flux_mjd[i]: #turned on
-            delta_W1.append(CLAGN_W1_high_mag[i] - CLAGN_W1_low_mag[i])
-        else: #turned off
-            delta_W1.append(CLAGN_W1_low_mag[i] - CLAGN_W1_high_mag[i])
-        delta_W1_unc.append(np.sqrt(CLAGN_W1_low_mag_unc[i]**2 + CLAGN_W1_high_mag_unc[i]**2))
+    # delta_W1 = []
+    # delta_W1_unc = []
+    # for i in range(len(CLAGN_quantifying_change_data)):
+    #     if CLAGN_W1_high_flux_mjd[i] > CLAGN_W1_low_flux_mjd[i]: #turned on
+    #         delta_W1.append(CLAGN_W1_high_mag[i] - CLAGN_W1_low_mag[i])
+    #     else: #turned off
+    #         delta_W1.append(CLAGN_W1_low_mag[i] - CLAGN_W1_high_mag[i])
+    #     delta_W1_unc.append(np.sqrt(CLAGN_W1_low_mag_unc[i]**2 + CLAGN_W1_high_mag_unc[i]**2))
 
-    delta_W2 = []
-    delta_W2_unc = []
-    for i in range(len(CLAGN_quantifying_change_data)):
-        if CLAGN_W2_high_flux_mjd[i] > CLAGN_W2_low_flux_mjd[i]: #turned on
-            delta_W2.append(CLAGN_W2_high_mag[i] - CLAGN_W2_low_mag[i])
-        else: #turned off
-            delta_W2.append(CLAGN_W2_low_mag[i] - CLAGN_W2_high_mag[i])
-        delta_W2_unc.append(np.sqrt(CLAGN_W2_low_mag_unc[i]**2 + CLAGN_W2_high_mag_unc[i]**2))
+    # delta_W2 = []
+    # delta_W2_unc = []
+    # for i in range(len(CLAGN_quantifying_change_data)):
+    #     if CLAGN_W2_high_flux_mjd[i] > CLAGN_W2_low_flux_mjd[i]: #turned on
+    #         delta_W2.append(CLAGN_W2_high_mag[i] - CLAGN_W2_low_mag[i])
+    #     else: #turned off
+    #         delta_W2.append(CLAGN_W2_low_mag[i] - CLAGN_W2_high_mag[i])
+    #     delta_W2_unc.append(np.sqrt(CLAGN_W2_low_mag_unc[i]**2 + CLAGN_W2_high_mag_unc[i]**2))
 
     # def model_funct(vals, x):
     #     return vals[0] + vals[1]*x
@@ -4059,55 +4065,63 @@ if delta_W2mag_vs_delta_W1mag_CLAGN:
 
     # print(f"Best-fit parameters: intercept = {intercept:.3f} ± {intercept_err:.3f}, grad = {grad:.3f} ± {grad_err:.3f}")
 
-    # #plot data - to make best fit line I needed no nans in the uncertainties. Don't need that for the plot.
-    # CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
-    # #drop objects that don't have analysis in both W1 and W2
+    #plot data - to make best fit line I needed no nans in the uncertainties. Don't need that for the plot.
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_just_MIR_max_uncs.csv')
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+        CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+        CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    #drop objects that don't have analysis in both W1 and W2
     # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[27]])
     # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[30]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[28]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[29]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[31]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[32]])
+    print(len(CLAGN_quantifying_change_data))
 
-    # CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
-    # CLAGN_W1_low_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_low_flux]
-    # CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+    CLAGN_W1_low_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_low_flux]
+    CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
     # CLAGN_W1_low_flux_unc = np.where(np.isnan(CLAGN_W1_low_flux_unc), np.nanmedian(CLAGN_W1_low_flux_unc), CLAGN_W1_low_flux_unc)
-    # CLAGN_W1_low_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_low_flux_unc, CLAGN_W1_low_flux)]
-    # CLAGN_W1_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
-    # CLAGN_W1_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
-    # CLAGN_W1_high_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_high_flux]
-    # CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
+    CLAGN_W1_low_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_low_flux_unc, CLAGN_W1_low_flux)]
+    CLAGN_W1_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
+    CLAGN_W1_high_flux = CLAGN_quantifying_change_data.iloc[:, 41].tolist()
+    CLAGN_W1_high_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_high_flux]
+    CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
     # CLAGN_W1_high_flux_unc = np.where(np.isnan(CLAGN_W1_high_flux_unc), np.nanmedian(CLAGN_W1_high_flux_unc), CLAGN_W1_high_flux_unc)
-    # CLAGN_W1_high_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_high_flux_unc, CLAGN_W1_high_flux)]
-    # CLAGN_W1_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+    CLAGN_W1_high_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_high_flux_unc, CLAGN_W1_high_flux)]
+    CLAGN_W1_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
 
-    # CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
-    # CLAGN_W2_low_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_low_flux]
-    # CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+    CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+    CLAGN_W2_low_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_low_flux]
+    CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
     # CLAGN_W2_low_flux_unc = np.where(np.isnan(CLAGN_W2_low_flux_unc), np.nanmedian(CLAGN_W2_low_flux_unc), CLAGN_W2_low_flux_unc)
-    # CLAGN_W2_low_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_low_flux_unc, CLAGN_W2_low_flux)]
-    # CLAGN_W2_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
-    # CLAGN_W2_high_flux = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
-    # CLAGN_W2_high_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_high_flux]
-    # CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+    CLAGN_W2_low_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_low_flux_unc, CLAGN_W2_low_flux)]
+    CLAGN_W2_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 39].tolist()
+    CLAGN_W2_high_flux = CLAGN_quantifying_change_data.iloc[:, 42].tolist()
+    CLAGN_W2_high_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_high_flux]
+    CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
     # CLAGN_W2_high_flux_unc = np.where(np.isnan(CLAGN_W2_high_flux_unc), np.nanmedian(CLAGN_W2_high_flux_unc), CLAGN_W2_high_flux_unc)
-    # CLAGN_W2_high_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_high_flux_unc, CLAGN_W2_high_flux)]
-    # CLAGN_W2_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
+    CLAGN_W2_high_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_high_flux_unc, CLAGN_W2_high_flux)]
+    CLAGN_W2_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 40].tolist()
 
-    # delta_W1 = []
-    # delta_W1_unc = []
-    # for i in range(len(CLAGN_quantifying_change_data)):
-    #     if CLAGN_W1_high_flux_mjd[i] > CLAGN_W1_low_flux_mjd[i]: #turned on
-    #         delta_W1.append(CLAGN_W1_high_mag[i] - CLAGN_W1_low_mag[i])
-    #     else: #turned off
-    #         delta_W1.append(CLAGN_W1_low_mag[i] - CLAGN_W1_high_mag[i])
-    #     delta_W1_unc.append(np.sqrt(CLAGN_W1_low_mag_unc[i]**2 + CLAGN_W1_high_mag_unc[i]**2))
+    delta_W1 = []
+    delta_W1_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if CLAGN_W1_high_flux_mjd[i] > CLAGN_W1_low_flux_mjd[i]: #turned on
+            delta_W1.append(CLAGN_W1_high_mag[i] - CLAGN_W1_low_mag[i])
+        else: #turned off
+            delta_W1.append(CLAGN_W1_low_mag[i] - CLAGN_W1_high_mag[i])
+        delta_W1_unc.append(np.sqrt(CLAGN_W1_low_mag_unc[i]**2 + CLAGN_W1_high_mag_unc[i]**2))
 
-    # delta_W2 = []
-    # delta_W2_unc = []
-    # for i in range(len(CLAGN_quantifying_change_data)):
-    #     if CLAGN_W2_high_flux_mjd[i] > CLAGN_W2_low_flux_mjd[i]: #turned on
-    #         delta_W2.append(CLAGN_W2_high_mag[i] - CLAGN_W2_low_mag[i])
-    #     else: #turned off
-    #         delta_W2.append(CLAGN_W2_low_mag[i] - CLAGN_W2_high_mag[i])
-    #     delta_W2_unc.append(np.sqrt(CLAGN_W2_low_mag_unc[i]**2 + CLAGN_W2_high_mag_unc[i]**2))
+    delta_W2 = []
+    delta_W2_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if CLAGN_W2_high_flux_mjd[i] > CLAGN_W2_low_flux_mjd[i]: #turned on
+            delta_W2.append(CLAGN_W2_high_mag[i] - CLAGN_W2_low_mag[i])
+        else: #turned off
+            delta_W2.append(CLAGN_W2_low_mag[i] - CLAGN_W2_high_mag[i])
+        delta_W2_unc.append(np.sqrt(CLAGN_W2_low_mag_unc[i]**2 + CLAGN_W2_high_mag_unc[i]**2))
 
     def model_funct(vals, x):
         return vals[0] + vals[1]*x
@@ -4139,18 +4153,331 @@ if delta_W2mag_vs_delta_W1mag_CLAGN:
     min_W1 = min(delta_W1)
     max_W2 = max(delta_W2)
     min_W2 = min(delta_W2)
-    x = np.linspace(1.05*min([min_W1, min_W2]), 1.05*max([max_W1, max_W2]), 100)
+    x = np.linspace(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]), 100)
 
     plt.figure(figsize=(12, 7))
     plt.errorbar(delta_W1, delta_W2, xerr=delta_W1_unc, yerr=delta_W2_unc, fmt='o', color='red')
     plt.plot(x, x, color='black', linestyle=':', label = 'ΔW2 = ΔW1')
     plt.plot(x_data, fit_line, linewidth=2, linestyle='-', color = 'black', label=f'ΔW2 = {grad:.2f}ΔW1 - {abs(intercept):.2f}')
-    plt.xlim(1.05*min([min_W1, min_W2]), 1.05*max([max_W1, max_W2]))
-    plt.ylim(1.05*min([min_W1, min_W2]), 1.05*max([max_W1, max_W2]))
+    plt.xlim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.ylim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
     plt.tick_params(axis='both', labelsize=26, length=8, width=2)
-    plt.xlabel('ΔW1', fontsize = 26)
-    plt.ylabel('ΔW2', fontsize = 26)
-    plt.title("Colour Variability of CLAGN", fontsize = 28)
+    plt.xlabel('ΔW1 / Magnitude', fontsize = 26)
+    plt.ylabel('ΔW2 / Magnitude', fontsize = 26)
+    plt.title("Colour Variability of Bright CLAGN", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
+if delta_W2mag_vs_delta_W1mag_CLAGN_Yang2025_repeat:
+    c = 299792458
+    W1_k = 309.540 #Janskys. This means that mag 0 = 309.540 Janskys at the W1 wl.
+    W2_k = 171.787
+    W1_wl = 3.4e4 #Angstroms
+    W2_wl = 4.6e4
+    W1_AB_correction = 2.699
+    W2_AB_correction = 3.339
+    def mag(flux, k, wavel, AB_correction):
+        k = (k*(10**(-6))*(c*10**(10)))/(wavel**2) # converting from Jansky to 10-17 ergs/s/cm2/Å. Express c in Angstrom units
+        return -2.5*np.log10(flux/k) + AB_correction
+    
+    #plot data - to make best fit line I needed no nans in the uncertainties. Don't need that for the plot.
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_recreating_Yang2025.csv')
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+    #     CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+    #     CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    # #drop objects that don't have uncs for W1/W2 max min epochs
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[28]])
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[29]])
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[31]])
+    CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[32]])
+    print(len(CLAGN_quantifying_change_data))
+
+    CLAGN_W1_low_flux = CLAGN_quantifying_change_data.iloc[:, 27].tolist()
+    CLAGN_W1_low_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_low_flux]
+    CLAGN_W1_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 28].tolist()
+    CLAGN_W1_low_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_low_flux_unc, CLAGN_W1_low_flux)]
+    CLAGN_W1_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 33].tolist()
+    CLAGN_W1_high_flux = CLAGN_quantifying_change_data.iloc[:, 37].tolist()
+    CLAGN_W1_high_mag = [mag(flux, W1_k, W1_wl, W1_AB_correction) for flux in CLAGN_W1_high_flux]
+    CLAGN_W1_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 29].tolist()
+    CLAGN_W1_high_mag_unc = [2.5*flux_unc/(np.log(10)*W1_flux) for flux_unc, W1_flux in zip(CLAGN_W1_high_flux_unc, CLAGN_W1_high_flux)]
+    CLAGN_W1_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
+
+    CLAGN_W2_low_flux = CLAGN_quantifying_change_data.iloc[:, 30].tolist()
+    CLAGN_W2_low_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_low_flux]
+    CLAGN_W2_low_flux_unc = CLAGN_quantifying_change_data.iloc[:, 31].tolist()
+    CLAGN_W2_low_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_low_flux_unc, CLAGN_W2_low_flux)]
+    CLAGN_W2_low_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 35].tolist()
+    CLAGN_W2_high_flux = CLAGN_quantifying_change_data.iloc[:, 38].tolist()
+    CLAGN_W2_high_mag = [mag(flux, W2_k, W2_wl, W2_AB_correction) for flux in CLAGN_W2_high_flux]
+    CLAGN_W2_high_flux_unc = CLAGN_quantifying_change_data.iloc[:, 32].tolist()
+    CLAGN_W2_high_mag_unc = [2.5*flux_unc/(np.log(10)*W2_flux) for flux_unc, W2_flux in zip(CLAGN_W2_high_flux_unc, CLAGN_W2_high_flux)]
+    CLAGN_W2_high_flux_mjd = CLAGN_quantifying_change_data.iloc[:, 36].tolist()
+
+    delta_W1 = []
+    delta_W1_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if CLAGN_W1_high_flux_mjd[i] > CLAGN_W1_low_flux_mjd[i]: #turned on
+            delta_W1.append(CLAGN_W1_high_mag[i] - CLAGN_W1_low_mag[i])
+        else: #turned off
+            delta_W1.append(CLAGN_W1_low_mag[i] - CLAGN_W1_high_mag[i])
+        delta_W1_unc.append(np.sqrt(CLAGN_W1_low_mag_unc[i]**2 + CLAGN_W1_high_mag_unc[i]**2))
+
+    delta_W2 = []
+    delta_W2_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if CLAGN_W2_high_flux_mjd[i] > CLAGN_W2_low_flux_mjd[i]: #turned on
+            delta_W2.append(CLAGN_W2_high_mag[i] - CLAGN_W2_low_mag[i])
+        else: #turned off
+            delta_W2.append(CLAGN_W2_low_mag[i] - CLAGN_W2_high_mag[i])
+        delta_W2_unc.append(np.sqrt(CLAGN_W2_low_mag_unc[i]**2 + CLAGN_W2_high_mag_unc[i]**2))
+
+    def model_funct(vals, x):
+        return vals[0] + vals[1]*x
+    
+    # Prepare data (x, y, and their uncertainties)
+    x_data = np.array(delta_W1)
+    y_data = np.array(delta_W2)
+    x_err = np.array(delta_W1_unc)  # Add your x uncertainties here
+    y_err = np.array(delta_W2_unc)
+
+    # Define model and data for ODR
+    model = Model(model_funct)
+    data = RealData(x_data, y_data, sx=x_err, sy=y_err)
+    odr = ODR(data, model, beta0=[0, 1])  # Initial guess
+
+    # Run the fitting
+    output = odr.run()
+
+    # Extract best-fit parameters
+    intercept, grad = output.beta
+    intercept_err, grad_err = output.sd_beta  # Standard deviations (uncertainties in parameters)
+
+    # Generate fitted line
+    fit_line = model_funct(output.beta, x_data)
+
+    print(f"Best-fit parameters: intercept = {intercept:.3f} ± {intercept_err:.3f}, grad = {grad:.3f} ± {grad_err:.3f}")
+
+    max_W1 = max(delta_W1)
+    min_W1 = min(delta_W1)
+    max_W2 = max(delta_W2)
+    min_W2 = min(delta_W2)
+    x = np.linspace(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]), 100)
+
+    plt.figure(figsize=(12, 7))
+    plt.errorbar(delta_W1, delta_W2, xerr=delta_W1_unc, yerr=delta_W2_unc, fmt='o', color='red')
+    plt.plot(x, x, color='black', linestyle=':', label = 'ΔW2 = ΔW1')
+    plt.plot(x_data, fit_line, linewidth=2, linestyle='-', color = 'black', label=f'ΔW2 = {grad:.2f}ΔW1 - {abs(intercept):.2f}')
+    plt.xlim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.ylim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel('ΔW1 / Magnitude', fontsize = 26)
+    plt.ylabel('ΔW2 / Magnitude', fontsize = 26)
+    plt.title("Colour Variability of Bright CLAGN", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
+if Comparing_Yang2025_analysis_to_mine:
+    #Yang2025 finds that delta_w2/delta_W1 = 1.27.
+    #Let's look at the relationship between W2 NFD/W1 NFD and similar for z-score.
+    #I am going to do it the same as them - W1 and W2 NFD over same time period.
+    #plot data - to make best fit line I needed no nans in the uncertainties. Don't need that for the plot.
+    CLAGN_quantifying_change_data = pd.read_csv('CLAGN_Quantifying_Change_recreating_Yang2025.csv')
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data[np.where(CLAGN_quantifying_change_data.iloc[:, 27].notna(),  
+    #     CLAGN_quantifying_change_data.iloc[:, 27] >= bright_dim_W1,
+    #     CLAGN_quantifying_change_data.iloc[:, 30] >= bright_dim_W2)]
+    # #drop objects that don't have uncs for W1/W2 max min epochs
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[28]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[29]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[31]])
+    # CLAGN_quantifying_change_data = CLAGN_quantifying_change_data.dropna(subset=[CLAGN_quantifying_change_data.columns[32]])
+
+    CLAGN_W1_zscore_max = CLAGN_quantifying_change_data.iloc[:, 1].tolist()
+    CLAGN_W1_zscore_max_unc = CLAGN_quantifying_change_data.iloc[:, 2].tolist()
+    CLAGN_W1_zscore_min = CLAGN_quantifying_change_data.iloc[:, 3].tolist()
+    CLAGN_W1_zscore_min_unc = CLAGN_quantifying_change_data.iloc[:, 4].tolist()
+    CLAGN_W1_zscore_mean = [
+        np.nanmean([abs(zmax), abs(zmin)]) 
+        if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+        else np.nan  # Assign NaN if both are NaN
+        for zmax, zmin in zip(CLAGN_W1_zscore_max, CLAGN_W1_zscore_min)
+    ]
+    CLAGN_W1_zscore_mean_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if np.isnan(CLAGN_W1_zscore_max[i]):
+            if np.isnan(CLAGN_W1_zscore_min[i]):
+                CLAGN_W1_zscore_mean_unc.append(np.nan)
+            else:
+                CLAGN_W1_zscore_mean_unc.append(CLAGN_W1_zscore_min_unc[i])
+        else:
+            if np.isnan(CLAGN_W1_zscore_min[i]):
+                CLAGN_W1_zscore_mean_unc.append(CLAGN_W1_zscore_max_unc[i])
+            else:
+                CLAGN_W1_zscore_mean_unc.append((1/2)*np.sqrt(CLAGN_W1_zscore_min_unc[i]**2+CLAGN_W1_zscore_max_unc[i]**2))
+    CLAGN_W1_NFD = CLAGN_quantifying_change_data.iloc[:, 7].tolist()
+    CLAGN_W1_NFD_unc = CLAGN_quantifying_change_data.iloc[:, 8].tolist()
+    CLAGN_W1_min_mjd = CLAGN_quantifying_change_data.iloc[:, 33].tolist()
+    CLAGN_W1_max_mjd = CLAGN_quantifying_change_data.iloc[:, 34].tolist()
+
+    CLAGN_W1_min_mjd = np.array(CLAGN_W1_min_mjd)
+    CLAGN_W1_max_mjd = np.array(CLAGN_W1_max_mjd)
+    CLAGN_W1_zscore_mean = np.array(CLAGN_W1_zscore_mean)
+    CLAGN_W1_zscore_mean_unc = np.array(CLAGN_W1_zscore_mean_unc)
+    CLAGN_W1_NFD = np.array(CLAGN_W1_NFD)
+    CLAGN_W1_NFD_unc = np.array(CLAGN_W1_NFD_unc)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W1 = CLAGN_W1_min_mjd > CLAGN_W1_max_mjd
+    CLAGN_W1_zscore_mean[invert_indices_W1] *= -1
+    CLAGN_W1_NFD[invert_indices_W1] *= -1
+
+    CLAGN_W2_zscore_max = CLAGN_quantifying_change_data.iloc[:, 9].tolist()
+    CLAGN_W2_zscore_max_unc = CLAGN_quantifying_change_data.iloc[:, 10].tolist()
+    CLAGN_W2_zscore_min = CLAGN_quantifying_change_data.iloc[:, 11].tolist()
+    CLAGN_W2_zscore_min_unc = CLAGN_quantifying_change_data.iloc[:, 12].tolist()
+    CLAGN_W2_zscore_mean = [
+        np.nanmean([abs(zmax), abs(zmin)]) 
+        if not (np.isnan(zmax) and np.isnan(zmin))  # Check if both are NaN
+        else np.nan  # Assign NaN if both are NaN
+        for zmax, zmin in zip(CLAGN_W2_zscore_max, CLAGN_W2_zscore_min)
+    ]
+    CLAGN_W2_zscore_mean_unc = []
+    for i in range(len(CLAGN_quantifying_change_data)):
+        if np.isnan(CLAGN_W2_zscore_max[i]):
+            if np.isnan(CLAGN_W2_zscore_min[i]):
+                CLAGN_W2_zscore_mean_unc.append(np.nan)
+            else:
+                CLAGN_W2_zscore_mean_unc.append(CLAGN_W2_zscore_min_unc[i])
+        else:
+            if np.isnan(CLAGN_W2_zscore_min[i]):
+                CLAGN_W2_zscore_mean_unc.append(CLAGN_W2_zscore_max_unc[i])
+            else:
+                CLAGN_W2_zscore_mean_unc.append((1/2)*np.sqrt(CLAGN_W2_zscore_min_unc[i]**2+CLAGN_W2_zscore_max_unc[i]**2))
+    CLAGN_W2_NFD = CLAGN_quantifying_change_data.iloc[:, 15].tolist()
+    CLAGN_W2_NFD_unc = CLAGN_quantifying_change_data.iloc[:, 16].tolist()
+    CLAGN_W2_min_mjd = CLAGN_quantifying_change_data.iloc[:, 35].tolist()
+    CLAGN_W2_max_mjd = CLAGN_quantifying_change_data.iloc[:, 36].tolist()
+
+    CLAGN_W2_min_mjd = np.array(CLAGN_W2_min_mjd)
+    CLAGN_W2_max_mjd = np.array(CLAGN_W2_max_mjd)
+    CLAGN_W2_zscore_mean = np.array(CLAGN_W2_zscore_mean)
+    CLAGN_W2_zscore_mean_unc = np.array(CLAGN_W2_zscore_mean_unc)
+    CLAGN_W2_NFD = np.array(CLAGN_W2_NFD)
+    CLAGN_W2_NFD_unc = np.array(CLAGN_W2_NFD_unc)
+    # Find indices where min_mjd > max_mjd
+    invert_indices_W2 = CLAGN_W2_min_mjd > CLAGN_W2_max_mjd
+    CLAGN_W2_zscore_mean[invert_indices_W2] *= -1
+    CLAGN_W2_NFD[invert_indices_W2] *= -1
+
+    # Find indices where neither list has NaN #AND where neither of the uncertainties are nan (for fitting)
+    mask_zs = ~np.isnan(CLAGN_W1_zscore_mean) & ~np.isnan(CLAGN_W2_zscore_mean) & ~np.isnan(CLAGN_W1_zscore_mean_unc) & ~np.isnan(CLAGN_W2_zscore_mean_unc)
+    mask_NFD = ~np.isnan(CLAGN_W1_NFD) & ~np.isnan(CLAGN_W2_NFD) & ~np.isnan(CLAGN_W1_NFD_unc) & ~np.isnan(CLAGN_W2_NFD_unc)
+    # Filter the lists
+    CLAGN_W1_zscore_mean = CLAGN_W1_zscore_mean[mask_zs].tolist()
+    CLAGN_W1_zscore_mean_unc = CLAGN_W1_zscore_mean_unc[mask_zs].tolist()
+    CLAGN_W2_zscore_mean = CLAGN_W2_zscore_mean[mask_zs].tolist()
+    CLAGN_W2_zscore_mean_unc = CLAGN_W2_zscore_mean_unc[mask_zs].tolist()
+    CLAGN_W1_NFD = CLAGN_W1_NFD[mask_NFD].tolist()
+    CLAGN_W1_NFD_unc = CLAGN_W1_NFD_unc[mask_NFD].tolist()
+    CLAGN_W2_NFD = CLAGN_W2_NFD[mask_NFD].tolist()
+    CLAGN_W2_NFD_unc = CLAGN_W2_NFD_unc[mask_NFD].tolist()
+    print(f'Number of CLAGN plotted (Z-Score Analysis) = {len(CLAGN_W1_zscore_mean)}')
+    print(f'Number of CLAGN plotted (NFD Analysis) = {len(CLAGN_W1_NFD)}')
+
+    ###FIRST Plot & Fit z-score. Next will be NFD
+    def model_funct(vals, x):
+        return vals[0] + vals[1]*x
+    
+    # Prepare data (x, y, and their uncertainties)
+    x_data = np.array(CLAGN_W1_zscore_mean)
+    y_data = np.array(CLAGN_W2_zscore_mean)
+    x_err = np.array(CLAGN_W1_zscore_mean_unc)
+    y_err = np.array(CLAGN_W2_zscore_mean_unc)
+
+    # Define model and data for ODR
+    model = Model(model_funct)
+    data = RealData(x_data, y_data, sx=x_err, sy=y_err)
+    odr = ODR(data, model, beta0=[0, 1])  # Initial guess
+
+    # Run the fitting
+    output = odr.run()
+
+    # Extract best-fit parameters
+    intercept, grad = output.beta
+    intercept_err, grad_err = output.sd_beta  # Standard deviations (uncertainties in parameters)
+
+    # Generate fitted line
+    fit_line = model_funct(output.beta, x_data)
+
+    print(f"Best-fit parameters (Z-Score): intercept = {intercept:.3f} ± {intercept_err:.3f}, grad = {grad:.3f} ± {grad_err:.3f}")
+
+    max_W1 = max(CLAGN_W1_zscore_mean)
+    min_W1 = min(CLAGN_W1_zscore_mean)
+    max_W2 = max(CLAGN_W2_zscore_mean)
+    min_W2 = min(CLAGN_W2_zscore_mean)
+    x = np.linspace(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]), 100)
+
+    plt.figure(figsize=(12, 7))
+    plt.errorbar(CLAGN_W1_zscore_mean, CLAGN_W2_zscore_mean, xerr=CLAGN_W1_zscore_mean_unc, yerr=CLAGN_W2_zscore_mean_unc, fmt='o', color='red')
+    plt.plot(x, x, color='black', linestyle=':', label = 'W2 ZS = W1 ZS')
+    plt.plot(x_data, fit_line, linewidth=2, linestyle='-', color = 'black', label=f'W2 ZS = {grad:.2f}W1 ZS + {abs(intercept):.2f}')
+    plt.xlim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.ylim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel('W1 Z-Score', fontsize = 26)
+    plt.ylabel('W2 Z-Score', fontsize = 26)
+    plt.title("Colour Variability of CLAGN: Z-Score Analysis", fontsize = 28)
+    plt.legend(loc = 'best', fontsize=25)
+    plt.tight_layout()
+    plt.show()
+
+
+    ###SECOND Plot & Fit NFD
+    def model_funct(vals, x):
+        return vals[0] + vals[1]*x
+    
+    # Prepare data (x, y, and their uncertainties)
+    x_data = np.array(CLAGN_W1_NFD)
+    y_data = np.array(CLAGN_W2_NFD)
+    x_err = np.array(CLAGN_W1_NFD_unc)
+    y_err = np.array(CLAGN_W2_NFD_unc)
+
+    # Define model and data for ODR
+    model = Model(model_funct)
+    data = RealData(x_data, y_data, sx=x_err, sy=y_err)
+    odr = ODR(data, model, beta0=[0, 1])  # Initial guess
+
+    # Run the fitting
+    output = odr.run()
+
+    # Extract best-fit parameters
+    intercept, grad = output.beta
+    intercept_err, grad_err = output.sd_beta  # Standard deviations (uncertainties in parameters)
+
+    # Generate fitted line
+    fit_line = model_funct(output.beta, x_data)
+
+    print(f"Best-fit parameters (NFD): intercept = {intercept:.3f} ± {intercept_err:.3f}, grad = {grad:.3f} ± {grad_err:.3f}")
+
+    max_W1 = max(CLAGN_W1_NFD)
+    min_W1 = min(CLAGN_W1_NFD)
+    max_W2 = max(CLAGN_W2_NFD)
+    min_W2 = min(CLAGN_W2_NFD)
+    x = np.linspace(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]), 100)
+
+    plt.figure(figsize=(12, 7))
+    plt.errorbar(CLAGN_W1_NFD, CLAGN_W2_NFD, xerr=CLAGN_W1_NFD_unc, yerr=CLAGN_W2_NFD_unc, fmt='o', color='red')
+    plt.plot(x, x, color='black', linestyle=':', label = 'W2 NFD = W1 NFD')
+    plt.plot(x_data, fit_line, linewidth=2, linestyle='-', color = 'black', label=f'W2 NFD = {grad:.2f}W1 NFD - {abs(intercept):.2f}')
+    plt.xlim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.ylim(1.25*min([min_W1, min_W2]), 1.25*max([max_W1, max_W2]))
+    plt.tick_params(axis='both', labelsize=26, length=8, width=2)
+    plt.xlabel('W1 NFD', fontsize = 26)
+    plt.ylabel('W2 NFD', fontsize = 26)
+    plt.title("Colour Variability of CLAGN: NFD Analysis", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.tight_layout()
     plt.show()
@@ -4301,8 +4628,8 @@ if delta_W2mag_vs_delta_W1mag_AGN:
     plt.xlim(1.05*max([min_W1, min_W2]), 1.05*max([max_W1, max_W2]))
     plt.ylim(1.05*max([min_W1, min_W2]), 1.05*max([max_W1, max_W2]))
     plt.tick_params(axis='both', labelsize=26, length=8, width=2)
-    plt.xlabel('ΔW1', fontsize = 26)
-    plt.ylabel('ΔW2', fontsize = 26)
+    plt.xlabel('ΔW1 / Magnitude', fontsize = 26)
+    plt.ylabel('ΔW2 / Magnitude', fontsize = 26)
     plt.title("Colour Variability of Non-CL AGN", fontsize = 28)
     plt.legend(loc = 'best', fontsize=25)
     plt.tight_layout()
